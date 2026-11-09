@@ -134,7 +134,7 @@ export default function AssistantReplyQuoteAction() {
         setAction(null);
       }}
     >
-      {t('replyQuotes.addToChat', { defaultValue: '添加到9GClaw对话' })}
+      {t('replyQuotes.addToChat', { defaultValue: '添加到九格智能体对话' })}
     </button>,
     document.body,
   );

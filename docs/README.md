@@ -10,7 +10,7 @@ Start with the [contribution rules](../CONTRIBUTING.md). Module READMEs are shor
 ## Setup and operations
 
 - [Source installation](../README_SOURCE_INSTALL.md) and [Docker](../README_DOCKER.md).
-- [Releases and signing](release.md), [Ubuntu DEB](ubuntu-desktop-support.md), [RPM](redhat-desktop-support.md), [Web updates](web-update.md).
+- [Windows releases](release.md), [upstream synchronization](upstream-sync.zh.md), [branding and identity](9gclaw-branding.md), [Web updates](web-update.md).
 - [Test selection](testing.md), [local transcription](funasr-installation.md), [cron scheduling](cron-scheduling.md), [Web search providers](web-search-providers.md).
 
 ## API and protocol reference

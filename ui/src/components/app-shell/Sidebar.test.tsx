@@ -34,7 +34,7 @@ const general: Project = {
 
 const project: Project = {
   name: '9gclaw',
-  displayName: '9GClaw',
+  displayName: 'Sample project',
   fullPath: '/workspace/9GClaw',
   sessions: [],
 };
@@ -84,16 +84,15 @@ describe('Sidebar layout', () => {
   it('shows brand text, quick actions, projects and conversations together', () => {
     renderSidebar(null);
 
-    const brand = screen.getByRole('img', { name: '9GCLAW' });
+    const brand = screen.getByRole('img', { name: 'G9Agent' });
     const brandSources = Array.from(brand.querySelectorAll('img')).map((image) =>
       image.getAttribute('src'),
     );
-    expect(brandSources).toHaveLength(2);
-    expect(brandSources[0]).toContain('9gclaw-wordmark-light.png');
-    expect(brandSources[1]).toContain('9gclaw-wordmark-dark.png');
+    expect(brandSources).toEqual(['/logo-256.png']);
+    expect(brand.textContent).toBe('G9Agent');
     expect(screen.getByRole('navigation', { name: /Quick actions|Primary actions/ })).toBeTruthy();
     expect(screen.getByText(/New conversation|新对话/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Start a new conversation in 9GClaw|在 9GClaw 中新建对话/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Start a new conversation in Sample project|在 Sample project 中新建对话/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Start a general conversation|新建通用对话/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Create new project|创建新项目/ })).toBeTruthy();
     expect(screen.getByText('Skills')).toBeTruthy();
@@ -108,18 +107,18 @@ describe('Sidebar layout', () => {
 
     expect(screen.getByText('Projects')).toBeTruthy();
     expect(screen.getByText('Conversations')).toBeTruthy();
-    expect(screen.getByText('9GClaw')).toBeTruthy();
+    expect(screen.getByText('Sample project')).toBeTruthy();
   });
 
   it('keeps a sidebar expansion control when the wordmark is collapsed', () => {
     localStorage.setItem('sidebar-v2-width', '76');
     renderSidebar(null);
 
-    expect(screen.queryByRole('img', { name: '9GCLAW' })).toBeNull();
+    expect(screen.queryByRole('img', { name: 'G9Agent' })).toBeNull();
     const expand = screen.getByRole('button', { name: /Expand project sidebar|展开项目侧栏/ });
     expect(expand.querySelector('img')).toBeNull();
     fireEvent.click(expand);
-    expect(screen.getByRole('img', { name: '9GCLAW' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'G9Agent' })).toBeTruthy();
   });
 
   it('opens scheduled tasks from the sidebar quick action', () => {
@@ -170,7 +169,7 @@ describe('Sidebar layout', () => {
     const onSelectProject = vi.fn();
     renderSidebar(null, { onSelectProject });
 
-    fireEvent.click(screen.getByRole('button', { name: /^9GClaw$/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Sample project$/ }));
 
     expect(onSelectProject).toHaveBeenCalledWith(project);
   });
@@ -182,16 +181,16 @@ describe('Sidebar layout', () => {
     const projectsHeading = screen.getByRole('button', { name: 'Collapse projects' }).closest('.tree-heading') as HTMLElement;
     const conversationsHeading = screen.getByRole('button', { name: 'Collapse conversations' }).closest('.tree-heading') as HTMLElement;
 
-    expect(screen.getByText('9GClaw')).toBeTruthy();
+    expect(screen.getByText('Sample project')).toBeTruthy();
     expect(within(projectsHeading).getByRole('button', { name: /Create new project|创建新项目/ })).toBeTruthy();
     expect(within(conversationsHeading).getByRole('button', { name: /Start a general conversation|新建通用对话/ })).toBeTruthy();
 
     fireEvent.click(screen.getByText('Projects'));
-    expect(screen.getByText('9GClaw')).toBeTruthy();
+    expect(screen.getByText('Sample project')).toBeTruthy();
     fireEvent.click(within(projectsHeading).getByRole('button', { name: 'Collapse projects' }));
-    expect(screen.queryByText('9GClaw')).toBeNull();
+    expect(screen.queryByText('Sample project')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Expand projects' }));
-    expect(screen.getByText('9GClaw')).toBeTruthy();
+    expect(screen.getByText('Sample project')).toBeTruthy();
 
     fireEvent.click(screen.getByText('Conversations'));
     expect(within(conversationsHeading).getByRole('button', { name: 'Collapse conversations' })).toBeTruthy();
@@ -210,7 +209,7 @@ describe('Sidebar layout', () => {
 
     expect(screen.getByRole('button', { name: 'Collapse conversations' })).toBeTruthy();
     expect(screen.getByText('hello world')).toBeTruthy();
-    expect(screen.getByText('9GClaw')).toBeTruthy();
+    expect(screen.getByText('Sample project')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Collapse conversations' }));
     expect(screen.queryByText('hello world')).toBeNull();
@@ -237,7 +236,7 @@ describe('Sidebar layout', () => {
     renderSidebar(null, { onStartNewSession });
 
     fireEvent.click(screen.getByRole('button', {
-      name: /Start a new conversation in 9GClaw|在 9GClaw 中新建对话/,
+      name: /Start a new conversation in Sample project|在 Sample project 中新建对话/,
     }));
     expect(onStartNewSession).toHaveBeenLastCalledWith(project);
 
@@ -297,7 +296,7 @@ describe('desktop working-directory actions', () => {
     fireEvent.contextMenu(screen.getByText('Fallback chat'));
     fireEvent.click(screen.getByRole('menuitem', { name: /Open in File Explorer|在文件资源管理器中打开/ }));
     await waitFor(() => expect(openDirectory).toHaveBeenCalledWith(project.fullPath));
-    fireEvent.contextMenu(screen.getByText('9GClaw'));
+    fireEvent.contextMenu(screen.getByText('Sample project'));
     fireEvent.click(screen.getByRole('menuitem', { name: /Open in File Explorer|在文件资源管理器中打开/ }));
     await waitFor(() => expect(openDirectory).toHaveBeenCalledTimes(2));
   });
@@ -314,7 +313,7 @@ describe('desktop working-directory actions', () => {
 
   it('keeps native file manager actions out of the browser', () => {
     renderSidebar(project);
-    fireEvent.contextMenu(screen.getByText('9GClaw'));
+    fireEvent.contextMenu(screen.getByText('Sample project'));
     expect(screen.getAllByRole('menuitem')).toHaveLength(2);
   });
 
@@ -346,7 +345,7 @@ describe('desktop working-directory actions', () => {
     window.addEventListener('9gclaw:toast', toast);
     try {
       renderSidebar(project, undefined, await localizedOptions(failure === false ? 'en' : 'zh-CN'));
-      fireEvent.contextMenu(screen.getByText('9GClaw'));
+      fireEvent.contextMenu(screen.getByText('Sample project'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Open in File Explorer|在文件资源管理器中打开/ }));
       await waitFor(() => expect(toast).toHaveBeenCalledOnce());
       expect(toast.mock.calls[0][0].detail).toMatchObject({ kind: 'error' });

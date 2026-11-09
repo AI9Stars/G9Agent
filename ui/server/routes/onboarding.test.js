@@ -318,7 +318,7 @@ describe('onboarding routes', () => {
   it('rejects githubUrl for existing workspaces', async () => {
     const { request } = await createOnboardingApp();
     const response = await request('/api/v1/workspaces', {
-      method: 'POST', body: JSON.stringify({ type: 'existing', path: '/tmp/workspace', githubUrl: 'https://github.com/AI9Stars/9GClaw.git' }),
+      method: 'POST', body: JSON.stringify({ type: 'existing', path: '/tmp/workspace', githubUrl: 'https://github.com/AI9Stars/G9Agent.git' }),
     });
     expect(response).toMatchObject({ status: 400, body: { code: 'INVALID_REQUEST' } });
   });
@@ -391,11 +391,11 @@ describe('onboarding routes', () => {
       cloneGitHubRepository,
     });
     const response = await request('/api/v1/workspaces', {
-      method: 'POST', body: JSON.stringify({ type: 'new', path: '/tmp/onboarding-workspace', githubUrl: 'https://github.com/AI9Stars/9GClaw.git' }),
+      method: 'POST', body: JSON.stringify({ type: 'new', path: '/tmp/onboarding-workspace', githubUrl: 'https://github.com/AI9Stars/G9Agent.git' }),
     });
     expect(response).toMatchObject({ status: 409, body: { code: 'GIT_CLONE_FAILED' } });
     expect(cloneGitHubRepository).toHaveBeenCalledWith(
-      'https://github.com/AI9Stars/9GClaw.git',
+      'https://github.com/AI9Stars/G9Agent.git',
       expect.stringMatching(/^[\\/]tmp[\\/]onboarding-workspace[\\/]\.9GClaw\.9gclaw-clone-/),
       null,
       expect.objectContaining({ signal: expect.any(AbortSignal), timeoutMs: 300000 }),
@@ -420,7 +420,7 @@ describe('onboarding routes', () => {
     const cloneGitHubRepository = vi.fn().mockImplementationOnce(() => new Promise((resolve) => { finishClone = resolve; }));
     const { request } = await createOnboardingApp({ cloneGitHubRepository });
     const first = request('/api/v1/workspaces', {
-      method: 'POST', headers: { 'x-user': 'busy-user' }, body: JSON.stringify({ type: 'new', path: '/tmp/first-workspace', githubUrl: 'https://github.com/AI9Stars/9GClaw.git' }),
+      method: 'POST', headers: { 'x-user': 'busy-user' }, body: JSON.stringify({ type: 'new', path: '/tmp/first-workspace', githubUrl: 'https://github.com/AI9Stars/G9Agent.git' }),
     });
     await vi.waitFor(() => expect(cloneGitHubRepository).toHaveBeenCalledTimes(1));
 

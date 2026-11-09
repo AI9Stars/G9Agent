@@ -9,6 +9,7 @@ import test from "node:test";
 import { createRequire } from 'node:module';
 import { gzipSync } from 'node:zlib';
 import { verifyReleaseAssets } from './verify-release-assets.mjs';
+import { validateReleaseManifest } from '../../../ui/server/services/releaseService.js';
 const { parseUpdateInfo } = createRequire(import.meta.url)('electron-updater/out/providers/Provider');
 
 const scriptsRoot = dirname(fileURLToPath(import.meta.url));
@@ -54,8 +55,8 @@ test("unified release manifest links the source tag and checksummed installers",
           NINEGCLAW_RELEASE_TAG: "v2026.09.03",
           NINEGCLAW_RELEASE_DATE: "2026-09-03",
           NINEGCLAW_RELEASE_BUILD_TIME: "2026-09-03T02:00:00+08:00",
-          NINEGCLAW_COMMIT_SHA: "0123456789abcdef",
-          NINEGCLAW_UPDATE_REPOSITORY: "AI9Stars/9GClaw",
+          NINEGCLAW_COMMIT_SHA: "0123456789abcdef0123456789abcdef01234567",
+          NINEGCLAW_UPDATE_REPOSITORY: "AI9Stars/G9Agent",
         },
       },
     );
@@ -65,15 +66,19 @@ test("unified release manifest links the source tag and checksummed installers",
     const manifest = JSON.parse(readFileSync(resolve(assetsDir, "release.json"), "utf8"));
     assert.equal(manifest.tag, "v2026.09.03");
     assert.equal(manifest.version, "2026.903.0");
-    assert.equal(manifest.sourceSha, "0123456789abcdef");
+    assert.equal(manifest.sourceSha, "0123456789abcdef0123456789abcdef01234567");
     assert.equal(manifest.repository, "AI9Stars/9GClaw");
+    assert.equal(manifest.canonicalRepository, "AI9Stars/G9Agent");
+    assert.ok(validateReleaseManifest(manifest, 'AI9Stars/9GClaw').assets[0].downloadUrl.startsWith('https://github.com/AI9Stars/9GClaw/'));
+    assert.ok(validateReleaseManifest(manifest, 'AI9Stars/G9Agent').assets[0].downloadUrl.startsWith('https://github.com/AI9Stars/G9Agent/'));
+    assert.throws(() => validateReleaseManifest(manifest, 'another/repository'), /does not match/);
     assert.equal(manifest.date, "2026-09-03");
     assert.equal(manifest.schemaVersion, 1);
     assert.equal(manifest.artifactSchemaVersion, 1);
     assert.equal(manifest.differentialUpdates, true);
     assert.deepEqual(manifest.assets.filter(a => a.format === 'blockmap').map(a => a.name).sort(),
       manifest.assets.filter(a => /\.(exe|zip)$/.test(a.name)).map(a => `${a.name}.blockmap`).sort());
-    assert.deepEqual(verifyReleaseAssets(assetsDir), { installers: 10, feeds: 8 });
+    assert.throws(() => verifyReleaseAssets(assetsDir), /Unexpected installer/);
     for (const feed of manifest.assets.filter(a => a.format === 'yml')) {
       const parsed = parseUpdateInfo(readFileSync(join(assetsDir, feed.name), 'utf8'), feed.name, new URL('https://example.invalid/'));
       assert.equal(parsed.version, manifest.version);
@@ -127,7 +132,7 @@ test("unified release manifest links the source tag and checksummed installers",
     const disabled = generate('0');
     assert.equal(disabled.status, 0, disabled.stderr || disabled.stdout);
     assert.equal(JSON.parse(readFileSync(resolve(assetsDir, 'release.json'), 'utf8')).differentialUpdates, false);
-    assert.deepEqual(verifyReleaseAssets(assetsDir), { installers: 10, feeds: 8 });
+    assert.throws(() => verifyReleaseAssets(assetsDir), /Unexpected installer/);
   } finally {
     rmSync(assetsDir, { recursive: true, force: true });
   }

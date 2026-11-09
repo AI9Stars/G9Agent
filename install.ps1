@@ -17,7 +17,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $LaunchDirectory = (Get-Location).Path
 
-if (-not $RepoUrl) { $RepoUrl = 'https://github.com/AI9Stars/9GClaw.git' }
+if (-not $RepoUrl) { $RepoUrl = 'https://github.com/AI9Stars/G9Agent.git' }
 if (-not $Branch) { $Branch = 'main' }
 if (-not $InstallDir) { $InstallDir = Join-Path $HOME '.9gclaw\app' }
 if (-not $ConfigPath) { $ConfigPath = Join-Path $HOME '.9gclaw\9gclaw.yaml' }
@@ -431,7 +431,7 @@ function Ensure-BrowserUseDependency {
 
   if ($env:NINEGCLAW_SKIP_BROWSER_INSTALL -ne '0') {
     Write-Step 'Skipping Chrome for Testing download (default) to keep install fast.'
-    Write-Step '9GClaw core features are still available without this optional browser-use dependency.'
+    Write-Step 'G9Agent core features are still available without this optional browser-use dependency.'
     Write-Step "To enable browser-use later, run: Set-Location `"$InstallDir`"; npm run install:browser"
     Write-Step 'Or re-run the installer with NINEGCLAW_SKIP_BROWSER_INSTALL=0.'
     return
@@ -475,7 +475,7 @@ function Install-AndBuild {
   $env:NINEGCLAW_CONFIG_PATH = $ConfigPath
   Invoke-Npm -Arguments @('run', 'build') -WorkingDirectory $InstallDir
   Invoke-Npm -Arguments @('run', 'build') -WorkingDirectory (Join-Path $InstallDir 'ui')
-  Write-Ok '9GClaw built successfully'
+  Write-Ok 'G9Agent built successfully'
 }
 
 function Write-CmdLauncher {

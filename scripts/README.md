@@ -13,6 +13,9 @@ Maintained build, development and diagnostic commands. Run from the repository r
 | [check-ui-build-graph.mjs](check-ui-build-graph.mjs) | Verifies deferred editor/PDF loading from the production Vite manifest and reports startup JavaScript bytes |
 | [smoke-llm-center-protocols.mjs](smoke-llm-center-protocols.mjs) | Explicitly enabled live checks for Chat Completions, Messages, Responses and Gemini, including output/context limits |
 | [update-web.mjs](update-web.mjs) | Managed Web source update flow |
+| [rebrand-tracked-files.mjs](rebrand-tracked-files.mjs) | Preview or apply namespace changes after an upstream merge; preserves valid code/CSS identifiers and binary bytes |
+| [check-branding.mjs](check-branding.mjs) | Audit legacy namespaces, packaged icons, ASCII artifact names and Windows release policy |
+| [rebuild-brand-assets.mjs](rebuild-brand-assets.mjs) | Regenerate derived icons and wordmarks from the maintained vector source |
 
 Driver preparation retries transient HTTP and connection/stream failures up to four attempts, with bounded exponential backoff and a five-minute timeout per attempt. Partial archives are removed before retrying. Permanent HTTP failures and checksum mismatches still fail the build; version and SHA-256 pins remain mandatory. Regression coverage lives in `apps/desktop/scripts/computer-use-download.test.mjs`.
 

@@ -38,7 +38,7 @@ export function resolveDefaultCommandShell(options: CommandShellResolverOptions 
   const configured = env.NINEGCLAW_SHELL_PATH;
   if (configured) {
     if (!commandAvailable(configured)) {
-      throw new Error(`Configured 9GClaw shell was not found: ${configured}`);
+      throw new Error(`Configured G9Agent shell was not found: ${configured}`);
     }
     return shellFromPath(configured);
   }
@@ -57,7 +57,7 @@ export function resolveDefaultCommandShell(options: CommandShellResolverOptions 
   if (commandAvailable(cmd)) return shellWithArgs(cmd, "cmd");
   if (commandAvailable("pwsh.exe")) return shellWithArgs("pwsh.exe", "pwsh");
 
-  throw new Error("No supported 9GClaw command shell found. Install Git Bash, cmd.exe, or PowerShell 7 (pwsh.exe).");
+  throw new Error("No supported G9Agent command shell found. Install Git Bash, cmd.exe, or PowerShell 7 (pwsh.exe).");
 }
 
 export function resolveWindowsGitBash(

@@ -1,7 +1,11 @@
 # RPM desktop support
 
-9GClaw ships separate RPM installers for Linux x64 and ARM64, alongside the
-existing Ubuntu DEBs. The RPM build baseline is Rocky Linux 9 (glibc 2.34), with
+This fork packages only Windows x64 and ARM64. The following is retained
+upstream implementation guidance, not an enabled build or release target.
+Linux package scripts, builder targets, feeds and workflows must be restored
+and validated together before these commands can be used.
+
+The upstream RPM build baseline is Rocky Linux 9 (glibc 2.34), with
 native architecture-matched CI runners. The target family is RHEL 9+, Rocky Linux
 9+, AlmaLinux 9+, and Fedora desktops. RHEL 8 and older are outside this baseline.
 A build baseline does not certify every distribution or desktop environment;
@@ -48,16 +52,9 @@ unified release manifest and SHA256/SHA512 checksums before installation.
 The RPM updater installs through the system package manager with elevated
 authorization; the current dependency tries dnf/yum after zypper.
 
-Desktop Smoke and Daily Release call the same RPM workflow. Each architecture
-builds on Rocky Linux 9, validates the RPM header, feed and package marker,
-installs on that baseline, and executes the bundled native modules and updater.
-The same RPM job starts the installed server and Electron window under X11 and
-Wayland on Rocky Linux 9 before uploading the installer. Linux CI exposes only
-DEB and RPM jobs for x64 and ARM64. Daily Release requires both RPMs and both
-RPM feeds before publishing. Native desktop acceptance is still needed for
-each supported distribution.
-The Wayland test installs Weston from EPEL after baseline package verification;
-this test-tool repository is not required by the 9GClaw RPM itself.
+This repository's GitHub Actions publish only Windows x64 and ARM64. Linux
+packaging targets, commands, workflows and release feeds are not enabled.
+Shared source and helper scripts alone do not establish a Linux release.
 
 
 References: [electron-builder Linux targets](https://www.electron.build/v26/docs/linux/),

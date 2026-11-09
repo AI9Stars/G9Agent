@@ -1,7 +1,7 @@
 # Web self-update
 
 Web self-update through CLI and IM is a convenience for standard Git deployments. It installs the
-latest stable `vYYYY.MM.DD[-rN]` release from `AI9Stars/9GClaw`, using the
+latest stable `vYYYY.MM.DD[-rN]` release from `AI9Stars/G9Agent`, using the
 release manifest's `sourceSha` and verifying that it matches the published tag.
 It does not follow the moving tip of `main`.
 

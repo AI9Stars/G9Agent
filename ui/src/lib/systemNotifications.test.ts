@@ -2,7 +2,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { clearWebNotificationBadge } from './systemNotifications';
 
-afterEach(() => { window.ninegclawDesktop = undefined; vi.restoreAllMocks(); document.title = '9GClaw'; });
+afterEach(() => { window.ninegclawDesktop = undefined; vi.restoreAllMocks(); document.title = 'G9Agent'; });
 it('removes legacy web title counts and clears PWA badges without publishing a new count', async () => {
   document.title = '(9) 9GClaw';
   const clear = vi.fn(async () => {});
@@ -10,7 +10,7 @@ it('removes legacy web title counts and clears PWA badges without publishing a n
   Object.defineProperty(navigator, 'clearAppBadge', { value: clear, configurable: true });
   Object.defineProperty(navigator, 'setAppBadge', { value: set, configurable: true });
   await clearWebNotificationBadge();
-  expect(document.title).toBe('9GClaw');
+  expect(document.title).toBe('G9Agent');
   expect(clear).toHaveBeenCalledOnce();
   expect(set).not.toHaveBeenCalled();
   delete (navigator as any).clearAppBadge;

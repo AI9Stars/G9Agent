@@ -47,7 +47,7 @@ export class ComputerUseController {
     try { version = JSON.parse(fs.readFileSync(path.join(options.resources, 'manifest.json'), 'utf8')).version; } catch { /* build not prepared */ }
     this.state = { enabled, phase: 'disabled', available: fs.existsSync(this.binary), version, platform: process.platform };
     if (process.platform === 'darwin') {
-      this.state.permissionOwner = options.bundleId === 'com.github.Electron' ? 'Electron' : '9GClaw';
+      this.state.permissionOwner = options.bundleId === 'com.github.Electron' ? 'Electron' : 'G9Agent';
       this.state.permissionAppPath = options.permissionAppPath;
     }
     if (process.platform === 'linux') this.state.desktopSession = process.env.XDG_SESSION_TYPE === 'wayland' || process.env.WAYLAND_DISPLAY
@@ -118,7 +118,7 @@ export class ComputerUseController {
     if (permissions && (!permissions.accessibility || !permissions.screenRecording)) {
       await this.stopChild(); this.state.phase = 'needs-permissions'; delete this.state.error; return;
     }
-    if (!this.state.available) { this.state.phase = 'error'; this.state.error = 'Bundled Driver is missing. Reinstall 9GClaw.'; return; }
+    if (!this.state.available) { this.state.phase = 'error'; this.state.error = 'Bundled Driver is missing. Reinstall G9Agent.'; return; }
     if (process.platform === 'linux' && this.state.desktopSession === 'unknown') {
       this.state.phase = 'error'; this.state.error = 'No interactive desktop session was found.'; return;
     }
@@ -130,12 +130,12 @@ export class ComputerUseController {
         const identity = checks?.find(check => check.name === 'bundle_identity');
         if (identity?.status !== 'pass' || identity.data?.bundle_identifier !== this.options.bundleId
           || identity.data.identity_source !== 'parent_application' || identity.data.parent_process_id !== process.pid) {
-          throw new Error('Driver is not directly hosted by 9GClaw.');
+          throw new Error('Driver is not directly hosted by G9Agent.');
         }
         const permissionsResult = await this.call('check_permissions');
         const source = permissionsResult.source as Record<string, unknown> | undefined;
         if (source?.attribution !== 'host' || source.host_bundle_id !== this.options.bundleId || source.pid !== this.child?.pid) {
-          throw new Error('Driver permission identity does not match 9GClaw.');
+          throw new Error('Driver permission identity does not match G9Agent.');
         }
         if (permissionsResult.accessibility !== true || permissionsResult.screen_recording !== true) {
           await this.stopChild(); this.state.phase = 'needs-permissions'; return;

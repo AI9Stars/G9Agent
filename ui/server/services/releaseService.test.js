@@ -5,7 +5,7 @@ import { compareVersions, getLatestRelease, normalizeRepository, releaseVersion 
 const asset = { name: '9GClaw-2026.907.9-mac-arm64.zip', platform: 'darwin', arch: 'arm64', size: 42,
   sha256: 'a'.repeat(64), sha512: 'A'.repeat(86) + '==' };
 const manifest = { schemaVersion: 1, tag: 'v2026.09.07-r10', sourceSha: 'a'.repeat(40),
-  repository: 'AI9Stars/9GClaw', version: '2026.907.9', date: '2026-09-07', assets: [asset] };
+  repository: 'AI9Stars/G9Agent', version: '2026.907.9', date: '2026-09-07', assets: [asset] };
 const response = (data, status = 200) => ({ ok: status === 200, status, json: async () => data });
 const discover = (data = manifest) => getLatestRelease({ fetchImpl: async () => response(data) });
 
@@ -16,7 +16,7 @@ describe('unified release discovery', () => {
     expect(latest).toMatchObject({ tagName: manifest.tag, version: manifest.version,
       sourceSha: manifest.sourceSha, publishedAt: manifest.date });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(fetchImpl.mock.calls[0][0]).toBe('https://github.com/AI9Stars/9GClaw/releases/latest/download/release.json');
+    expect(fetchImpl.mock.calls[0][0]).toBe('https://github.com/AI9Stars/G9Agent/releases/latest/download/release.json');
     expect(fetchImpl.mock.calls[0][1].headers.Authorization).toBeUndefined();
   });
   it.each([
@@ -51,13 +51,13 @@ describe('release versions and installer manifest validation', () => {
     expect(() => releaseVersion(tag)).toThrow();
   });
   it('normalizes repository URLs without falling back to a different repository', () => {
-    expect(normalizeRepository()).toBe('AI9Stars/9GClaw');
+    expect(normalizeRepository()).toBe('AI9Stars/G9Agent');
     expect(normalizeRepository('https://github.com/example/9GClaw.git')).toBe('example/9GClaw');
     expect(() => normalizeRepository('../9GClaw')).toThrow();
   });
   it('pins downloads to the validated manifest tag', async () => {
     const latest = await discover();
-    expect(latest.assets[0].downloadUrl).toBe(`https://github.com/AI9Stars/9GClaw/releases/download/${manifest.tag}/${asset.name}`);
+    expect(latest.assets[0].downloadUrl).toBe(`https://github.com/AI9Stars/G9Agent/releases/download/${manifest.tag}/${asset.name}`);
   });
   it.each([
     { ...asset, name: '../installer.zip' },

@@ -12,6 +12,26 @@ import { releaseStartupShell } from '../startupShell';
 
 afterEach(() => { cleanup(); document.getElementById('root')?.remove(); releaseStartupShell(); vi.useRealTimers(); vi.restoreAllMocks(); delete window.ninegclawDesktop; delete window.__ninegclawStartupState; });
 
+it.each([['en', 'G9Agent'], ['zh-CN', '九格智能体']])('localizes native, pre-React and React startup names in %s', async (language, name) => {
+  const html = renderLoadingHtml({ language: language as 'en' | 'zh-CN', themeMode: 'light' });
+  expect(html).toContain(`<title>${name}</title>`);
+  expect(html).toContain(`<span>${name}</span></h1>`);
+  localStorage.setItem('userLanguage', language);
+  const shell = document.createElement('div'); shell.id = '9gclaw-startup-shell';
+  shell.innerHTML = renderLoadingHtml({ language: 'en', themeMode: 'light' }, true).match(/<body[^>]*>([\s\S]*?)<\/body>/)![1];
+  document.body.append(shell);
+  try {
+    for (const script of shell.querySelectorAll('script')) new Function('window', 'document', 'navigator', 'localStorage', script.textContent!)(window, document, navigator, localStorage);
+    expect(document.querySelector('.pd-startup-brand')?.textContent).toBe(name);
+    expect(screen.getByRole('progressbar', { name })).toBeTruthy();
+    releaseStartupShell();
+    const i18n = await createTestI18n(language);
+    render(<I18nextProvider i18n={i18n}><AuthLoadingScreen /></I18nextProvider>);
+    expect(document.querySelector('.pd-startup-brand')?.textContent).toBe(name);
+    expect(screen.getByRole('progressbar', { name })).toBeTruthy();
+  } finally { localStorage.clear(); }
+});
+
 it('moves slowly inside a stage, remains bounded and resumes at the same position after handoff', () => {
   const status = { phase: 'gateway', progress: 78, phaseStartedAt: 1000 };
   const first = startupVisualProgress(status, 2000), later = startupVisualProgress(status, 20000);
@@ -155,7 +175,7 @@ it('continues desktop progress after navigation and updates without showing inte
 
 it.each([
   ['PD_RUNTIME_OUT_OF_MEMORY', 'There was not enough memory to start the service.'],
-  ['PD_RESOURCE_NOT_FOUND', 'A required application file is missing. Reinstall 9GClaw and try again.'],
+  ['PD_RESOURCE_NOT_FOUND', 'A required application file is missing. Reinstall G9Agent and try again.'],
   ['PD_NETWORK_PORT_IN_USE', 'A port required by the local service is already in use.'],
 ])('shows a concise reason for %s and delegates save/cancel to the native dialog', async (code, reason) => {
   const saveRuntimeLogs = vi.fn().mockResolvedValue({ canceled: true }), retry = vi.fn();

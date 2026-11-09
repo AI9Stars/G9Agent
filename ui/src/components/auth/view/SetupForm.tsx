@@ -3,8 +3,7 @@ import type { TFunction } from 'i18next';
 import { useCallback, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
-import ninegclawLogoDark from '../../../assets/9gclaw-wordmark-dark.png';
-import ninegclawLogoLight from '../../../assets/9gclaw-wordmark-light.png';
+import BrandWordmark from '../../ui/BrandWordmark';
 import AuthErrorAlert from './AuthErrorAlert';
 import AuthInputField from './AuthInputField';
 import AuthScreenLayout from './AuthScreenLayout';
@@ -90,22 +89,7 @@ export default function SetupForm() {
       title={t('common:uiText.welcome')}
       description={t('common:uiText.setupDescription')}
       footerText={t('common:uiText.singleUser')}
-      logo={
-        <div className="flex items-center justify-center gap-2">
-          <img
-            src={ninegclawLogoLight}
-            alt="9GClaw"
-            className="h-14 w-auto max-w-72 select-none object-contain dark:hidden"
-            draggable={false}
-          />
-          <img
-            src={ninegclawLogoDark}
-            alt="9GClaw"
-            className="hidden h-14 w-auto max-w-72 select-none object-contain dark:block"
-            draggable={false}
-          />
-        </div>
-      }
+      logo={<BrandWordmark />}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthInputField

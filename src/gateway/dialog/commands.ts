@@ -9,7 +9,7 @@ import { DialogGatewayError } from "./errors.js";
 const PINNED = ["/skill_install", "/projects", "/switch-project"];
 const WEB_BUILTINS: Array<[string, string]> = [
   ["/clear", "Clear the conversation history"], ["/model", "View the current AI model and available options"],
-  ["/cost", "Display token usage and cost information"], ["/memory", "Open 9GCLAW.md memory file for editing"],
+  ["/cost", "Display token usage and cost information"], ["/memory", "Open NINEGCLAW.md memory file for editing"],
   ["/config", "Open settings and configuration"], ["/rewind", "Rewind the conversation to a previous state"],
   ["/ao", "List, run, or inspect Always-On jobs"], ["/turnkey", "Run turnkey workflow subcommands"],
   ["/skill_install", "Install a skill"],

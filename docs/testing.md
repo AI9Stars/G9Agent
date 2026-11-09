@@ -25,32 +25,20 @@ Run chat browser regressions with `pnpm --dir ui exec playwright test -c e2e/str
 
 ## Pull request CI selection
 
-Web Regression and Desktop use `apps/desktop/scripts/classify-ci-changes.mjs` to
-select complete suites from the PR merge-base diff, including deleted files and
-both sides of renames. The lightweight selection jobs always validate routing;
-job-level conditions retain existing check names for unrelated changes.
+This fork keeps four Windows workflows. Desktop PR checks run checkpoints,
+MCP and product-identity regressions, Web typechecking/builds, desktop helper
+checks, branding/localization checks and updater regressions. Native Windows
+x64 and ARM64 jobs package and validate their own installers without publishing.
+The manual Windows Release workflow is the only publisher; a separate retry
+workflow may repeat the first failed build once. OBS, Docker and non-Windows
+Actions are disabled. Shared cross-platform tests and sources remain available
+for local validation, with explicit platform prerequisites.
 
-| Changed boundary | PR validation |
-| --- | --- |
-| Chat/UI components and styles | Full Web/client suite and browser acceptance; no unrelated checkpoint matrix, desktop helpers or Docker rebuild |
-| Backend, workspace or checkpoint paths | Web regression and the existing three-platform checkpoint suite; Docker for runtime/image inputs |
-| Desktop, installer or release inputs | Desktop helper checks and the complete relevant native packaging matrix |
-| Dependency locks, shared package inputs or routing policy | All affected execution boundaries |
-| Maintained documentation | Routing checks; runtime skills/resources Markdown still selects builds |
-| OBS scripts/workflows | Credential-free OBS tests; no live OBS access from PRs |
-
-The Web browser job pins Ubuntu 24.04 for the locked Playwright version. New PR
-pushes cancel superseded Web runs. Web Regression owns the single Docker build,
-with GHA layer caching and isolated runtime-import verification. Main pushes
-still run full Web/browser and Docker checks; manual Desktop runs and formal
-releases retain all native targets. Production signing and publication gates
-are independent of PR selection and remain mandatory.
-
-Web Regression also exercises tool input/registry/scheduling contracts, prompt
-capability and cache stability, live plugin preferences, and scoped runtime reload.
-These use synthetic tools/providers and isolated profiles; no real provider calls
-are required. UI tests cover lossless event delivery, render isolation and shared
-chat behavior, with browser acceptance validating streaming and history flows.
+Upstream synchronization must also verify new runtime/tool contracts, scoped
+reload and deferred editor behavior. Use synthetic providers and isolated
+profiles; real provider calls require explicit opt-in. Local Windows runners
+may need a configured Git Bash path and Python on PATH. Preserve assertions
+and report platform limits instead of removing unsupported cases.
 
 After `pnpm --dir ui build`, run `node scripts/check-ui-build-graph.mjs` to
 verify that the startup and text-editor import graphs exclude deferred features.

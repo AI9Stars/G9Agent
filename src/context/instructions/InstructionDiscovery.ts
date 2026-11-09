@@ -1,17 +1,17 @@
 /**
- * 9GCLAW.md instruction file discovery — multi-scope instruction hierarchy.
+ * NINEGCLAW.md instruction file discovery — multi-scope instruction hierarchy.
  *
  * Files are loaded in the following order (later = higher priority, model pays
  * more attention to content that appears later in the system prompt):
  *
- *   1. Managed     — $NINEGCLAW_MANAGED_CONFIG/9GCLAW.md
- *   2. User        — ~/.9gclaw/9GCLAW.md
+ *   1. Managed     — $NINEGCLAW_MANAGED_CONFIG/NINEGCLAW.md
+ *   2. User        — ~/.9gclaw/NINEGCLAW.md
  *   3. User rules  — ~/.9gclaw/rules/*.md
  *   4. Project     — per directory from projectRoot toward cwd:
- *                      <dir>/9GCLAW.md
- *                      <dir>/.9gclaw/9GCLAW.md
+ *                      <dir>/NINEGCLAW.md
+ *                      <dir>/.9gclaw/NINEGCLAW.md
  *                      <dir>/.9gclaw/rules/*.md
- *   5. Local       — <dir>/9GCLAW.local.md  (private, not committed)
+ *   5. Local       — <dir>/NINEGCLAW.local.md  (private, not committed)
  *
  * Design mirrors the legacy upstream instruction-file discovery, adapted to
  * 9GClaw path conventions (~/.9gclaw/, .9gclaw/).
@@ -48,21 +48,21 @@ export class InstructionDiscovery {
     // 1. Managed (administrator-level, e.g. /etc/9gclaw/)
     const managedDir = process.env.NINEGCLAW_MANAGED_CONFIG;
     if (managedDir) {
-      await this.tryAdd(layers, seen, "managed", join(managedDir, "9GCLAW.md"), signal);
+      await this.tryAdd(layers, seen, "managed", join(managedDir, "NINEGCLAW.md"), signal);
     }
 
     // 2. User-level
-    await this.tryAdd(layers, seen, "user", join(this.pilotHome, "9GCLAW.md"), signal);
+    await this.tryAdd(layers, seen, "user", join(this.pilotHome, "NINEGCLAW.md"), signal);
     await this.tryAddRulesDir(layers, seen, "user", join(this.pilotHome, "rules"), signal);
 
     // 3–5. Project + Local — from root toward cwd (root first = lower priority)
     const dirs = this.collectDirectoryChain();
     for (const dir of dirs) {
       signal?.throwIfAborted();
-      await this.tryAdd(layers, seen, "project", join(dir, "9GCLAW.md"), signal);
-      await this.tryAdd(layers, seen, "project", join(dir, ".9gclaw", "9GCLAW.md"), signal);
+      await this.tryAdd(layers, seen, "project", join(dir, "NINEGCLAW.md"), signal);
+      await this.tryAdd(layers, seen, "project", join(dir, ".9gclaw", "NINEGCLAW.md"), signal);
       await this.tryAddRulesDir(layers, seen, "project-rules", join(dir, ".9gclaw", "rules"), signal);
-      await this.tryAdd(layers, seen, "local", join(dir, "9GCLAW.local.md"), signal);
+      await this.tryAdd(layers, seen, "local", join(dir, "NINEGCLAW.local.md"), signal);
     }
 
     signal?.throwIfAborted();

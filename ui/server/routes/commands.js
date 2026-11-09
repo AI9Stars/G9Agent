@@ -213,7 +213,7 @@ const webOnlyBuiltInCommands = [
   },
   {
     name: '/memory',
-    description: 'Open 9GCLAW.md memory file for editing',
+    description: 'Open NINEGCLAW.md memory file for editing',
     namespace: 'builtin',
     metadata: { type: 'builtin' }
   },
@@ -516,14 +516,14 @@ Custom commands can be created in:
         action: 'memory',
         data: {
           error: 'No project selected',
-          message: 'Please select a project to access its 9GCLAW.md file'
+          message: 'Please select a project to access its NINEGCLAW.md file'
         }
       };
     }
 
-    const nineGClawMdPath = path.join(projectPath, '9GCLAW.md');
+    const nineGClawMdPath = path.join(projectPath, 'NINEGCLAW.md');
 
-    // Check if 9GCLAW.md exists
+    // Check if NINEGCLAW.md exists
     let exists = false;
     try {
       await fs.access(nineGClawMdPath);
@@ -539,8 +539,8 @@ Custom commands can be created in:
         path: nineGClawMdPath,
         exists,
         message: exists
-          ? `Opening 9GCLAW.md at ${nineGClawMdPath}`
-          : `9GCLAW.md not found at ${nineGClawMdPath}. Create it to store project-specific instructions.`
+          ? `Opening NINEGCLAW.md at ${nineGClawMdPath}`
+          : `NINEGCLAW.md not found at ${nineGClawMdPath}. Create it to store project-specific instructions.`
       }
     };
   },

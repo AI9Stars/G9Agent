@@ -19,12 +19,12 @@ describe('project creation path utilities', () => {
 
 describe('shouldShowGithubAuthentication', () => {
   it.each([
-    ['new', 'https://github.com/AI9Stars/9GClaw.git', true],
-    ['new', 'http://github.com/AI9Stars/9GClaw.git', false],
-    ['new', 'git@github.com:AI9Stars/9GClaw.git', false],
-    ['new', 'https://gitlab.com/AI9Stars/9GClaw.git', false],
+    ['new', 'https://github.com/AI9Stars/G9Agent.git', true],
+    ['new', 'http://github.com/AI9Stars/G9Agent.git', false],
+    ['new', 'git@github.com:AI9Stars/G9Agent.git', false],
+    ['new', 'https://gitlab.com/AI9Stars/G9Agent.git', false],
     ['new', '/tmp/local-repository', false],
-    ['existing', 'https://github.com/AI9Stars/9GClaw.git', false],
+    ['existing', 'https://github.com/AI9Stars/G9Agent.git', false],
   ] as const)(
     'returns %s/%s => %s',
     (workspaceType, githubUrl, expected) => {

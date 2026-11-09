@@ -22,7 +22,7 @@ const version = process.env.NINEGCLAW_RELEASE_VERSION || buildDateVersion(releas
 const releaseTag = process.env.NINEGCLAW_RELEASE_TAG || buildReleaseTag(releaseDate, revision);
 const buildTime = process.env.NINEGCLAW_RELEASE_BUILD_TIME || new Date().toISOString();
 const commitSha = process.env.NINEGCLAW_COMMIT_SHA || process.env.GITHUB_SHA || resolveGitCommit();
-const repository = process.env.NINEGCLAW_UPDATE_REPOSITORY || process.env.GITHUB_REPOSITORY || "AI9Stars/9GClaw";
+const repository = process.env.NINEGCLAW_UPDATE_REPOSITORY || process.env.GITHUB_REPOSITORY || "AI9Stars/G9Agent";
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 packageJson.version = version;

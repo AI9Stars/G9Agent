@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import { startupLabels, startupVisualProgress } from './startupPresentation';
 import { startupStyle } from './startupStyle';
 import { LEGACY_LIGHT_PRESETS, LIGHT_PRESETS, normalizeLightAppearance, deriveLightColors, type LightAppearance } from './lightAppearance';
@@ -15,53 +16,67 @@ export function normalizeAppearance(value: unknown, locale = 'en'): DesktopAppea
 }
 
 const STARTUP_ZH: Record<string, string> = {
-  "Preparing 9GClaw runtime...": "正在准备 9GClaw 运行环境…",
+  "Preparing G9Agent runtime...": "正在准备 九格智能体 运行环境…",
   "Checking local configuration...": "正在检查本地配置…",
   "Starting Web UI server...": "正在启动网页服务…",
-  "9GClaw is ready for model setup.": "9GClaw 已就绪，请配置模型。",
-  "9GClaw runtime stopped.": "9GClaw 运行环境已停止。",
+  "G9Agent is ready for model setup.": "九格智能体 已就绪，请配置模型。",
+  "G9Agent runtime stopped.": "九格智能体 运行环境已停止。",
   "Gateway exited unexpectedly. The Web UI is still available.": "Gateway 意外退出，网页界面仍可使用。",
   "Model configuration needs attention.": "模型配置需要修复。",
   "Starting local gateway...": "正在启动本地 Gateway…",
-  "9GClaw is ready.": "9GClaw 已就绪。",
+  "G9Agent is ready.": "九格智能体 已就绪。",
   "Gateway failed to start. The Web UI is still available.": "Gateway 启动失败，网页界面仍可使用。",
   "server exited unexpectedly. See runtime log for details.": "网页服务意外退出，请查看运行日志。",
   "gateway exited unexpectedly. See runtime log for details.": "Gateway 意外退出，请查看运行日志。",
-  "9GClaw failed to start.": "9GClaw 启动失败。",
-  "9GClaw failed to restore window.": "9GClaw 无法恢复窗口。",
+  "G9Agent failed to start.": "九格智能体 启动失败。",
+  "G9Agent failed to restore window.": "九格智能体 无法恢复窗口。",
   "Retry": "重试",
   "Open Log": "打开日志",
-  "Starting 9GClaw...": "正在启动 9GClaw…",
+  "Starting G9Agent...": "正在启动 九格智能体…",
   "Log: ": "日志：",
   "Unknown startup error.": "未知的启动错误。",
-  "9GClaw could not stop": "9GClaw 无法停止"
+  "G9Agent could not stop": "九格智能体 无法停止"
 };
 
 export function startupText(message: string, language: DesktopAppearance['language']): string {
   return language === 'zh-CN' ? STARTUP_ZH[message] || message : message;
 }
 
-export function renderLoadingHtml(appearance: DesktopAppearance, web = false): string {
+export function renderLoadingHtml(appearance: DesktopAppearance, web = false, logoBase64?: string): string {
   const labels = startupLabels(appearance.language);
   const light = normalizeLightAppearance(appearance.lightAppearance);
   const canvas = light.preset === 'default' ? '#ffffff' : deriveLightColors(light).background;
   return `<!doctype html><html lang="${appearance.language}" data-theme="${appearance.themeMode}">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>9GClaw</title>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${productName(appearance.language)}</title>
 <style>
 :root{color-scheme:light;--startup-bg:${canvas};--startup-fg:#171717;--startup-muted:#737373;--startup-line:#e5e5e5}
 :root[data-theme="dark"]{color-scheme:dark;--startup-bg:#23252b;--startup-fg:#f5f5f5;--startup-muted:#a3a3a3;--startup-line:#262626}
 @media(prefers-color-scheme:dark){:root[data-theme="system"]{color-scheme:dark;--startup-bg:#23252b;--startup-fg:#f5f5f5;--startup-muted:#a3a3a3;--startup-line:#262626}}
 ${startupStyle}
 #failure{display:none}#startup[data-error=true] #loading{display:none}#startup[data-error=true] #failure{display:block}#saveStatus:empty{display:none}
-</style></head><body style="margin:0"><div class="pd-startup-screen" id="startup"><main><h1 class="pd-startup-brand">9GClaw</h1>
-<div id="loading" role="status"><div class="pd-startup-track" role="progressbar" aria-label="9GClaw" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8"><div class="pd-startup-bar" id="bar" style="width:8%"></div></div><p class="pd-startup-message" id="message">${labels.starting}</p></div>
+</style></head><body style="margin:0"><div class="pd-startup-screen" id="startup"><main><h1 class="pd-startup-brand"><img class="pd-startup-logo" src="${logoBase64 ? `data:image/png;base64,${logoBase64}` : '/logo-256.png'}" alt=""/><span>${productName(appearance.language)}</span></h1>
+<div id="loading" role="status"><div class="pd-startup-track" role="progressbar" aria-label="${productName(appearance.language)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8"><div class="pd-startup-bar" id="bar" style="width:8%"></div></div><p class="pd-startup-message" id="message">${labels.starting}</p></div>
 <section class="pd-startup-failure" id="failure" role="alert"><h2>${labels.failed}</h2><p class="reason" id="reason"></p><div class="pd-startup-meta" id="code"></div><p class="pd-startup-meta" id="log"></p><div class="pd-startup-actions"><button id="retry">${labels.restart}</button><button id="saveLog" class="secondary">${labels.save}</button></div><p class="pd-startup-meta" id="saveStatus" role="status"></p></section>
 </main></div><script>(()=>{
 const web=${web};
 const languages=${JSON.stringify({ en: startupLabels('en'), 'zh-CN': startupLabels('zh-CN') })};
 const saved=key=>{try{return localStorage.getItem(key)}catch{return null}};
-const appearance=web?(window.ninegclawDesktop?.getAppearance?.()||{language:saved('userLanguage')||(navigator.language.startsWith('zh')?'zh-CN':'en'),themeMode:saved('themeMode')||saved('theme')||'system'}):${JSON.stringify({ language: appearance.language, themeMode: appearance.themeMode })};
+const appearance=web?(window.ninegclawDesktop?.getAppearance?.()||{language:saved('userLanguage')||'en',themeMode:saved('themeMode')||saved('theme')||'system'}):${JSON.stringify({ language: appearance.language, themeMode: appearance.themeMode })};
 let labels=languages[appearance.language]||languages.en;
+const brandNames=${JSON.stringify({ en: productName('en'), 'zh-CN': productName('zh-CN') })};
+function localize(language){
+ labels=languages[language]||languages.en;
+ const name=brandNames[language]||brandNames.en;
+ document.title=name;document.documentElement.lang=language==='zh-CN'?'zh-CN':'en';
+ document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content',name);
+ document.querySelector('link[rel="manifest"]')?.setAttribute('href',language==='zh-CN'?'/manifest.zh-CN.json':'/manifest.json');
+ document.querySelector('.pd-startup-brand span').textContent=name;
+ document.querySelector('[role="progressbar"]').setAttribute('aria-label',name);
+ document.querySelector('#failure h2').textContent=labels.failed;
+ document.getElementById('retry').textContent=labels.restart;
+ document.getElementById('saveLog').textContent=labels.save;
+}
+localize(appearance.language);
 if(web){
  document.documentElement.dataset.theme=appearance.themeMode;
  // The application's default canvas is lavender. Keep the startup canvas the
@@ -82,7 +97,7 @@ function update(status){
  const reset=status.phase==='starting'&&current.phase!=='starting';
  const finishing=current.completed&&!reset&&status.phase!=='error'&&status.phase!=='stopped';
  current={...status,completed:!!(status.completed||finishing),leaving:!!(status.leaving||finishing&&current.leaving),progress:reset?8:Math.max(current.progress||8,status.progress||8),startedAt:status.startedAt||(reset?Date.now():current.startedAt),phaseStartedAt:status.phaseStartedAt||(status.phase===current.phase?current.phaseStartedAt:Date.now())};
- if(status.language)labels=languages[status.language]||languages.en;
+ if(status.language)localize(status.language);
  if(animationStart!==current.startedAt){animationStart=current.startedAt;root.style.setProperty('--startup-animation-offset',-(Date.now()-animationStart)+'ms')}
  window.__ninegclawStartupState=current;root.dataset.error=String(status.phase==='error');root.dataset.complete=String(current.completed);root.dataset.leaving=String(current.leaving);draw();
  if(status.phase==='error'){

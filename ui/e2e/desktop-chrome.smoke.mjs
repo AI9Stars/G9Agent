@@ -257,7 +257,7 @@ try {
     await expect.poll(() => app.evaluate(() => global.chromeTest.about().copiedVersion)).toContain('Commit: abc123fixture');
     await app.evaluate(() => { global.aboutResponse = 2; });
     await command('help-about');
-    await expect.poll(() => app.evaluate(() => global.chromeTest.about().openedWebsite)).toBe('https://github.com/AI9Stars/9GClaw');
+    await expect.poll(() => app.evaluate(() => global.chromeTest.about().openedWebsite)).toBe('https://github.com/AI9Stars/G9Agent');
     console.log('PASS: compact caption and rich About dialog, version copy and project link');
   }
   if (process.env.NINEGCLAW_CHROME_MANUAL === '1') {

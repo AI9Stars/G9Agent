@@ -10,7 +10,7 @@ process.on('uncaughtException', error => { console.error(error); app.exit(1); })
 process.on('unhandledRejection', error => { console.error(error); app.exit(1); });
 
 app.setPath('userData', path.join(__dirname, 'profile'));
-app.setName('9GClaw Tray Test');
+app.setName('G9Agent Tray Test');
 fs.mkdirSync(app.getPath('userData'), { recursive: true });
 const appearance = path.join(app.getPath('userData'), 'appearance.json');
 if (!fs.existsSync(appearance)) fs.writeFileSync(appearance, '{"language":"zh-CN","themeMode":"system"}');
@@ -355,7 +355,7 @@ if (process.argv.includes('--tray-second-instance')) {
       dialogs[1].resolve({ response: 0 });
       await pause(50);
       const nativeQuit = Menu.getApplicationMenu().items[0].submenu.items.find(item => item.role === 'quit');
-      assert.equal(nativeQuit.label, 'Quit 9GClaw');
+      assert.equal(nativeQuit.label, 'Quit G9Agent');
       assert.match(nativeQuit.getDefaultRoleAccelerator(), /^Command(?:OrControl)?\+Q$/);
       Menu.sendActionToFirstResponder('terminate:');
       await until(() => dialogs.length === 3, 'application menu uses native quit protection');

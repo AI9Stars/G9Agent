@@ -1,6 +1,7 @@
 import { describeReleaseAsset, installerDownloads } from '../../shared/releaseArtifacts.js';
+import { RELEASE_REPOSITORY, releaseRepositoryMatches } from '../../shared/releaseRepository.js';
 // Shared release discovery. Installation policy belongs to each platform.
-export const RELEASE_REPOSITORY = 'AI9Stars/9GClaw';
+export { RELEASE_REPOSITORY };
 export const RELEASE_TAG = /^v\d{4}\.\d{2}\.\d{2}(?:-r[1-9]\d*)?$/;
 export const COMMIT_SHA = /^[a-f0-9]{40}$/;
 
@@ -51,7 +52,7 @@ export function validateReleaseManifest(manifest, repository = RELEASE_REPOSITOR
   let expectedVersion;
   try { expectedVersion = releaseVersion(manifest?.tag); }
   catch { throw new Error('Release manifest does not match the published release.'); }
-  if (manifest.schemaVersion !== 1 || manifest.repository !== repository
+  if (manifest.schemaVersion !== 1 || !releaseRepositoryMatches(manifest.repository, repository)
       || (manifest.artifactSchemaVersion !== undefined && manifest.artifactSchemaVersion !== 1)
       || !COMMIT_SHA.test(manifest.sourceSha || '')
       || manifest.version !== expectedVersion

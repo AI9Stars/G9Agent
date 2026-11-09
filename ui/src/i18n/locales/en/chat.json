@@ -18,30 +18,63 @@
     "label": "Request failed",
     "details": "Error details",
     "authDetails": "The provider's raw authentication response is not displayed in this conversation. Check your API key and access permissions.",
-    "generic": { "title": "This request could not be completed", "hint": "Try again or choose another model in this conversation. Expand the details if the problem continues." },
-    "auth": { "title": "The model service could not authenticate this request", "hint": "Check this provider's API key and access permissions in the model pool." },
-    "billing": { "title": "The model service has insufficient credit or quota", "hint": "Check your provider account's credit and quota, or choose another model in this conversation." },
-    "rateLimit": { "title": "The model service is limiting requests", "hint": "Try again later, reduce concurrent requests, or choose another model in this conversation." },
-    "context": { "title": "This conversation exceeds the model's context capacity", "hint": "Send /compact, start a new conversation, or choose a model with a larger context. Configure each model's context limit in the model pool." },
-    "payload": { "title": "This request is too large", "hint": "Use fewer attachments or shorter content, or compact the conversation before trying again." },
-    "filtered": { "title": "The model service could not process this content", "hint": "Adjust your request and try again. Check the provider's content policy if the problem continues." },
-    "model": { "title": "The selected model is unavailable", "hint": "Choose another model in this conversation, or check its name and access permissions in the model pool." },
-    "timeout": { "title": "The model took too long to respond", "hint": "Check your connection and try again. For repeated timeouts, adjust the model's timeout settings or choose another model." },
-    "network": { "title": "The connection to the model service was interrupted", "hint": "Check your network, proxy, and provider URL before sending the request again." },
-    "server": { "title": "The model service is temporarily unavailable", "hint": "Try again later or choose another model in this conversation." }
+    "generic": {
+      "title": "This request could not be completed",
+      "hint": "Try again or choose another model in this conversation. Expand the details if the problem continues."
+    },
+    "auth": {
+      "title": "The model service could not authenticate this request",
+      "hint": "Check this provider's API key and access permissions in the model pool."
+    },
+    "billing": {
+      "title": "The model service has insufficient credit or quota",
+      "hint": "Check your provider account's credit and quota, or choose another model in this conversation."
+    },
+    "rateLimit": {
+      "title": "The model service is limiting requests",
+      "hint": "Try again later, reduce concurrent requests, or choose another model in this conversation."
+    },
+    "context": {
+      "title": "This conversation exceeds the model's context capacity",
+      "hint": "Send /compact, start a new conversation, or choose a model with a larger context. Configure each model's context limit in the model pool."
+    },
+    "payload": {
+      "title": "This request is too large",
+      "hint": "Use fewer attachments or shorter content, or compact the conversation before trying again."
+    },
+    "filtered": {
+      "title": "The model service could not process this content",
+      "hint": "Adjust your request and try again. Check the provider's content policy if the problem continues."
+    },
+    "model": {
+      "title": "The selected model is unavailable",
+      "hint": "Choose another model in this conversation, or check its name and access permissions in the model pool."
+    },
+    "timeout": {
+      "title": "The model took too long to respond",
+      "hint": "Check your connection and try again. For repeated timeouts, adjust the model's timeout settings or choose another model."
+    },
+    "network": {
+      "title": "The connection to the model service was interrupted",
+      "hint": "Check your network, proxy, and provider URL before sending the request again."
+    },
+    "server": {
+      "title": "The model service is temporarily unavailable",
+      "hint": "Try again later or choose another model in this conversation."
+    }
   },
   "imageGeneration": {
-  "drawing": "Drawing…",
-  "loading": "Loading image…",
-  "complete": "Image generated",
-  "failed": "Drawing failed",
-  "loadFailed": "Image could not be loaded. Reopen this chat.",
-  "interrupted": "Drawing stopped",
-  "enlarge": "Enlarge image",
-  "image": "Generated image",
-  "download": "Download original",
-  "saved": "Saved to {{path}}"
-},
+    "drawing": "Drawing…",
+    "loading": "Loading image…",
+    "complete": "Image generated",
+    "failed": "Drawing failed",
+    "loadFailed": "Image could not be loaded. Reopen this chat.",
+    "interrupted": "Drawing stopped",
+    "enlarge": "Enlarge image",
+    "image": "Generated image",
+    "download": "Download original",
+    "saved": "Saved to {{path}}"
+  },
   "attachmentPreview": {
     "imageNote": "Static preview. Download the original for full resolution and animation.",
     "sheetTruncated": "Spreadsheet preview shows up to 200 rows and 50 columns per sheet. Download for the complete workbook.",
@@ -76,7 +109,7 @@
     "copyCode": "Copy code"
   },
   "workspace": {
-    "emptyTitle": "Ask 9GClaw about this project",
+    "emptyTitle": "Ask G9Agent about this project",
     "emptyDescription": "Reference a workspace file with @ when you want it included."
   },
   "inputQueue": {
@@ -123,7 +156,7 @@
     "error": "Error",
     "tool": "Tool",
     "claude": "Claude",
-    "9gclaw": "9GClaw",
+    "9gclaw": "G9Agent",
     "cursor": "Cursor",
     "codex": "Codex",
     "gemini": "Gemini"
@@ -292,8 +325,8 @@
   "interactive": {
     "title": "Interactive Prompt",
     "waiting": "Waiting for your response in the CLI",
-    "instruction": "Please select an option in your terminal where 9GClaw is running.",
-    "selectedOption": "✓ 9GClaw selected option {{number}}",
+    "instruction": "Please select an option in your terminal where G9Agent is running.",
+    "selectedOption": "✓ G9Agent selected option {{number}}",
     "instructionDetail": "In the CLI, you would select this option interactively using arrow keys or by typing the number."
   },
   "filePreparation": {
@@ -515,7 +548,7 @@
     "open": "Open {{name}}"
   },
   "replyQuotes": {
-    "addToChat": "Add to 9GClaw chat",
+    "addToChat": "Add to G9Agent chat",
     "chip": "{{count}} quotes",
     "chip_one": "{{count}} quote",
     "chip_other": "{{count}} quotes",
@@ -540,14 +573,14 @@
   "thinkingMode": {
     "selector": {
       "title": "Thinking Mode",
-      "description": "Extended thinking gives 9GClaw more time to evaluate alternatives",
+      "description": "Extended thinking gives G9Agent more time to evaluate alternatives",
       "active": "Active",
       "tip": "Higher thinking modes take more time but provide more thorough analysis"
     },
     "modes": {
       "none": {
         "name": "Standard",
-        "description": "Regular 9GClaw response",
+        "description": "Regular G9Agent response",
         "prefix": ""
       },
       "think": {
@@ -584,7 +617,7 @@
       "google": "by Google"
     },
     "readyPrompt": {
-      "9gclaw": "Ready to use 9GClaw with {{model}}. Start typing your message below.",
+      "9gclaw": "Ready to use G9Agent with {{model}}. Start typing your message below.",
       "cursor": "Ready to use Cursor with {{model}}. Start typing your message below.",
       "codex": "Ready to use Codex with {{model}}. Start typing your message below.",
       "gemini": "Ready to use Gemini with {{model}}. Start typing your message below.",
@@ -654,10 +687,10 @@
     },
     "loading": "Loading terminal...",
     "connecting": "Connecting to shell...",
-    "startSession": "Start a new 9GClaw session",
+    "startSession": "Start a new G9Agent session",
     "resumeSession": "Resume session: {{displayName}}...",
     "runCommand": "Run {{command}} in {{projectName}}",
-    "startCli": "Starting 9GClaw CLI in {{projectName}}",
+    "startCli": "Starting G9Agent CLI in {{projectName}}",
     "defaultCommand": "command"
   },
   "ninegclawStatus": {
@@ -694,8 +727,8 @@
     "nextTaskPrompt": "Start the next task"
   },
   "composer": {
-    "placeholder": "Tell 9GClaw what you want to get done…",
-    "welcomePlaceholder": "Tell 9GClaw what you want to get done…"
+    "placeholder": "Tell G9Agent what you want to get done…",
+    "welcomePlaceholder": "Tell G9Agent what you want to get done…"
   },
   "subagent": {
     "detailTitle": "Subagent Detail",

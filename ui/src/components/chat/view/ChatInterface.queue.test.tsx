@@ -237,7 +237,7 @@ describe('ChatInterface queue integration', () => {
       selectedSession: null,
       workspaceBinding: {
         name: '9gclaw',
-        displayName: '9GClaw',
+        displayName: 'G9Agent',
         fullPath: '/workspace/9GClaw',
       },
       projects: [],
@@ -246,7 +246,7 @@ describe('ChatInterface queue integration', () => {
     } as any)} />);
 
     expect(screen.getByRole('heading', {
-      name: 'What do you want us to build in 9GClaw?',
+      name: 'What do you want us to build in G9Agent?',
     })).toBeTruthy();
   });
 

@@ -40,7 +40,7 @@ const { build } = require(path.join(projectDir, 'package.json'));
     const launchSection = fs.readFileSync(path.join(templates, 'installSection.nsh'), 'utf8').split('!macro doStartApp')[1];
     assert.ok(launchSection);
     const script = "Unicode true\n" + generator.build() + `
-!define PRODUCT_NAME "9GClaw"
+!define PRODUCT_NAME "G9Agent"
 !define APP_ID "cn.9gclaw.test"
 !define PRODUCT_FILENAME "9GClaw"
 !define VERSION "2026.907.0"

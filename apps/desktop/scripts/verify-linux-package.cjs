@@ -1,11 +1,11 @@
-// Run with the Node.js binary inside an installed 9GClaw DEB or RPM.
+// Run with the Node.js binary inside an installed G9Agent DEB or RPM.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { createRequire } = require('node:module');
 const { execFileSync } = require('node:child_process');
 
-const installRoot = '/opt/9GClaw';
+const installRoot = '/opt/G9Agent';
 const resources = path.join(installRoot, 'resources');
 const runtime = path.join(resources, 'runtime');
 const expectedArch = process.argv[2];

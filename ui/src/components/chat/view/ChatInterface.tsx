@@ -747,7 +747,7 @@ function ChatInterface({
         />
       )}
       input={input}
-      placeholder={t('composer.placeholder', { defaultValue: 'Tell 9GClaw what you want to get done…' })}
+      placeholder={t('composer.placeholder', { defaultValue: 'Tell G9Agent what you want to get done…' })}
       textareaRef={textareaRef}
       inputHighlightRef={inputHighlightRef}
       renderInputWithMentions={renderInputWithMentions}
@@ -863,7 +863,7 @@ function ChatInterface({
               <MessageSquare className="h-4 w-4" strokeWidth={1.8} />
             </div>
             <p className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300">
-              {t('workspace.emptyTitle', { defaultValue: 'Ask 9GClaw about this project' })}
+              {t('workspace.emptyTitle', { defaultValue: 'Ask G9Agent about this project' })}
             </p>
             <p className="mt-1 max-w-56 text-[12px] leading-5 text-neutral-400 dark:text-neutral-500">
               {t('workspace.emptyDescription', {

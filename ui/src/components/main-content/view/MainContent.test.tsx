@@ -152,7 +152,7 @@ class ResizeObserverMock {
 
 const project: Project = {
   name: '9gclaw',
-  displayName: '9GClaw',
+  displayName: 'G9Agent',
   fullPath: '/workspace/9GClaw',
 };
 

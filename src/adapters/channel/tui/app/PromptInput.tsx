@@ -29,7 +29,7 @@ export function PromptInput({
           value={value}
           onChange={onChange}
           onSubmit={onSubmit}
-          placeholder="Ask 9GClaw... (Tab focus · ⏎ expand · /help)"
+          placeholder="Ask G9Agent... (Tab focus · ⏎ expand · /help)"
           showCursor
           focus={focus}
         />

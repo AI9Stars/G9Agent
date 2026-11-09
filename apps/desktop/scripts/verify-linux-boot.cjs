@@ -37,16 +37,16 @@ async function waitForReady() {
     if (exited) throw new Error(`Electron exited before startup:\n${output}`);
     if (fs.existsSync(runtimeLog)) {
       const log = fs.readFileSync(runtimeLog, 'utf8');
-      const url = log.match(/9GClaw Web UI ready: (http:\/\/127\.0\.0\.1:\d+)/)?.[1];
+      const url = log.match(/G9Agent Web UI ready: (http:\/\/127\.0\.0\.1:\d+)/)?.[1];
       if (url) {
         const response = await fetch(url).catch(() => null);
         if (response?.ok) return url;
       }
-      if (log.includes('9GClaw failed to start')) throw new Error(log.slice(-6000));
+      if (log.includes('G9Agent failed to start')) throw new Error(log.slice(-6000));
     }
     await pause(250);
   }
-  throw new Error(`Timed out waiting for 9GClaw UI:\n${output}\n${fs.existsSync(runtimeLog) ? fs.readFileSync(runtimeLog, 'utf8').slice(-6000) : 'No runtime log'}`);
+  throw new Error(`Timed out waiting for G9Agent UI:\n${output}\n${fs.existsSync(runtimeLog) ? fs.readFileSync(runtimeLog, 'utf8').slice(-6000) : 'No runtime log'}`);
 }
 
 async function stop() {
@@ -90,7 +90,7 @@ async function main() {
     if (display === 'x11') {
       const { execFileSync } = require('node:child_process');
       const windows = execFileSync('xwininfo', ['-root', '-tree'], { encoding: 'utf8' });
-      assert.match(windows, /9GClaw/, 'X11 window was not created');
+      assert.match(windows, /G9Agent/, 'X11 window was not created');
     }
     console.log(`PASS: installed Linux package started on ${display} and served ${url}`);
   } finally {

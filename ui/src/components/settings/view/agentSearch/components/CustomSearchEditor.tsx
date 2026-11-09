@@ -19,7 +19,7 @@ export default function CustomSearchEditor({ value, endpoint, disabled, onSave }
   const [body, setBody] = useState(jsonText(value.requestBody));
   const [error, setError] = useState('');
   const [preview, setPreview] = useState('');
-  const [query, setQuery] = useState('9GClaw');
+  const [query, setQuery] = useState('G9Agent');
   const change = (patch: Partial<WebSearchCustomProviderConfig>) => { setDraft({ ...draft, ...patch }); setError(''); setPreview(''); };
   const prepare = () => {
     const parse = (text: string, field: string) => { try { return text.trim() ? JSON.parse(text) : undefined; } catch { throw new Error(label('invalidJson') + ': ' + field); } };

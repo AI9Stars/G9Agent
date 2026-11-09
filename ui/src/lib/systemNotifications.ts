@@ -1,4 +1,5 @@
 import type { SystemNotification } from '../../shared/notifications';
+import { productName } from '../../../apps/desktop/src/brand';
 
 export async function notificationWorkerMessage(type: string, value: unknown) {
   if (window.ninegclawDesktop || !('serviceWorker' in navigator)) return undefined;
@@ -32,7 +33,7 @@ export async function showSystemNotification(payload: SystemNotification) {
 /** Web/PWA has no global counter. Clear badges left by an older deployment. */
 export async function clearWebNotificationBadge() {
   if (window.ninegclawDesktop) return;
-  document.title = '9GClaw';
+  document.title = productName(document.documentElement.lang);
   const badge = navigator as Navigator & { clearAppBadge?: () => Promise<void> };
   await badge.clearAppBadge?.();
 }

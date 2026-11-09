@@ -14,10 +14,10 @@ LangString PD_UnableComplete 1033 "Unable to complete installation. See details 
 LangString PD_UnableComplete 2052 "无法完成安装。请查看下方详情后重新运行安装程序。"
 LangString PD_DesktopShortcut 1033 "Create a desktop shortcut"
 LangString PD_DesktopShortcut 2052 "创建桌面快捷方式"
-LangString PD_StartApplication 1033 "Start 9GClaw"
-LangString PD_StartApplication 2052 "启动 9GClaw"
-LangString PD_ShortcutFailed 1033 "9GClaw was installed, but the desktop shortcut could not be created. You can open 9GClaw from the Start menu."
-LangString PD_ShortcutFailed 2052 "9GClaw 已安装，但无法创建桌面快捷方式。你可以从开始菜单启动 9GClaw。"
+LangString PD_StartApplication 1033 "Start G9Agent"
+LangString PD_StartApplication 2052 "启动 九格智能体"
+LangString PD_ShortcutFailed 1033 "G9Agent was installed, but the desktop shortcut could not be created. You can open G9Agent from the Start menu."
+LangString PD_ShortcutFailed 2052 "九格智能体 已安装，但无法创建桌面快捷方式。你可以从开始菜单启动 九格智能体。"
 
 !ifdef BUILD_UNINSTALLER
   ; Creation is deferred to the finish-page checkbox, but the normal

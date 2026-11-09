@@ -17,6 +17,7 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { authenticatedFetch } from '../utils/api';
+import { syncProductBrand } from '../lib/productBrand';
 
 import enCommon from './locales/en/common.json';
 import enSettings from './locales/en/settings.json';
@@ -115,6 +116,7 @@ i18n
   });
 
 i18n.on('languageChanged', (lng) => {
+  syncProductBrand(lng);
   try {
     localStorage.setItem('userLanguage', lng);
   } catch (error) {
@@ -147,5 +149,7 @@ function syncAlwaysOnLanguage(lng) {
     })
     .catch(() => {});
 }
+
+syncProductBrand(i18n.resolvedLanguage || i18n.language);
 
 export default i18n;

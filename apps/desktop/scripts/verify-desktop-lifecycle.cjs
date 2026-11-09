@@ -75,7 +75,9 @@ async function verify(scenario) {
       fs.copyFileSync(path.resolve(desktop, '../../ui/server/services', file), path.join(services, file));
     }
     fs.mkdirSync(path.join(runtime, 'ui', 'shared'), { recursive: true });
-    fs.copyFileSync(path.resolve(desktop, '../../ui/shared/releaseArtifacts.js'), path.join(runtime, 'ui', 'shared', 'releaseArtifacts.js'));
+    for (const file of ['releaseArtifacts.js', 'releaseRepository.js']) {
+      fs.copyFileSync(path.resolve(desktop, '../../ui/shared', file), path.join(runtime, 'ui', 'shared', file));
+    }
     const env = {
       ...process.env,
       NINEGCLAW_TRAY_TEST_UPDATER: path.dirname(require.resolve('electron-updater/package.json')),

@@ -39,7 +39,7 @@ describe('JSON update protocol', () => {
     expect(provider.isUseMultipleRangeRequest).toBe(false);
   });
   it('keeps old JSON readable and exposes DMGs only in macOS installer downloads', () => {
-    const base = { schemaVersion: 1, tag: 'v2026.10.29', date: '2026-10-29', version: '2026.1029.0', repository: 'AI9Stars/9GClaw', sourceSha: 'a'.repeat(40) };
+    const base = { schemaVersion: 1, tag: 'v2026.10.29', date: '2026-10-29', version: '2026.1029.0', repository: 'AI9Stars/G9Agent', sourceSha: 'a'.repeat(40) };
     const assets = ['dmg', 'zip'].map(format => ({ name: `9GClaw-2026.1029.0-mac-arm64.${format}`, platform: 'darwin', arch: 'arm64', size: 5, sha256: 'a'.repeat(64), sha512: 'A'.repeat(86) + '==' }));
     const old = validateReleaseManifest({ ...base, assets });
     expect(old.differentialUpdates).toBe(false);

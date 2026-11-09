@@ -75,7 +75,7 @@ describe('desktop update assets', () => {
     const prepareToInstall = vi.fn();
     const verifyFile = vi.fn();
     const controller = createUpdateController({
-      updater: updater as unknown as AppUpdater, repository: 'AI9Stars/9GClaw',
+      updater: updater as unknown as AppUpdater, repository: 'AI9Stars/G9Agent',
       platform: 'linux', arch: 'arm64', version: '2026.927.0', packaged: true,
       latestRelease: async () => latest,
       downloadAvailable: async () => true,
@@ -86,7 +86,7 @@ describe('desktop update assets', () => {
     controller.start();
     await controller.wait();
     expect(updater.setFeedURL).toHaveBeenCalledWith(expect.objectContaining({
-      provider: 'custom', url: 'https://github.com/AI9Stars/9GClaw/releases/download/v2026.09.28/',
+      provider: 'custom', url: 'https://github.com/AI9Stars/G9Agent/releases/download/v2026.09.28/',
     }));
     expect(verifyFile).toHaveBeenCalledWith('/tmp/9GClaw-test.deb', latest.assets[0]);
     expect(prepareToInstall).toHaveBeenCalledOnce();

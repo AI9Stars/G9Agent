@@ -684,7 +684,7 @@ app.use('/api/update', authenticateToken, updateRoutes);
 app.get('/api/agents/runtime-config', authenticateToken, (_req, res) => {
     const permSettings = readPermissionSettings();
     res.json({
-        "9gclaw": { provider: '9gclaw' },
+        '9gclaw': { provider: '9gclaw' },
         permissions: {
             skipPermissions: permSettings.skipPermissions,
             effectiveMode: permSettings.skipPermissions ? 'bypassPermissions' : 'default',
@@ -2660,7 +2660,7 @@ function handleChatConnection(ws, request) {
                 // 9GClaw under the hood.
                 writer.send({
                     type: 'active-sessions',
-                    sessions: { claude: ids, cursor: [], codex: [], gemini: [], "9gclaw": ids },
+                    sessions: { claude: ids, cursor: [], codex: [], gemini: [], '9gclaw': ids },
                 });
             }
         } catch (error) {

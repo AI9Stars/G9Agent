@@ -67,7 +67,8 @@ export default defineConfig(({ mode }) => {
         if (path.resolve(context.filename) !== path.join(__dirname, 'index.html')) return html;
         // The same shell is painted before the application bundle is evaluated.
         // Keep it outside React's root so phase changes never replace the frame.
-        const page = renderLoadingHtml({ language: 'en', themeMode: 'system' }, true);
+        const page = renderLoadingHtml({ language: 'en', themeMode: 'system' }, true,
+          readFileSync(path.join(__dirname, 'public/logo-256.png')).toString('base64'));
         const style = page.match(/<style>([\s\S]*?)<\/style>/)[1];
         const body = page.match(/<body[^>]*>([\s\S]*?)<\/body>/)[1];
         return html.replace('<div id="root"></div>', () => `<div id="9gclaw-startup-shell"><style>${style}</style>${body}</div><div id="root"></div>`);
@@ -80,6 +81,12 @@ export default defineConfig(({ mode }) => {
         return [{ tag: 'script', injectTo: 'head-prepend', children: `
           try {
             var desktop = window.ninegclawDesktop?.getAppearance?.();
+            var language = desktop?.language || localStorage.getItem('userLanguage') || 'en';
+            var name = language === 'zh-CN' ? '九格智能体' : 'G9Agent';
+            document.title = name;
+            document.documentElement.lang = language === 'zh-CN' ? 'zh-CN' : 'en';
+            document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', name);
+            document.querySelector('link[rel="manifest"]')?.setAttribute('href', language === 'zh-CN' ? '/manifest.zh-CN.json' : '/manifest.json');
             var mode = desktop?.themeMode || localStorage.getItem('themeMode') || localStorage.getItem('theme') || 'system';
             if (!['light', 'dark', 'system'].includes(mode)) mode = 'system';
             var dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);

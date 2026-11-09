@@ -1,5 +1,5 @@
 {
-  "brand": "9GClaw",
+  "brand": "G9Agent",
   "sidebar": {
     "kicker": "First-time setup",
     "title": "Prepare your AI workspace",
@@ -12,7 +12,7 @@
     "workspace": "Workspace"
   },
   "language": {
-    "eyebrow": "Welcome to 9GClaw",
+    "eyebrow": "Welcome to G9Agent",
     "title": "Connect your model and start collaborating",
     "intro": "Finish model setup in a few steps. You can change the provider, model, or key in Settings at any time.",
     "legend": "Choose your interface language",
@@ -28,7 +28,7 @@
   },
   "provider": {
     "title": "Choose your model provider",
-    "intro": "Pick a provider first. 9GClaw will fill in the recommended endpoint format.",
+    "intro": "Pick a provider first. G9Agent will fill in the recommended endpoint format.",
     "customTitle": "Custom",
     "customHint": "OpenAI / Anthropic / Google"
   },

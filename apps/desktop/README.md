@@ -1,4 +1,4 @@
-# 9GClaw Desktop
+# G9Agent Desktop
 
 Electron shell for the shared Web UI and local Gateway. It owns native windows, menus, notifications, runtime supervision and updates; agent execution stays in [the core](../../src/README.md).
 
@@ -13,7 +13,7 @@ pnpm --filter 9gclaw-desktop compile
 pnpm --filter 9gclaw-desktop test
 ```
 
-Development and packaging prepare an architecture-matched runtime and pinned native resources. Packaging depends on the matching host architecture and platform toolchain. Use [release instructions](../../docs/release.md), [DEB support](../../docs/ubuntu-desktop-support.md) or [RPM support](../../docs/redhat-desktop-support.md) for build and signing setup.
+Development and packaging prepare an architecture-matched runtime and pinned native resources. This fork packages unsigned Windows x64/ARM64 installers on matching native hosts. The manual Windows Release workflow publishes to GitHub; PR packaging uploads artifacts without publishing. Updates use only this repository's GitHub Releases. See [release instructions](../../docs/release.md) and [upstream synchronization](../../docs/upstream-sync.zh.md).
 
 Desktop includes Python 3.12, uv/uvx and a curated set of agent, data, statistics, plotting and document libraries on all six Windows/macOS/Linux x64/ARM64 targets. Settings > Advanced > Python environment enables it by default. The Gateway creates an offline, writable virtual environment under `NINEGCLAW_HOME/runtimes/python`, sharing the immutable bundled base libraries. Preference changes apply to subsequent turns and retain running tasks and MCP connections. See [bundled Python release inputs](../../docs/release.md#bundled-python).
 
@@ -26,7 +26,7 @@ Settings > Advanced shows Git beside Python, including the executing host's sour
 - [applicationMenu.ts](src/applicationMenu.ts): native commands and shortcuts.
 - [updates.ts](src/updates.ts), [JsonReleaseProvider.ts](src/JsonReleaseProvider.ts) and [updateDownload.ts](src/updateDownload.ts): pinned release identity, differential/full download recovery and transport control; see [release policy](../../docs/release.md#differential-downloads-and-recovery).
 - [build-runtime.mjs](scripts/build-runtime.mjs): runtime assembly; [installer documentation](resources/installer/README.md) explains transactional Windows payload replacement.
-- [rebuild-icon.mjs](scripts/rebuild-icon.mjs) regenerates platform icons; [rebuild-icon.ps1](scripts/rebuild-icon.ps1) preserves the Windows command entry.
+- [rebuild-brand-assets.mjs](../../scripts/rebuild-brand-assets.mjs) regenerates the fork's platform icons and wordmarks from the maintained vector source.
 - [computerUse.ts](src/computerUse.ts): built-in native Driver lifecycle. Settings > External integrations > Computer Use controls it; macOS permissions belong to 9GClaw Computer Use, not the main app. See [MCP](../../src/mcp/README.md).
 
 Closing the window keeps background work running when a supported tray is available. Explicit Quit stops owned processes; updater failure must restore a working runtime. Do not terminate unrelated user processes.
@@ -56,7 +56,7 @@ Use palette tokens for interactive accents (links, selection, focus, switches, p
 
 ## Validation
 
-The Node helper suite is collected by the test command above. [Desktop chrome acceptance](../../ui/e2e/desktop-chrome.smoke.mjs), [lifecycle acceptance](scripts/verify-desktop-lifecycle.cjs) and native installer checks need their stated build/platform prerequisites and isolated profiles. They do not establish that a particular published package is signed; [release verification](../../docs/release.md) checks the actual payload.
+The Node helper suite is collected by the test command above. [Desktop chrome acceptance](../../ui/e2e/desktop-chrome.smoke.mjs), [lifecycle acceptance](scripts/verify-desktop-lifecycle.cjs) and native installer checks need their stated build/platform prerequisites and isolated profiles. [Release verification](../../docs/release.md) checks the packaged payload; this fork deliberately disables executable signing and update signature enforcement while retaining checksum validation.
 
 Caption-menu changes also require `pnpm --dir ui exec vitest run --project server server/services/windowsCaptionMenu.test.ts`; these fake-clock integration cases complement the desktop helper's real event-loop tests.
 

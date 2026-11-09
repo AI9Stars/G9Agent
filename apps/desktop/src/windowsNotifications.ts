@@ -8,7 +8,7 @@ export const TOAST_ACTIVATOR_CLSID = '{785E87AC-C88F-49ED-99B6-6617D2B67638}';
 
 /** Register the current user's identity before the first toast, including NSIS
  * all-users installs. Electron owns COM activation and native Toast rendering. */
-export async function registerWindowsNotifications(appId: string, displayName = '9GClaw', activatorClsid = TOAST_ACTIVATOR_CLSID): Promise<void> {
+export async function registerWindowsNotifications(appId: string, displayName = 'G9Agent', activatorClsid = TOAST_ACTIVATOR_CLSID): Promise<void> {
   // electron-builder portable launches from a disposable extraction directory.
   // Neither its executable nor its PNG may be persisted, and its shared app ID
   // must not overwrite an installed copy's shortcut/notification registration.
@@ -18,7 +18,7 @@ export async function registerWindowsNotifications(appId: string, displayName = 
   const iconPath = app.isPackaged
     ? path.join(process.resourcesPath, 'icons', 'icon.png')
     : path.join(__dirname, '..', 'resources', 'icons', 'icon.png');
-  if (!fs.existsSync(iconPath)) throw new Error('9GClaw notification icon is missing');
+  if (!fs.existsSync(iconPath)) throw new Error('G9Agent notification icon is missing');
   const programs = path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs');
   fs.mkdirSync(programs, { recursive: true });
   const shortcut = path.join(programs, `${displayName}.lnk`);
@@ -26,7 +26,7 @@ export async function registerWindowsNotifications(appId: string, displayName = 
     target: process.execPath, cwd: path.dirname(process.execPath),
     description: displayName, icon: process.execPath, iconIndex: 0,
     appUserModelId: appId, toastActivatorClsid: activatorClsid,
-  })) throw new Error('Could not register the 9GClaw notification shortcut');
+  })) throw new Error('Could not register the G9Agent notification shortcut');
   const registry = `HKCU\\Software\\Classes\\AppUserModelId\\${appId}`;
   const run = promisify(execFile);
   const reg = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'reg.exe');

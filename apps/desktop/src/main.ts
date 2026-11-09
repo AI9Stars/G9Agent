@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import { registerWindowsNotifications, TOAST_ACTIVATOR_CLSID } from './windowsNotifications';
 import { installRendererRecovery } from "./rendererRecovery";
 import { commandEnabled, emptyMenuState, normalizeMenuState, type DesktopCommand } from "./desktopCommands";
@@ -84,8 +85,13 @@ let desktopTray: ReturnType<typeof createDesktopTray> | null = null;
 const APP_ID = "cn.9gclaw.desktop";
 const EXTERNAL_NAVIGATION_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 const PLAYWRIGHT_BROWSER_DIR = "playwright-browsers";
-const DEFAULT_UPDATE_REPOSITORY = "AI9Stars/9GClaw";
+const DEFAULT_UPDATE_REPOSITORY = "AI9Stars/G9Agent";
 const PROCESS_LAUNCH_CWD = process.cwd();
+// Product labels are localized; filesystem locations always use the ASCII ID.
+if (app.getPath('userData') === path.join(app.getPath('appData'), app.getName())) {
+  app.setPath('userData', path.join(app.getPath('appData'), '9gclaw-desktop'));
+}
+app.setPath('sessionData', app.getPath('userData'));
 // Electron requires this before ready; saving the preference takes effect on
 // the next launch, never by changing a live window's renderer settings.
 const startupHardwareAcceleration = readAppearance().interfacePreferences?.hardwareAcceleration !== false;
@@ -178,10 +184,10 @@ class RuntimeManager {
     rendererLog ??= createRuntimeLogWriter(path.join(path.dirname(this.logPath), 'renderer.log'), { retentionDays: days });
     publishRuntimeStatus({
       phase: "starting",
-      message: "Preparing 9GClaw runtime...",
+      message: "Preparing G9Agent runtime...",
       logPath: this.logPath,
     });
-    this.log(`9GClaw Desktop runtime starting from ${this.runtimeRoot}`);
+    this.log(`G9Agent Desktop runtime starting from ${this.runtimeRoot}`);
     publishRuntimeStatus({
       phase: "config",
       message: "Checking local configuration...",
@@ -297,11 +303,11 @@ class RuntimeManager {
       runtimeRoot: this.runtimeRoot,
       logPath: this.logPath,
     };
-    this.log(`9GClaw Web UI ready: http://127.0.0.1:${serverPort}`);
+    this.log(`G9Agent Web UI ready: http://127.0.0.1:${serverPort}`);
     if (!this.configurationState || this.configurationState.state !== "ready") {
       publishRuntimeStatus({
         phase: "awaiting_configuration",
-        message: "9GClaw is ready for model setup.",
+        message: "G9Agent is ready for model setup.",
         logPath: this.logPath,
       });
     }
@@ -339,7 +345,7 @@ class RuntimeManager {
     this.serverProcess = null;
     this.gatewayProcess = null;
     this.gatewayStartPromise = null;
-    this.log("9GClaw Desktop runtime stopped");
+    this.log("G9Agent Desktop runtime stopped");
     this.logStream?.close();
     this.logStream = null;
     this.info = null;
@@ -351,7 +357,7 @@ class RuntimeManager {
     this.gatewayState = { state: "stopped" };
     publishRuntimeStatus({
       phase: "stopped",
-      message: "9GClaw runtime stopped.",
+      message: "G9Agent runtime stopped.",
       logPath: this.logPath,
     });
   }
@@ -362,7 +368,7 @@ class RuntimeManager {
       return [this.nodeBinary, ...runtimeReportArguments(), builtEntry, "server"];
     }
     if (app.isPackaged || process.env.NINEGCLAW_DESKTOP_RUNTIME_ROOT) {
-      throw new Error(`Compiled 9GClaw gateway entry not found: ${builtEntry}`);
+      throw new Error(`Compiled G9Agent gateway entry not found: ${builtEntry}`);
     }
     return [this.nodeBinary, ...runtimeReportArguments(), "--import", "tsx", path.join(this.runtimeRoot, "src", "cli", "9gclaw.ts"), "server"];
   }
@@ -478,7 +484,7 @@ class RuntimeManager {
           phase: "awaiting_configuration",
           message: runtimeMessage.configuration.state === "invalid"
             ? "Model configuration needs attention."
-            : "9GClaw is ready for model setup.",
+            : "G9Agent is ready for model setup.",
           logPath: this.logPath,
         });
       }
@@ -549,7 +555,7 @@ class RuntimeManager {
       this.setGatewayState({ state: "ready" });
       publishRuntimeStatus({
         phase: "ready",
-        message: "9GClaw is ready.",
+        message: "G9Agent is ready.",
         logPath: this.logPath,
       });
     } catch (error) {
@@ -695,7 +701,7 @@ async function createOrShowWindow(): Promise<void> {
     height: 900,
     minWidth: 960,
     minHeight: 640,
-    title: "9GClaw",
+    title: productName(readAppearance().language),
     ...(icon ? { icon } : {}),
     // Windows and Linux show their application menus in the title-bar overlay.
     autoHideMenuBar: process.platform === "win32" || process.platform === "linux",
@@ -783,7 +789,7 @@ async function createOrShowWindow(): Promise<void> {
 
   // Hashed assets and revalidated HTML already handle software updates.
   // Clearing the entire HTTP cache here made every window start a cold load.
-  startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance()))}`;
+  startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance(), false, readBrandLogo()))}`;
   await mainWindow.loadURL(startupPageUrl);
   if (lastRuntimeStatus) {
     sendRuntimeStatus(lastRuntimeStatus);
@@ -860,7 +866,7 @@ async function startRuntimeAndLoad(): Promise<void> {
       : new RuntimeProcessDiagnostics("desktop", runtime?.getLogPath() || path.join(app.getPath("logs"), "runtime.log")).failure(error instanceof Error ? error.stack ?? error.message : String(error));
     publishRuntimeStatus({
       phase: "error",
-      message: "9GClaw failed to start.",
+      message: "G9Agent failed to start.",
       logPath: runtime?.getLogPath(),
       error: detail,
     });
@@ -879,11 +885,11 @@ async function retryRuntime(): Promise<void> {
   const currentRuntime = runtime;
   await stopRuntime();
   if (isQuitting) return;
-  publishRuntimeStatus({ phase: 'starting', message: 'Preparing 9GClaw runtime...', logPath: currentRuntime?.getLogPath() });
+  publishRuntimeStatus({ phase: 'starting', message: 'Preparing G9Agent runtime...', logPath: currentRuntime?.getLogPath() });
   if (!mainWindow || mainWindow.isDestroyed()) {
     await createOrShowWindow();
   } else {
-    startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance()))}`;
+    startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance(), false, readBrandLogo()))}`;
     await mainWindow.loadURL(startupPageUrl);
   }
   await startRuntimeAndLoad();
@@ -999,7 +1005,7 @@ function ensurePilotHome(log: (message: string) => void): { pilotHome: string } 
     ? path.resolve(process.env.NINEGCLAW_HOME)
     : path.join(os.homedir(), ".9gclaw");
   fs.mkdirSync(pilotHome, { recursive: true });
-  log(`9GClaw home ready at ${pilotHome}`);
+  log(`G9Agent home ready at ${pilotHome}`);
   return { pilotHome };
 }
 
@@ -1026,22 +1032,13 @@ function getUpdateController() {
   const network = createUpdateNetwork(updater.netSession, () => {
     const configService = require(path.join(resolveRuntimeRoot(), "ui/server/services/ninegclawConfig.js"));
     const record = configService.readNineGClawConfigFile();
-    if (record.parseError) throw new Error("Invalid 9GClaw proxy configuration");
+    if (record.parseError) throw new Error("Invalid G9Agent proxy configuration");
     return record.config.proxy;
   });
   updater.on("login", network.login);
   const downloadControl = installUpdateDownloadControl(updater);
   const { createDesktopReleaseService } = require(path.join(resolveRuntimeRoot(), "ui/server/services/desktopReleaseService.js"));
-  const routeCache = path.join(app.getPath("userData"), "update-route.json");
-  const releaseService = createDesktopReleaseService({ repository, currentVersion: app.getVersion(), fetchImpl: network.fetch, probe: network.probe, checkDownload: network.checkDownload,
-    routeStore: {
-      read: () => JSON.parse(fs.readFileSync(routeCache, "utf8")),
-      write: (record: unknown) => {
-        fs.writeFileSync(`${routeCache}.tmp`, JSON.stringify(record), "utf8");
-        fs.renameSync(`${routeCache}.tmp`, routeCache);
-      },
-    },
-  });
+  const releaseService = createDesktopReleaseService({ repository, fetchImpl: network.fetch, checkDownload: network.checkDownload });
   updateController = createUpdateController({
     updater, downloadControl, repository, platform: process.platform, arch: process.arch,
     version: app.getVersion(), packaged: app.isPackaged, linuxPackageType,
@@ -1049,8 +1046,6 @@ function getUpdateController() {
     latestRelease: releaseService.latestRelease,
     downloadBases: releaseService.downloadBases,
     downloadAvailable: releaseService.downloadAvailable,
-    downloadSucceeded: releaseService.downloadSucceeded,
-    downloadFailed: releaseService.downloadFailed,
     compareVersions: releases.compareVersions,
     prepareToInstall: async () => {
       isQuitting = true;
@@ -1123,6 +1118,13 @@ for (const [channel, action] of Object.entries({
   ipcMain.handle(channel, (event) => { requireUpdateSender(event); return action(); });
 }
 
+function readBrandLogo(): string {
+  const logoPath = app.isPackaged
+    ? path.join(process.resourcesPath, "icons", "icon.png")
+    : path.join(__dirname, "..", "resources", "icons", "icon.png");
+  return fs.readFileSync(logoPath).toString("base64");
+}
+
 function readAppearance(): DesktopAppearance {
   const locale = app.isReady() ? app.getLocale() : 'en';
   try {
@@ -1173,8 +1175,8 @@ function desktopMenuTemplate() {
           if (mainWindow && !mainWindow.isDestroyed()) void showDesktopAbout(mainWindow).catch(error => console.error("Desktop about dialog failed", error));
         } else {
           const operation = action === "docs"
-            ? shell.openExternal("https://github.com/AI9Stars/9GClaw")
-            : action === "issues" ? shell.openExternal("https://github.com/AI9Stars/9GClaw/issues")
+            ? shell.openExternal("https://github.com/AI9Stars/G9Agent")
+            : action === "issues" ? shell.openExternal("https://github.com/AI9Stars/G9Agent/issues")
               : shell.openPath(runtime?.getLogPath() || app.getPath("logs"));
           void operation.catch(error => console.error("Desktop help action failed", error));
         }
@@ -1249,6 +1251,7 @@ ipcMain.handle("9gclaw:set-appearance", (event, value: unknown) => {
   const paletteChanged = JSON.stringify(windowPalette(nativeTheme.shouldUseDarkColors, process.platform, current.lightAppearance)) !== JSON.stringify(windowPalette(nativeTheme.shouldUseDarkColors, process.platform, appearance.lightAppearance));
   if (paletteChanged || current.themeMode !== appearance.themeMode) publishWindowState();
   if (current.language !== appearance.language) {
+    mainWindow?.setTitle(productName(appearance.language));
     updateApplicationMenu();
     desktopTray?.refreshMenu();
   }
@@ -1285,7 +1288,7 @@ const desktopUninstaller = createDesktopUninstaller({
   cleanup: () => {
     return uninstallDataHelper.cleanupPersonalData({ profile: os.homedir(), appData: app.getPath('appData'), localAppData: process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache'), pilotHome: process.env.NINEGCLAW_HOME });
   },
-  notify: async message => { await dialog.showMessageBox({ type: 'info', title: '9GClaw', message }); },
+  notify: async message => { await dialog.showMessageBox({ type: 'info', title: productName(readAppearance().language), message }); },
   quit: () => { isQuitting = true; app.exit(0); },
 });
 ipcMain.handle('9gclaw:uninstall-status', event => { requireUpdateSender(event); return { supported: desktopUninstaller.supported() }; });
@@ -1357,8 +1360,8 @@ const lifecycle = createDesktopLifecycle({
   showDialog: (owner, options) => dialog.showMessageBox(owner, options),
   stopRuntime,
   quit: () => app.quit(),
-  reportError: error => console.error("9GClaw lifecycle operation failed", error),
-  reportStopError: error => dialog.showErrorBox(startupText("9GClaw could not stop", readAppearance().language), String(error)),
+  reportError: error => console.error("G9Agent lifecycle operation failed", error),
+  reportStopError: error => dialog.showErrorBox(startupText("G9Agent could not stop", readAppearance().language), String(error)),
 });
 
 const ownsInstance = process.platform === "darwin" || app.requestSingleInstanceLock();
@@ -1366,7 +1369,7 @@ if (!ownsInstance) {
   app.quit();
 } else {
   app.on("second-instance", (_event, argv) => {
-    void restoreMainWindow().then(() => argv.includes('--uninstall') ? desktopUninstaller.start() : undefined).catch(error => console.error("Could not restore 9GClaw", error));
+    void restoreMainWindow().then(() => argv.includes('--uninstall') ? desktopUninstaller.start() : undefined).catch(error => console.error("Could not restore G9Agent", error));
   });
   app.whenReady()
     .then(async () => {
@@ -1382,15 +1385,15 @@ if (!ownsInstance) {
                 ? path.join(process.resourcesPath, "icons", "trayTemplate.png")
                 : path.resolve(__dirname, "..", "resources", "icons", "trayTemplate.png");
               const image = nativeImage.createFromPath(iconPath);
-              if (image.isEmpty()) throw new Error("9GClaw menu bar icon is missing");
+              if (image.isEmpty()) throw new Error("G9Agent menu bar icon is missing");
               image.setTemplateImage(true);
               return new Tray(image);
             }
             const iconPath = resolveAppIcon();
-            if (!iconPath) throw new Error("9GClaw tray icon is missing");
+            if (!iconPath) throw new Error("G9Agent tray icon is missing");
             if (process.platform === "linux") {
               const image = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
-              if (image.isEmpty()) throw new Error("9GClaw tray icon is invalid");
+              if (image.isEmpty()) throw new Error("G9Agent tray icon is invalid");
               return new Tray(image);
             }
             return new Tray(iconPath);
@@ -1413,7 +1416,7 @@ if (!ownsInstance) {
           isChinese: () => readAppearance().language === "zh-CN",
           open: lifecycle.open,
           requestQuit: lifecycle.requestQuit,
-          reportError: error => console.error("9GClaw tray operation failed", error),
+          reportError: error => console.error("G9Agent tray operation failed", error),
         });
       }
       if (process.platform === "darwin") {
@@ -1428,7 +1431,7 @@ if (!ownsInstance) {
     .then(async () => {
       if (process.platform === 'linux' && process.argv.includes('--uninstall')) {
         try { await desktopUninstaller.start(); }
-        catch (error) { dialog.showErrorBox('9GClaw', String(error)); }
+        catch (error) { dialog.showErrorBox('G9Agent', String(error)); }
         if (!isQuitting) app.exit(0);
       } else await startRuntimeAndLoad();
     })
@@ -1437,7 +1440,7 @@ if (!ownsInstance) {
       await runtime?.stop().catch(() => undefined);
       publishRuntimeStatus({
         phase: "error",
-        message: "9GClaw failed to start.",
+        message: "G9Agent failed to start.",
         logPath: runtime?.getLogPath(),
         error: detail,
       });

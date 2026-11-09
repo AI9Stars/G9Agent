@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { describeReleaseAsset, compatibilityFeeds } from "../../../ui/shared/releaseArtifacts.js";
+import { manifestRepository } from '../../../ui/shared/releaseRepository.js';
 
 const assetsDir = resolve(process.argv[2] || "release-assets");
 const files = listFiles(assetsDir)
@@ -28,7 +29,8 @@ const manifest = {
   date: requiredEnv("NINEGCLAW_RELEASE_DATE"),
   buildTime: requiredEnv("NINEGCLAW_RELEASE_BUILD_TIME"),
   sourceSha: requiredEnv("NINEGCLAW_COMMIT_SHA"),
-  repository: requiredEnv("NINEGCLAW_UPDATE_REPOSITORY"),
+  repository: manifestRepository(requiredEnv("NINEGCLAW_UPDATE_REPOSITORY")),
+  canonicalRepository: requiredEnv("NINEGCLAW_UPDATE_REPOSITORY"),
   assets,
 };
 

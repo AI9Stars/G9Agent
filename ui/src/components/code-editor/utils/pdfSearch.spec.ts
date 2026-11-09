@@ -22,7 +22,7 @@ describe('findPdfSearchMatches', () => {
   });
 
   it('matches case-insensitively and collapses whitespace', () => {
-    const matches = findPdfSearchMatches(['Pilot', 'Deck  search'], '9gclaw search', 1);
+    const matches = findPdfSearchMatches(['9G', 'Claw  search'], '9gclaw search', 1);
 
     expect(matches).toHaveLength(1);
     expect(matches[0].begin).toEqual({ divIndex: 0, offset: 0 });

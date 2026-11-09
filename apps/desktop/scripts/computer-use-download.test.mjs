@@ -9,7 +9,7 @@ import { test } from 'node:test';
 import { downloadDriverArchive, prepareComputerUse, verifyDriverArchive } from '../../../scripts/prepare-computer-use.mjs';
 
 function target(t) {
-  const directory = mkdtempSync(join(tmpdir(), 'pilotdeck-driver-download-'));
+  const directory = mkdtempSync(join(tmpdir(), '9gclaw-driver-download-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   return { directory, archive: join(directory, 'driver.tar.gz') };
 }
@@ -40,7 +40,7 @@ async function proxyFixture(t) {
   return { proxyUrl: `http://127.0.0.1:${proxy.address().port}`, originUrl: `http://127.0.0.1:${origin.address().port}/archive`, tunnels: () => tunnels };
 }
 
-for (const name of ['PILOTDECK_PROXY', 'HTTPS_PROXY', 'https_proxy', 'HTTP_PROXY', 'http_proxy']) {
+for (const name of ['NINEGCLAW_PROXY', 'HTTPS_PROXY', 'https_proxy', 'HTTP_PROXY', 'http_proxy']) {
   test(`downloads through ${name} instead of resolving a proxy-only destination directly`, async t => {
     const { archive } = target(t);
     const proxy = await proxyFixture(t);
@@ -166,7 +166,7 @@ test('preparation still rejects corrupt successful downloads and preserves an ex
   globalThis.fetch = async () => { requests++; return new Response('corrupt archive'); };
   t.after(() => { globalThis.fetch = originalFetch; });
   await assert.rejects(prepareComputerUse({ destination, platform: 'linux', arch: 'x64',
-    env: { PILOTDECK_CUA_BASE_URL: 'https://example.test' } }), /checksum mismatch/);
+    env: { NINEGCLAW_CUA_BASE_URL: 'https://example.test' } }), /checksum mismatch/);
   assert.equal(requests, 1);
   assert.equal(readFileSync(join(destination, 'existing.txt'), 'utf8'), 'keep installed resources');
 });

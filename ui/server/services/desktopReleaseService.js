@@ -1,7 +1,7 @@
 import { RELEASE_REPOSITORY, RELEASE_TAG, normalizeRepository, compareVersions, validateReleaseManifest } from './releaseService.js';
 
 // Keep mirrors in code, never accept a download host from remote metadata.
-export const OBS_BASE = 'https://n00069-minicpm-5-0.obs.cn-north-4.myhuaweicloud.com/PilotDeck/';
+export const OBS_BASE = 'https://n00069-minicpm-5-0.obs.cn-north-4.myhuaweicloud.com/9GClaw/';
 const ROUTE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 export function createDesktopReleaseService({ repository: value, currentVersion, fetchImpl = fetch, probe, checkDownload,
@@ -29,7 +29,7 @@ export function createDesktopReleaseService({ repository: value, currentVersion,
     try { routeStore?.write(record); } catch { /* Retain in-memory preference if disk is unavailable. */ }
   }
   async function json(url, signal) {
-    const response = await fetchImpl(url, { signal, headers: { Accept: 'application/json', 'User-Agent': 'PilotDeck-Updater', 'Cache-Control': 'no-cache' } });
+    const response = await fetchImpl(url, { signal, headers: { Accept: 'application/json', 'User-Agent': '9GClaw-Updater', 'Cache-Control': 'no-cache' } });
     if (!response.ok) throw new Error('Release request failed');
     return response.json();
   }

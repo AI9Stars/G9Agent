@@ -11,10 +11,10 @@
 import { McpClient, McpClientError, type McpClientOptions } from "../client/McpClient.js";
 import { awaitWithAbort } from "../../runtime/abort.js";
 import type {
-  PilotDeckMcpClientStatusEntry,
-  PilotDeckMcpServerInstructions,
-  PilotDeckMcpServerSpec,
-  PilotDeckMcpToolSpec,
+  NineGClawMcpClientStatusEntry,
+  NineGClawMcpServerInstructions,
+  NineGClawMcpServerSpec,
+  NineGClawMcpToolSpec,
 } from "../protocol/types.js";
 
 export type McpRuntimeOptions = {
@@ -26,8 +26,8 @@ export type McpRuntimeOptions = {
 
 export class McpRuntime {
   private readonly clients = new Map<string, McpClient>();
-  private readonly catalogs = new Map<string, PilotDeckMcpToolSpec[]>();
-  private refreshInFlight?: Promise<PilotDeckMcpToolSpec[]>;
+  private readonly catalogs = new Map<string, NineGClawMcpToolSpec[]>();
+  private refreshInFlight?: Promise<NineGClawMcpToolSpec[]>;
   private stopVersion = 0;
   private stopped = false;
   private stopInFlight?: Promise<void>;
@@ -35,7 +35,7 @@ export class McpRuntime {
     Pick<McpRuntimeOptions, "clientOptions">;
 
   constructor(
-    public readonly servers: PilotDeckMcpServerSpec[],
+    public readonly servers: NineGClawMcpServerSpec[],
     options: McpRuntimeOptions = {},
   ) {
     this.options = {
@@ -48,12 +48,12 @@ export class McpRuntime {
   }
 
   /** Start each client. Errors are captured per server (do not abort the rest). */
-  async start(): Promise<PilotDeckMcpClientStatusEntry[]> {
+  async start(): Promise<NineGClawMcpClientStatusEntry[]> {
     this.stopped = false;
     const stopVersion = this.stopVersion;
     const queue = [...this.clients.values()];
     const concurrency = Math.max(1, Math.min(this.options.connectConcurrency, queue.length));
-    const results: PilotDeckMcpClientStatusEntry[] = [];
+    const results: NineGClawMcpClientStatusEntry[] = [];
 
     const workers: Promise<void>[] = [];
     for (let i = 0; i < concurrency; i++) {
@@ -106,7 +106,7 @@ export class McpRuntime {
   }
 
   /** Refresh ready or previously discovered servers, retaining failed servers' last complete catalog. */
-  async refreshToolCatalog(signal?: AbortSignal): Promise<PilotDeckMcpToolSpec[]> {
+  async refreshToolCatalog(signal?: AbortSignal): Promise<NineGClawMcpToolSpec[]> {
     signal?.throwIfAborted();
     if (this.stopped) throw new Error("MCP runtime is stopped");
     if (!this.refreshInFlight) {
@@ -117,7 +117,7 @@ export class McpRuntime {
     return structuredClone(await awaitWithAbort(signal, () => this.refreshInFlight!));
   }
 
-  private async refreshCatalog(): Promise<PilotDeckMcpToolSpec[]> {
+  private async refreshCatalog(): Promise<NineGClawMcpToolSpec[]> {
     const stopVersion = this.stopVersion;
     const next = new Map(this.catalogs);
     const queue = [...this.clients.values()].filter(client => client.getStatus() === "ready" || next.has(client.spec.id));
@@ -136,8 +136,8 @@ export class McpRuntime {
   }
 
   /** Aggregate every advertised tool across every client. */
-  async listAllTools(): Promise<PilotDeckMcpToolSpec[]> {
-    const out: PilotDeckMcpToolSpec[] = [];
+  async listAllTools(): Promise<NineGClawMcpToolSpec[]> {
+    const out: NineGClawMcpToolSpec[] = [];
     for (const client of this.clients.values()) {
       if (client.getStatus() !== "ready") continue;
       try {
@@ -152,8 +152,8 @@ export class McpRuntime {
   }
 
   /** Runtime-fetched server instructions (B3 upgrade path). */
-  getInstructions(): PilotDeckMcpServerInstructions[] {
-    const out: PilotDeckMcpServerInstructions[] = [];
+  getInstructions(): NineGClawMcpServerInstructions[] {
+    const out: NineGClawMcpServerInstructions[] = [];
     for (const client of this.clients.values()) {
       if (client.getStatus() !== "ready") continue;
       const instructions = client.getInstructions();
@@ -164,7 +164,7 @@ export class McpRuntime {
     return out;
   }
 
-  statuses(): PilotDeckMcpClientStatusEntry[] {
+  statuses(): NineGClawMcpClientStatusEntry[] {
     return [...this.clients.values()].map((c) => ({
       serverId: c.spec.id,
       status: c.getStatus(),

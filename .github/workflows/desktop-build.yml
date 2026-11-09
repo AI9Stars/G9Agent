@@ -62,7 +62,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PILOTDECK_UPDATE_REPOSITORY: ${{ github.repository }}
+  NINEGCLAW_UPDATE_REPOSITORY: ${{ github.repository }}
 
 jobs:
   linux:

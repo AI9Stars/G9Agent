@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
-import type { PilotDeckMcpToolSpec } from "../protocol/types.js";
+import type { NineGClawMcpToolSpec } from "../protocol/types.js";
 
 /** One advertised contract binds model schema, permission flags and dispatch. */
-export function toolContractFingerprint(tool: PilotDeckMcpToolSpec): string {
+export function toolContractFingerprint(tool: NineGClawMcpToolSpec): string {
   const contract = { name: tool.toolName, description: tool.description, inputSchema: tool.inputSchema, annotations: tool.annotations ?? {} };
   const serialized = JSON.stringify(contract, (_key, value: unknown) => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return value;

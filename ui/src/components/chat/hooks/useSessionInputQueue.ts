@@ -91,7 +91,7 @@ export function useSessionInputQueue({
   const request = useCallback((message: Record<string, unknown>): Promise<QueueOperationResult> => {
     if (!sessionId) return Promise.resolve({ ok: false, error: 'No active session.' });
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      return Promise.resolve({ ok: false, error: 'PilotDeck is disconnected.' });
+      return Promise.resolve({ ok: false, error: '9GClaw is disconnected.' });
     }
     const requestId = createRequestId();
     return new Promise((resolve) => {
@@ -101,7 +101,7 @@ export function useSessionInputQueue({
       }, 10_000);
       pendingRef.current.set(requestId, { resolve, timeoutId, sessionId });
       try {
-        sendMessage({ ...message, requestId, sessionId, provider: 'pilotdeck' });
+        sendMessage({ ...message, requestId, sessionId, provider: '9gclaw' });
       } catch (error) {
         window.clearTimeout(timeoutId);
         pendingRef.current.delete(requestId);

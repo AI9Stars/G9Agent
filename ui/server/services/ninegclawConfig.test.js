@@ -16,21 +16,21 @@ import { fileSymlinkOrSkip } from '../test-support/symlink.js';
 import { parse as parseYaml } from 'yaml';
 import {
     applyConfigToProcessEnv,
-    buildDefaultPilotDeckConfig,
+    buildDefaultNineGClawConfig,
     buildMemoryLlmOptions,
     buildRuntimeEnv,
     configRevision,
-    normalizePilotDeckConfig,
+    normalizeNineGClawConfig,
     maskSecrets,
-    readPilotDeckConfigFile,
+    readNineGClawConfigFile,
     resolveConfiguredProviderApiKey,
     resolveModel,
     sanitizeProviderCredentials,
-    serializePilotDeckConfigResponse,
-    updatePilotDeckConfig,
-    validatePilotDeckConfig,
-    writePilotDeckConfig,
-} from './pilotdeckConfig.js';
+    serializeNineGClawConfigResponse,
+    updateNineGClawConfig,
+    validateNineGClawConfig,
+    writeNineGClawConfig,
+} from './ninegclawConfig.js';
 
 const tempDirs = [];
 
@@ -52,20 +52,20 @@ it('keeps search template references editable without exposing literal secrets o
 
 afterEach(() => {
     vi.unstubAllEnvs();
-    delete process.env.PILOTDECK_CONFIG_PATH;
+    delete process.env.NINEGCLAW_CONFIG_PATH;
     for (const dir of tempDirs.splice(0)) {
         rmSync(dir, { recursive: true, force: true });
     }
 });
 
-function useTempConfig(contents, filename = 'pilotdeck.yaml') {
-    const dir = mkdtempSync(join(tmpdir(), 'pilotdeck-config-test-'));
+function useTempConfig(contents, filename = '9gclaw.yaml') {
+    const dir = mkdtempSync(join(tmpdir(), '9gclaw-config-test-'));
     tempDirs.push(dir);
     const configPath = join(dir, filename);
     if (contents !== null) {
         writeFileSync(configPath, contents, 'utf8');
     }
-    process.env.PILOTDECK_CONFIG_PATH = configPath;
+    process.env.NINEGCLAW_CONFIG_PATH = configPath;
     return configPath;
 }
 
@@ -73,7 +73,7 @@ describe('first-run background config writes', () => {
     it('does not create a partial config for a background preferences update', async () => {
         const configPath = useTempConfig(null);
 
-        await expect(updatePilotDeckConfig((config) => {
+        await expect(updateNineGClawConfig((config) => {
             config.alwaysOn = { language: 'zh-CN' };
         }, { paths: [['alwaysOn', 'language']], settleMs: 0 })).rejects.toMatchObject({
             code: 'MODEL_CONFIGURATION_REQUIRED',
@@ -86,7 +86,7 @@ describe('first-run background config writes', () => {
     it('does not create a bootstrap placeholder config', async () => {
         const configPath = useTempConfig(null);
 
-        await expect(writePilotDeckConfig({
+        await expect(writeNineGClawConfig({
             agent: { model: '_placeholder/_placeholder' },
             model: { providers: { _placeholder: {
                 protocol: 'openai', url: 'https://example.invalid/v1',
@@ -98,9 +98,9 @@ describe('first-run background config writes', () => {
     });
 });
 
-describe('readPilotDeckConfigFile fallback behavior', () => {
+describe('readNineGClawConfigFile fallback behavior', () => {
     it('uses built-in Office preview by default', () => {
-        expect(buildDefaultPilotDeckConfig().webui.officePreview).toEqual({
+        expect(buildDefaultNineGClawConfig().webui.officePreview).toEqual({
             service: 'builtin',
             binaryPath: '',
         });
@@ -109,7 +109,7 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
     it('returns defaults when the config file is missing', () => {
         const configPath = useTempConfig(null);
 
-        const record = readPilotDeckConfigFile();
+        const record = readNineGClawConfigFile();
 
         expect(record.exists).toBe(false);
         expect(record.configPath).toBe(configPath);
@@ -124,7 +124,7 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
     it('reads and normalizes valid YAML', () => {
         useTempConfig('schemaVersion: 1\nmodel:\n  providers: {}\n');
 
-        const record = readPilotDeckConfigFile();
+        const record = readNineGClawConfigFile();
 
         expect(record.exists).toBe(true);
         expect(record.parseError).toBeNull();
@@ -137,7 +137,7 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
         const raw = 'schemaVersion: 1\nmodel:\n  providers: [\n';
         useTempConfig(raw);
 
-        const record = readPilotDeckConfigFile();
+        const record = readNineGClawConfigFile();
 
         expect(record.exists).toBe(true);
         expect(record.raw).toBe(raw);
@@ -150,9 +150,9 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
     it('changes the revision for secret-only disk edits while keeping the response masked', () => {
         const configPath = useTempConfig('schemaVersion: 1\nadapters:\n  feishu:\n    appSecret: super-secret-a\n');
 
-        const first = serializePilotDeckConfigResponse(readPilotDeckConfigFile());
+        const first = serializeNineGClawConfigResponse(readNineGClawConfigFile());
         writeFileSync(configPath, 'schemaVersion: 1\nadapters:\n  feishu:\n    appSecret: super-secret-b\n');
-        const second = serializePilotDeckConfigResponse(readPilotDeckConfigFile());
+        const second = serializeNineGClawConfigResponse(readNineGClawConfigFile());
 
         expect(first.revision).toMatch(/^[a-f0-9]{64}$/);
         expect(first.raw).toBe(second.raw);
@@ -175,7 +175,7 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
         ].join('\n');
         const configPath = useTempConfig(raw);
 
-        await updatePilotDeckConfig((config) => {
+        await updateNineGClawConfig((config) => {
             config.adapters = { ...(config.adapters ?? {}), weixin: { enabled: true } };
         }, { paths: [['adapters']], settleMs: 0 });
 
@@ -183,13 +183,13 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
         expect(saved).toContain('# hand-maintained config');
         expect(saved).toContain('            apiKey: REDACTED');
         expect(saved).toContain('                demo: {}');
-        expect(readPilotDeckConfigFile().parseError).toBeNull();
+        expect(readNineGClawConfigFile().parseError).toBeNull();
     });
 
     it('replaces a null YAML parent before setting a targeted child path', async () => {
         const configPath = useTempConfig('schemaVersion: 1\nadapters:\n');
 
-        await updatePilotDeckConfig((config) => {
+        await updateNineGClawConfig((config) => {
             config.adapters = { wecom: { enabled: true } };
         }, { paths: [['adapters', 'wecom']], settleMs: 0 });
 
@@ -202,7 +202,7 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
         const raw = 'schemaVersion: 1\nmodel:\n    providers: [\n';
         const configPath = useTempConfig(raw);
 
-        await expect(updatePilotDeckConfig((config) => {
+        await expect(updateNineGClawConfig((config) => {
             config.adapters = { weixin: { enabled: true } };
         }, { paths: [['adapters']], settleMs: 0 })).rejects.toMatchObject({
             code: 'INVALID_CONFIG_YAML',
@@ -216,7 +216,7 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
         const completed = 'schemaVersion: 1\ncustomEnv:\n    VALUE: external\n';
         const configPath = useTempConfig(initial);
 
-        const saving = updatePilotDeckConfig((config) => {
+        const saving = updateNineGClawConfig((config) => {
             config.adapters = { weixin: { enabled: true } };
         }, { paths: [['adapters']], settleMs: 30, maxAttempts: 3 });
         setTimeout(() => writeFileSync(configPath, 'schemaVersion: 1\ncustomEnv: [\n', 'utf8'), 5);
@@ -233,19 +233,19 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
         const configPath = useTempConfig('schemaVersion: 1\n');
         const dir = dirname(configPath);
 
-        await writePilotDeckConfig({ schemaVersion: 1, customEnv: { UPDATED: 'yes' } });
+        await writeNineGClawConfig({ schemaVersion: 1, customEnv: { UPDATED: 'yes' } });
 
-        expect(readPilotDeckConfigFile().config.customEnv.UPDATED).toBe('yes');
+        expect(readNineGClawConfigFile().config.customEnv.UPDATED).toBe('yes');
         expect(readdirSync(dir).filter(name => name.endsWith('.tmp'))).toEqual([]);
     });
 
     it('rejects a write when the disk changed after it was read', async () => {
         const configPath = useTempConfig('schemaVersion: 1\ncustomEnv:\n  VALUE: first\n');
-        const loaded = readPilotDeckConfigFile();
+        const loaded = readNineGClawConfigFile();
         const externalRaw = 'schemaVersion: 1\ncustomEnv:\n  VALUE: external\n';
         writeFileSync(configPath, externalRaw, 'utf8');
 
-        await expect(writePilotDeckConfig({
+        await expect(writeNineGClawConfig({
             schemaVersion: 1,
             customEnv: { VALUE: 'stale' },
         }, {
@@ -258,11 +258,11 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
 
     it('rechecks the revision after the final pre-write callback', async () => {
         const configPath = useTempConfig('schemaVersion: 1\ncustomEnv:\n  VALUE: first\n');
-        const loaded = readPilotDeckConfigFile();
+        const loaded = readNineGClawConfigFile();
         const externalRaw = 'schemaVersion: 1\ncustomEnv:\n  VALUE: external\n';
         const onWriteCommitted = vi.fn();
 
-        await expect(writePilotDeckConfig({
+        await expect(writeNineGClawConfig({
             schemaVersion: 1,
             customEnv: { VALUE: 'stale' },
         }, {
@@ -276,21 +276,21 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
     });
 
     it.for(['directory', 'file'])('atomically updates a config through a %s link without replacing the link', async (type, context) => {
-        const dir = mkdtempSync(join(tmpdir(), 'pilotdeck-config-symlink-test-'));
+        const dir = mkdtempSync(join(tmpdir(), '9gclaw-config-symlink-test-'));
         tempDirs.push(dir);
         const managedDir = join(dir, 'managed');
         mkdirSync(managedDir);
-        const targetPath = join(managedDir, 'pilotdeck.yaml');
-        const link = join(dir, type === 'file' ? 'pilotdeck.yaml' : 'linked');
-        const configPath = type === 'file' ? link : join(link, 'pilotdeck.yaml');
+        const targetPath = join(managedDir, '9gclaw.yaml');
+        const link = join(dir, type === 'file' ? '9gclaw.yaml' : 'linked');
+        const configPath = type === 'file' ? link : join(link, '9gclaw.yaml');
         writeFileSync(targetPath, 'schemaVersion: 1\ncustomEnv:\n  VALUE: first\n', 'utf8');
         if (type === 'file') {
             if (!fileSymlinkOrSkip(context, targetPath, configPath)) return;
         } else symlinkSync(managedDir, link, process.platform === 'win32' ? 'junction' : 'dir');
-        process.env.PILOTDECK_CONFIG_PATH = configPath;
+        process.env.NINEGCLAW_CONFIG_PATH = configPath;
 
-        const loaded = readPilotDeckConfigFile();
-        await writePilotDeckConfig({
+        const loaded = readNineGClawConfigFile();
+        await writeNineGClawConfig({
             schemaVersion: 1,
             customEnv: { VALUE: 'updated' },
         }, {
@@ -306,23 +306,23 @@ describe('readPilotDeckConfigFile fallback behavior', () => {
 describe('optional feature defaults', () => {
     it.each(['', 'cron:\n', 'cron: {}\n', 'cron:\n  timezone: Asia/Shanghai\n'])('enables cron when YAML omits its switch: %j', (raw) => {
         const configPath = useTempConfig(raw);
-        const { config } = readPilotDeckConfigFile();
+        const { config } = readNineGClawConfigFile();
         expect(config.cron.enabled).toBe(true);
         if (raw.includes('timezone')) expect(config.cron.timezone).toBe('Asia/Shanghai');
-        expect(normalizePilotDeckConfig(config)).toEqual(config);
+        expect(normalizeNineGClawConfig(config)).toEqual(config);
         expect(readFileSync(configPath, 'utf8')).toBe(raw);
     });
 
     it('preserves an explicit cron opt-out through a save and read', async () => {
         useTempConfig('schemaVersion: 1\n');
         const cron = { enabled: false, timezone: 'Asia/Shanghai', maxConcurrentRuns: 3 };
-        await writePilotDeckConfig({ ...buildDefaultPilotDeckConfig(), cron });
-        expect(readPilotDeckConfigFile().config.cron).toEqual(cron);
+        await writeNineGClawConfig({ ...buildDefaultNineGClawConfig(), cron });
+        expect(readNineGClawConfigFile().config.cron).toEqual(cron);
     });
 
     it('keeps advanced features and message channels off for a new user', () => {
         useTempConfig(null);
-        expect(readPilotDeckConfigFile().config).toMatchObject({
+        expect(readNineGClawConfigFile().config).toMatchObject({
             memory: { enabled: false },
             router: { enabled: false },
             tools: { webSearch: { enabled: false } },
@@ -343,13 +343,13 @@ describe('optional feature defaults', () => {
             alwaysOn: { projects: { '/test-project': { enabled } } },
             adapters: { feishu: { enabled, appId: 'app' }, weixin: { enabled }, wecom: { enabled, token: 'bot' } },
         };
-        const normalized = normalizePilotDeckConfig(configured);
+        const normalized = normalizeNineGClawConfig(configured);
         expect(normalized).toMatchObject(configured);
-        expect(normalizePilotDeckConfig(normalized)).toEqual(normalized);
+        expect(normalizeNineGClawConfig(normalized)).toEqual(normalized);
     });
 
     it('preserves legacy configured sections without an enabled flag', () => {
-        const normalized = normalizePilotDeckConfig({
+        const normalized = normalizeNineGClawConfig({
             memory: { model: 'test/model' },
             router: { scenarios: { default: 'test/model' } },
             tools: { webSearch: { provider: 'tavily', apiKey: 'search-key' } },
@@ -360,7 +360,7 @@ describe('optional feature defaults', () => {
     });
 });
 
-describe('validatePilotDeckConfig gateway validation', () => {
+describe('validateNineGClawConfig gateway validation', () => {
     it('uses catalog default URLs for memory and runtime settings', () => {
         const config = {
             agent: { model: 'deepseek/model-a' },
@@ -379,8 +379,8 @@ describe('validatePilotDeckConfig gateway validation', () => {
 
         expect(buildMemoryLlmOptions(config).baseUrl).toBe('https://api.deepseek.com/v1');
         expect(buildRuntimeEnv(config)).toMatchObject({
-            PILOTDECK_API_BASE_URL: 'https://api.deepseek.com/v1',
-            PILOTDECK_MEMORY_BASE_URL: 'https://api.deepseek.com/v1',
+            NINEGCLAW_API_BASE_URL: 'https://api.deepseek.com/v1',
+            NINEGCLAW_MEMORY_BASE_URL: 'https://api.deepseek.com/v1',
         });
     });
 
@@ -401,8 +401,8 @@ describe('validatePilotDeckConfig gateway validation', () => {
         };
 
         expect(buildRuntimeEnv(config)).toMatchObject({
-            PILOTDECK_API_KEY: 'sk-from-env',
-            PILOTDECK_MEMORY_API_KEY: 'sk-from-env',
+            NINEGCLAW_API_KEY: 'sk-from-env',
+            NINEGCLAW_MEMORY_API_KEY: 'sk-from-env',
         });
         expect(buildRuntimeEnv(config)).not.toHaveProperty('OPENAI_API_KEY');
         expect(buildMemoryLlmOptions(config).apiKey).toBe('sk-from-env');
@@ -445,10 +445,10 @@ describe('validatePilotDeckConfig gateway validation', () => {
             applyConfigToProcessEnv(openaiConfig);
             expect(process.env.OPENAI_API_KEY).toBe('openai-from-env');
             expect(process.env.ANTHROPIC_API_KEY).toBe('anthropic-from-env');
-            expect(process.env.PILOTDECK_API_KEY).toBe('openai-from-config');
+            expect(process.env.NINEGCLAW_API_KEY).toBe('openai-from-config');
 
             applyConfigToProcessEnv(anthropicConfig);
-            expect(process.env.PILOTDECK_API_KEY).toBe('anthropic-from-env');
+            expect(process.env.NINEGCLAW_API_KEY).toBe('anthropic-from-env');
         } finally {
             for (const key of Object.keys(process.env)) {
                 if (!(key in originalEnv)) delete process.env[key];
@@ -459,7 +459,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
 
     it('accepts an omitted URL for catalog providers', () => {
         for (const providerId of ['openai', 'minimax']) {
-            const validation = validatePilotDeckConfig({
+            const validation = validateNineGClawConfig({
                 agent: { model: `${providerId}/gpt-test` },
                 model: {
                     providers: {
@@ -480,7 +480,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
 
     it('accepts an omitted API key when the catalog environment key is available', () => {
         vi.stubEnv('ANTHROPIC_API_KEY', 'anthropic-from-env');
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'ollama/qwen' },
             model: {
                 providers: {
@@ -504,7 +504,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
 
     it('rejects an omitted API key when the catalog environment key is unavailable', () => {
         vi.stubEnv('ANTHROPIC_API_KEY', '');
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'anthropic/claude' },
             model: {
                 providers: {
@@ -528,7 +528,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
             url: 'https://proxy.example/v1',
             models: { 'gpt-test': {} },
         };
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'openai/gpt-test' },
             model: { providers: { openai: provider } },
         });
@@ -546,7 +546,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
             apiKey: '${PROXY_API_KEY}',
             models: { 'gpt-test': {} },
         };
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'openai/gpt-test' },
             model: { providers: { openai: provider } },
         });
@@ -556,7 +556,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('migrates the legacy interactive spreadsheet mode to built-in preview', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             webui: {
                 officePreview: {
                     service: 'libreoffice',
@@ -573,7 +573,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('migrates the legacy print spreadsheet mode to LibreOffice preview', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             webui: {
                 officePreview: {
                     service: 'libreoffice',
@@ -590,7 +590,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('migrates the legacy disabled Office service to built-in preview', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             webui: {
                 officePreview: {
                     service: 'none',
@@ -603,7 +603,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('rejects unsupported Office preview services', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             webui: {
                 officePreview: {
                     service: 'unexpected',
@@ -618,14 +618,14 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('rejects non-object gateway config', () => {
-        const validation = validatePilotDeckConfig({ gateway: true });
+        const validation = validateNineGClawConfig({ gateway: true });
 
         expect(validation.valid).toBe(false);
         expect(validation.errors).toContain('gateway: gateway config must be an object.');
     });
 
     it('rejects unsupported gateway bindAddress', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             gateway: {
                 bindAddress: '0.0.0.0',
             },
@@ -636,7 +636,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('warns when gateway.tokenPath is configured', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             gateway: {
                 tokenPath: '/tmp/token',
             },
@@ -649,7 +649,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('accepts valid gateway config', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             gateway: {
                 bindAddress: '127.0.0.1',
             },
@@ -660,7 +660,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('accepts Ollama providers without an apiKey', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'ollama/qwen3:0.6b' },
             model: {
                 providers: {
@@ -680,7 +680,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('accepts null model definitions as empty objects', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'ollama/qwen3:0.6b' },
             model: {
                 providers: {
@@ -702,7 +702,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('still treats absent model keys as missing', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'ollama/missing-model' },
             model: {
                 providers: {
@@ -743,7 +743,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('warns instead of failing when agent.subagents.default references a missing provider', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: {
                 model: 'ollama/qwen3:0.6b',
                 subagents: { default: 'missing/qwen3:0.6b' },
@@ -768,7 +768,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('warns instead of failing when agent.subagents.default references a missing model', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: {
                 model: 'ollama/qwen3:0.6b',
                 subagents: { default: 'ollama/missing-model' },
@@ -793,7 +793,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('rejects agent.model when the configured model is missing', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: 'ollama/missing-model' },
             model: {
                 providers: {
@@ -835,7 +835,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 
     it('rejects incomplete providers even when they are not the active agent model', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             agent: { model: '_placeholder/_placeholder' },
             model: {
                 providers: {
@@ -879,7 +879,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
         };
         useTempConfig(JSON.stringify(config));
 
-        const result = await writePilotDeckConfig(config);
+        const result = await writeNineGClawConfig(config);
 
         expect(result.config.agent.model).toBe('_placeholder/_placeholder');
         expect(result.config.model.providers).toHaveProperty('_placeholder');
@@ -907,7 +907,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
         };
         useTempConfig(JSON.stringify(config));
 
-        const result = await writePilotDeckConfig(config);
+        const result = await writeNineGClawConfig(config);
 
         expect(result.config.model.providers).toHaveProperty('_placeholder');
         expect(result.config.model.providers).toHaveProperty('ollama');
@@ -934,7 +934,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
                 },
             },
         };
-        const result = await writePilotDeckConfig(previousConfig, { previousConfig });
+        const result = await writeNineGClawConfig(previousConfig, { previousConfig });
 
         expect(result.config.model.providers).toHaveProperty('ollama');
         expect(result.config.model.providers).not.toHaveProperty('provider1');
@@ -943,7 +943,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     it('removes bootstrap providers and rewrites their references after selecting a real model', async () => {
         useTempConfig(null);
 
-        const result = await writePilotDeckConfig({
+        const result = await writeNineGClawConfig({
             agent: {
                 model: 'ollama/qwen3:0.6b',
                 subagents: { default: '_placeholder/_placeholder' },
@@ -1010,7 +1010,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     it('resets a placeholder subagent default when writing config', async () => {
         const configPath = useTempConfig(null);
 
-        const result = await writePilotDeckConfig({
+        const result = await writeNineGClawConfig({
             agent: {
                 model: 'ollama/qwen3:0.6b',
                 subagents: { default: '_placeholder/_placeholder' },
@@ -1042,7 +1042,7 @@ describe('validatePilotDeckConfig gateway validation', () => {
     });
 });
 
-describe('validatePilotDeckConfig router settings', () => {
+describe('validateNineGClawConfig router settings', () => {
     const base = {
         agent: { model: 'openai/gpt-test' },
         model: {
@@ -1058,7 +1058,7 @@ describe('validatePilotDeckConfig router settings', () => {
     };
 
     function withRouter(router) {
-        return validatePilotDeckConfig({ ...base, router });
+        return validateNineGClawConfig({ ...base, router });
     }
 
     it('accepts pricing units and keeps a missing unit backward compatible', () => {
@@ -1153,7 +1153,7 @@ describe('validatePilotDeckConfig router settings', () => {
     });
 });
 
-describe('validatePilotDeckConfig web search settings', () => {
+describe('validateNineGClawConfig web search settings', () => {
     const base = {
         agent: { model: 'openai/gpt-test' },
         model: {
@@ -1169,7 +1169,7 @@ describe('validatePilotDeckConfig web search settings', () => {
     };
 
     it('rejects an unknown provider and non-HTTP endpoint through common config validation', () => {
-        const validation = validatePilotDeckConfig({
+        const validation = validateNineGClawConfig({
             ...base,
             tools: { webSearch: { provider: 'zai', endpoint: 'ftp://example.test/search' } },
         });
@@ -1182,7 +1182,7 @@ describe('validatePilotDeckConfig web search settings', () => {
 
     it('accepts all supported built-in search providers', () => {
         for (const provider of ['glm', 'tavily', 'custom', 'serper', 'brave']) {
-            const validation = validatePilotDeckConfig({
+            const validation = validateNineGClawConfig({
                 ...base,
                 tools: { webSearch: { provider, ...(provider === 'custom' ? { endpoint: 'https://search.example.test' } : {}) } },
             });
@@ -1200,12 +1200,12 @@ describe('model thinking settings', () => {
     });
     it('accepts the three states and manually configured effort subsets', () => {
         for (const state of ['default', 'enabled', 'disabled']) {
-            expect(validatePilotDeckConfig(config({ state, efforts: ['low', 'medium', 'xhigh'], format: 'qwen-local' })).valid).toBe(true);
+            expect(validateNineGClawConfig(config({ state, efforts: ['low', 'medium', 'xhigh'], format: 'qwen-local' })).valid).toBe(true);
         }
     });
     it('rejects invalid effort and incompatible formats before saving', () => {
         for (const thinking of [{state:'both'}, {efforts:['ultra']}, {format:'anthropic'}]) {
-            const result = validatePilotDeckConfig(config(thinking));
+            const result = validateNineGClawConfig(config(thinking));
             expect(result.valid).toBe(false);
             expect(result.errors.join(' ')).toContain('thinking');
         }

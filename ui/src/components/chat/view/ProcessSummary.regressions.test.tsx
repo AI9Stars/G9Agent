@@ -147,7 +147,7 @@ it('counts every fetch separately from searches and retains mixed generic tool c
 });
 
 it.each(['completed', 'aborted_streaming', 'aborted_tools', 'model_error'])('uses execution bounds across %s and history refresh', async finishReason => {
-  const normalized = { sessionId: 's', provider: 'pilotdeck' as const, timestamp: start, runId: 'r' };
+  const normalized = { sessionId: 's', provider: '9gclaw' as const, timestamp: start, runId: 'r' };
   const timing = { startedAt: start, completedAt: end, finishReason };
   const rows = [
     { ...normalized, id: 'u', kind: 'text' as const, role: 'user' as const, content: 'Inspect' },

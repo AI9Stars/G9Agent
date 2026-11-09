@@ -1,8 +1,8 @@
-# PilotDeck releases and desktop builds
+# 9GClaw releases and desktop builds
 
-PilotDeck keeps Web and desktop sources on `main`. The desktop application is a
+9GClaw keeps Web and desktop sources on `main`. The desktop application is a
 thin Electron shell around the same gateway and Web UI; desktop-specific runtime
-behavior is enabled only when Electron sets `PILOTDECK_DESKTOP=1`.
+behavior is enabled only when Electron sets `NINEGCLAW_DESKTOP=1`.
 
 ## Cron upgrade compatibility
 
@@ -41,12 +41,12 @@ to run `uv pip compile scripts/python/requirements.in --python <bootstrap-python
 --generate-hashes --no-header --no-annotate --output-file
 scripts/python/requirements-<platform>-<arch>.txt --index-url https://pypi.org/simple`
 for each target in `runtime.json`. Run the preparation script again without `--bootstrap`.
-`PILOTDECK_PYTHON_ARCHIVE` and `PILOTDECK_UV_ARCHIVE` accept local archives, and
-`PILOTDECK_PYTHON_BASE_URL` / `PILOTDECK_UV_BASE_URL` support mirrors; checksum checks
-still apply. `PILOTDECK_PYTHON_DESTINATION` selects an isolated build output.
+`NINEGCLAW_PYTHON_ARCHIVE` and `NINEGCLAW_UV_ARCHIVE` accept local archives, and
+`NINEGCLAW_PYTHON_BASE_URL` / `NINEGCLAW_UV_BASE_URL` support mirrors; checksum checks
+still apply. `NINEGCLAW_PYTHON_DESTINATION` selects an isolated build output.
 
 The installed base is immutable. A version-and-location keyed venv under
-`PILOT_HOME/runtimes/python` provides `python`, `python3`, pip and writable additions,
+`NINEGCLAW_HOME/runtimes/python` provides `python`, `python3`, pip and writable additions,
 with bundled uv/uvx on PATH. `python -m pip install` and `uv pip install` target that
 venv; uncached additions require network access. Existing explicitly activated venvs
 and explicit MCP executables/environment selections take precedence. Disabling
@@ -56,13 +56,13 @@ sandbox. An application upgrade creates a new venv; user additions are retained 
 the previous directory but are not copied automatically between Python payloads.
 
 Browser clients use the same Gateway capability and setting. Standalone Web/CLI
-deployments can prepare a matching payload and set `PILOTDECK_PYTHON_ROOT` to its
+deployments can prepare a matching payload and set `NINEGCLAW_PYTHON_ROOT` to its
 absolute directory on the execution host. Without that payload they report
 unavailable and preserve the host's existing tools; browser-side Python is not used.
 External programs such as LibreOffice and Poppler remain separate dependencies.
 
 Run `pnpm run test:python` after preparing a native payload. Override
-`PILOTDECK_PYTHON_TEST_ROOT` to test an installed/copied payload; native checks are
+`NINEGCLAW_PYTHON_TEST_ROOT` to test an installed/copied payload; native checks are
 skipped only when no bundle is available in an ordinary source checkout. Desktop CI
 sets that path to the actual packaged payload on all six targets and additionally
 checks DEB and RPM installations. Tests cover offline documents/data/plots, writable
@@ -133,13 +133,13 @@ files. Changes limited to `docs/` or root README files skip the release unless
 Only the new `vYYYY.MM.DD[-rN]` tags are considered; historical `desktop-v` tags
 are not used as a baseline, so the first unified release builds automatically.
 
-Build scripts use `PILOTDECK_RELEASE_DATE`, `PILOTDECK_RELEASE_REVISION`,
-`PILOTDECK_RELEASE_VERSION`, `PILOTDECK_RELEASE_TAG`, and
-`PILOTDECK_RELEASE_BUILD_TIME` for release metadata. Desktop runtime environment
+Build scripts use `NINEGCLAW_RELEASE_DATE`, `NINEGCLAW_RELEASE_REVISION`,
+`NINEGCLAW_RELEASE_VERSION`, `NINEGCLAW_RELEASE_TAG`, and
+`NINEGCLAW_RELEASE_BUILD_TIME` for release metadata. Desktop runtime environment
 variables remain separate from these build-time inputs.
 
 Publishing and packaged repository metadata use the repository running the
-workflow. Upstream builds publish to `OpenBMB/PilotDeck`; fork builds publish to
+workflow. Upstream builds publish to `AI9Stars/9GClaw`; fork builds publish to
 their own repository.
 
 Desktop updates read the Latest release manifest directly. The Web About page
@@ -159,10 +159,10 @@ mirror does not hide an available update. An unreachable source may still contai
 a newer version, which a later check can discover. If neither route succeeds,
 both receive one more attempt before the check fails.
 
-OBS uses the website's `PilotDeck/latest.json` pointer, then the immutable
-`PilotDeck/<tag>/release.json`; pointer URLs are never trusted as download hosts.
+OBS uses the website's `9GClaw/latest.json` pointer, then the immutable
+`9GClaw/<tag>/release.json`; pointer URLs are never trusted as download hosts.
 GitHub uses the release explicitly marked **Latest**. Fork builds
-and `PILOTDECK_UPDATE_REPOSITORY` overrides never query the official OBS bucket.
+and `NINEGCLAW_UPDATE_REPOSITORY` overrides never query the official OBS bucket.
 The release workflow marks each completed release Latest. The client validates
 the manifest's tag, numeric version, repository, source commit format, asset
 names, sizes and checksums. That version is compared numerically
@@ -244,12 +244,12 @@ where clients that disabled differential downloads did not retain `update.zip`.
 Real transfer savings depend on the changed artifacts and must be measured.
 
 To disable differential use for a release, set the repository Actions variable
-`PILOTDECK_DIFFERENTIAL_UPDATES=0` before publication (the same environment variable
+`NINEGCLAW_DIFFERENTIAL_UPDATES=0` before publication (the same environment variable
 works for local manifest generation). Maps remain required so disabling the
 optimization cannot hide an incomplete build. Publish a new revision to change
 this policy; never mutate an immutable release or its checksums. An installed
 client can immediately use the full path with
-`PILOTDECK_DISABLE_DIFFERENTIAL_UPDATES=1` in its launch environment. These controls
+`NINEGCLAW_DISABLE_DIFFERENTIAL_UPDATES=1` in its launch environment. These controls
 do not downgrade installed applications or roll back user data. Native installer
 file rollback and runtime recovery retain their existing platform-specific limits.
 
@@ -274,7 +274,7 @@ a failed stop aborts installation and retains process records for recovery.
 
 Release checks, manifests and payload downloads share the
 `electron-updater` network session. It reads the user's `proxy.url` and
-`proxy.noProxy`; proxy environment variables (`PILOTDECK_PROXY`, `https_proxy`,
+`proxy.noProxy`; proxy environment variables (`NINEGCLAW_PROXY`, `https_proxy`,
 `HTTPS_PROXY`, `http_proxy`, `HTTP_PROXY`, in that order) take precedence.
 Loopback traffic always bypasses the proxy for the local Mac updater. Proxy
 settings refresh before checking and remain fixed during an active update.
@@ -402,19 +402,19 @@ signature audit checks the actual release payloads independently of build tests.
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm --filter pilotdeck-desktop test
+pnpm --filter 9gclaw-desktop test
 # Run the command matching the Mac host architecture:
-pnpm --filter pilotdeck-desktop dist:mac:arm64
-pnpm --filter pilotdeck-desktop dist:mac:x64
+pnpm --filter 9gclaw-desktop dist:mac:arm64
+pnpm --filter 9gclaw-desktop dist:mac:x64
 # Run the following on Windows:
-pnpm --filter pilotdeck-desktop dist:win
+pnpm --filter 9gclaw-desktop dist:win
 # On native Ubuntu 22.04 hosts with matching architectures:
-pnpm --filter pilotdeck-desktop dist:linux:x64
-pnpm --filter pilotdeck-desktop dist:linux:arm64
+pnpm --filter 9gclaw-desktop dist:linux:x64
+pnpm --filter 9gclaw-desktop dist:linux:arm64
 ```
 
 Local macOS builds can use ad-hoc signing. Set
-`PILOTDECK_DESKTOP_REQUIRE_SIGNING=1` to enforce production signing locally.
+`NINEGCLAW_DESKTOP_REQUIRE_SIGNING=1` to enforce production signing locally.
 
 When a root or UI dependency used by the desktop runtime changes, update
 `apps/desktop/runtime/package.json`, then refresh its dedicated lockfile with:
@@ -440,10 +440,10 @@ After compiling the desktop main process, run the real Electron networking
 check with the installed development Electron binary:
 
 ```sh
-pnpm --filter pilotdeck-desktop compile
-pnpm --filter pilotdeck-desktop exec electron scripts/verify-update-network.cjs
-pnpm --filter pilotdeck-desktop exec electron scripts/verify-update-download.cjs
-pnpm --filter pilotdeck-desktop exec electron scripts/verify-differential-update.cjs
+pnpm --filter 9gclaw-desktop compile
+pnpm --filter 9gclaw-desktop exec electron scripts/verify-update-network.cjs
+pnpm --filter 9gclaw-desktop exec electron scripts/verify-update-download.cjs
+pnpm --filter 9gclaw-desktop exec electron scripts/verify-differential-update.cjs
 node apps/desktop/scripts/verify-installer.cjs
 ```
 
@@ -537,7 +537,7 @@ RPM under X11 and Wayland in the same job. Both installers and feeds are release
 ## Windows signing
 
 Windows packaging loads `electron-builder.config.cjs`. On a configured Windows
-machine, `pack` and every `dist:win*` command automatically sign the PilotDeck
+machine, `pack` and every `dist:win*` command automatically sign the 9GClaw
 application, installer payload helper, NSIS uninstaller, and final installer or
 portable EXE. Bundled third-party executables retain their original signatures.
 Every signature uses SHA-256 and an RFC3161 timestamp, then passes SignTool
@@ -547,7 +547,7 @@ Signing errors stop packaging. The updater receives the expected publisher name.
 For local Certum SimplySign signing, log in to SimplySign Desktop under the same
 Windows account that runs the build. DSignTool is an optional manual UI; automated
 builds call Microsoft's Windows SDK SignTool directly. No PFX export is needed.
-Create `%LOCALAPPDATA%\PilotDeck\build-signing.json` with public metadata only:
+Create `%LOCALAPPDATA%\9GClaw\build-signing.json` with public metadata only:
 
 ```json
 {
@@ -559,9 +559,9 @@ Create `%LOCALAPPDATA%\PilotDeck\build-signing.json` with public metadata only:
 ```
 
 Do not put a PIN, OTP seed or private key in this file or the repository.
-`PILOTDECK_WINDOWS_SIGNING_CONFIG` selects another local config file.
-`PILOTDECK_WINDOWS_CERT_SHA1`, `PILOTDECK_WINDOWS_PUBLISHER` and `SIGNTOOL_PATH`
-override individual values. `PILOTDECK_WINDOWS_SIGNING=required` rejects missing
+`NINEGCLAW_WINDOWS_SIGNING_CONFIG` selects another local config file.
+`NINEGCLAW_WINDOWS_CERT_SHA1`, `NINEGCLAW_WINDOWS_PUBLISHER` and `SIGNTOOL_PATH`
+override individual values. `NINEGCLAW_WINDOWS_SIGNING=required` rejects missing
 configuration; `off` explicitly produces an unsigned development build. Without
 configuration, `auto` keeps the existing unsigned build behavior. A present but
 invalid config fails rather than silently producing unsigned output. These
@@ -569,7 +569,7 @@ settings do not change macOS/Linux packaging. SimplySign may require a fresh log
 before a later build; signing does not make its desktop session permanent.
 
 ```powershell
-pnpm --filter pilotdeck-desktop run dist:win:x64
+pnpm --filter 9gclaw-desktop run dist:win:x64
 node apps/desktop/scripts/windows-signing.cjs verify PATH_TO_SETUP_EXE
 ```
 
@@ -613,7 +613,7 @@ An activation QR backup must contain the actual TOTP seed/`otpauth://` URI for
 this client. An activation URL alone is not sufficient; do not upload the QR image
 to an online decoder. Confirm the backup format locally before configuring CI.
 
-Only trusted `main` runs in `OpenBMB/PilotDeck` may request signing. Dependencies,
+Only trusted `main` runs in `AI9Stars/9GClaw` may request signing. Dependencies,
 tests and runtime compilation run before signing secrets are injected. The two
 architecture jobs are serialized when signing to avoid consuming one TOTP twice.
 Credentials are scoped to the packaging step, and its temporary session cache is

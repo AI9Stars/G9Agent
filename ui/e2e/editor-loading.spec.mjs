@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { installEditorFixture, initialText } from './support/editor-loading-fixture.mjs';
 
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dist = path.resolve(process.env.PILOTDECK_EDITOR_BUILD_DIR || path.join(uiRoot, 'dist'));
-const expectLazy = process.env.PILOTDECK_EDITOR_EXPECT_LAZY !== '0';
+const dist = path.resolve(process.env.NINEGCLAW_EDITOR_BUILD_DIR || path.join(uiRoot, 'dist'));
+const expectLazy = process.env.NINEGCLAW_EDITOR_EXPECT_LAZY !== '0';
 const editorSource = 'src/components/code-editor/view/CodeEditor.tsx';
 const pdfSource = 'src/components/code-editor/view/subcomponents/PdfDocumentPreview.tsx';
 

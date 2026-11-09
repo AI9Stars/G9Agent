@@ -9,11 +9,11 @@ import { PluginRuntime } from "../../../src/extension/plugins/runtime/PluginRunt
 import { parsePluginMcpServers } from "../../../src/mcp/runtime/parsePluginMcpServers.js";
 import {
   patchProjectScopedMcpSpec,
-  PILOTDECK_FUNASR_INSTALL_COMMAND_MARKER,
-  PILOTDECK_FUNASR_MCP_ENTRYPOINT_MARKER,
-  PILOTDECK_FUNASR_RUNTIME_ROOT_MARKER,
-  PILOTDECK_NODE_EXECUTABLE_MARKER,
-  PILOTDECK_PROJECT_ROOT_MARKER,
+  NINEGCLAW_FUNASR_INSTALL_COMMAND_MARKER,
+  NINEGCLAW_FUNASR_MCP_ENTRYPOINT_MARKER,
+  NINEGCLAW_FUNASR_RUNTIME_ROOT_MARKER,
+  NINEGCLAW_NODE_EXECUTABLE_MARKER,
+  NINEGCLAW_PROJECT_ROOT_MARKER,
 } from "../../../src/mcp/runtime/projectMcpSpec.js";
 
 test("built-in FunASR plugin exposes a local per-session Node MCP", () => {
@@ -27,30 +27,30 @@ test("built-in FunASR plugin exposes a local per-session Node MCP", () => {
   assert.equal(servers[0]?.id, "funasr");
   assert.equal(servers[0]?.transport, "stdio");
   assert.equal(servers[0]?.perSession, true);
-  assert.equal(servers[0]?.command, PILOTDECK_NODE_EXECUTABLE_MARKER);
+  assert.equal(servers[0]?.command, NINEGCLAW_NODE_EXECUTABLE_MARKER);
   assert.equal(servers[0]?.callTimeoutMs, 300_000);
-  assert.ok(servers[0]?.args?.includes(PILOTDECK_FUNASR_MCP_ENTRYPOINT_MARKER));
-  assert.ok(servers[0]?.args?.includes(PILOTDECK_PROJECT_ROOT_MARKER));
-  assert.ok(servers[0]?.args?.includes(PILOTDECK_FUNASR_RUNTIME_ROOT_MARKER));
-  assert.ok(servers[0]?.args?.includes(PILOTDECK_FUNASR_INSTALL_COMMAND_MARKER));
+  assert.ok(servers[0]?.args?.includes(NINEGCLAW_FUNASR_MCP_ENTRYPOINT_MARKER));
+  assert.ok(servers[0]?.args?.includes(NINEGCLAW_PROJECT_ROOT_MARKER));
+  assert.ok(servers[0]?.args?.includes(NINEGCLAW_FUNASR_RUNTIME_ROOT_MARKER));
+  assert.ok(servers[0]?.args?.includes(NINEGCLAW_FUNASR_INSTALL_COMMAND_MARKER));
 });
 
 test("FunASR MCP receives Node, project-root, runtime-root, and entrypoint markers", () => {
-  const projectRoot = join(tmpdir(), "pilotdeck-project");
-  const pilotHome = join(tmpdir(), "pilotdeck-home");
+  const projectRoot = join(tmpdir(), "9gclaw-project");
+  const pilotHome = join(tmpdir(), "9gclaw-home");
   const patched = patchProjectScopedMcpSpec(
     {
       id: "funasr",
       transport: "stdio",
-      command: PILOTDECK_NODE_EXECUTABLE_MARKER,
+      command: NINEGCLAW_NODE_EXECUTABLE_MARKER,
       args: [
-        PILOTDECK_FUNASR_MCP_ENTRYPOINT_MARKER,
+        NINEGCLAW_FUNASR_MCP_ENTRYPOINT_MARKER,
         "--project-root",
-        PILOTDECK_PROJECT_ROOT_MARKER,
+        NINEGCLAW_PROJECT_ROOT_MARKER,
         "--runtime-root",
-        PILOTDECK_FUNASR_RUNTIME_ROOT_MARKER,
+        NINEGCLAW_FUNASR_RUNTIME_ROOT_MARKER,
         "--install-command",
-        PILOTDECK_FUNASR_INSTALL_COMMAND_MARKER,
+        NINEGCLAW_FUNASR_INSTALL_COMMAND_MARKER,
       ],
     },
     projectRoot,
@@ -69,7 +69,7 @@ test("FunASR MCP receives Node, project-root, runtime-root, and entrypoint marke
 });
 
 test("FunASR can be disabled through builtinPluginsEnabled", async () => {
-  const root = await mkdtemp(join(tmpdir(), "pilotdeck-funasr-plugin-"));
+  const root = await mkdtemp(join(tmpdir(), "9gclaw-funasr-plugin-"));
   try {
     const runtime = new PluginRuntime({
       projectRoot: root,

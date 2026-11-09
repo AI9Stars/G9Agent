@@ -44,7 +44,7 @@ jobs:
   sync:
     needs: tests
     if: >-
-      github.repository == 'OpenBMB/PilotDeck' &&
+      github.repository == 'AI9Stars/9GClaw' &&
       github.ref == 'refs/heads/main' &&
       (inputs.release_tag != '' || github.event_name == 'workflow_dispatch' ||
        (github.event_name == 'schedule' && vars.OBS_SYNC_ENABLED == 'true'))
@@ -121,5 +121,5 @@ jobs:
           release = json.loads(Path('resolved-release.json').read_text()) if Path('resolved-release.json').exists() else {}
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
               out.write(f"Result: {os.environ['RESULT']}\n\nRelease: {release.get('tag_name', 'unresolved')}\n\n")
-              out.write(f"Assets: {len(release.get('assets', []))}\n\nDestination: obs://n00069-minicpm-5-0/PilotDeck/{release.get('tag_name', 'unresolved')}/\n")
+              out.write(f"Assets: {len(release.get('assets', []))}\n\nDestination: obs://n00069-minicpm-5-0/9GClaw/{release.get('tag_name', 'unresolved')}/\n")
           PY

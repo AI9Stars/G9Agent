@@ -6,7 +6,7 @@ import { InProcessGateway } from "../../src/gateway/client/InProcessGateway.js";
 import { RemoteGateway } from "../../src/gateway/client/RemoteGateway.js";
 import type { GatewayWsClient } from "../../src/gateway/client/GatewayWsClient.js";
 import type { Gateway } from "../../src/gateway/protocol/types.js";
-import { PILOTDECK_GATEWAY_PROTOCOL_VERSION } from "../../src/gateway/protocol/version.js";
+import { NINEGCLAW_GATEWAY_PROTOCOL_VERSION } from "../../src/gateway/protocol/version.js";
 import { GatewayWsConnection } from "../../src/gateway/server/GatewayWsConnection.js";
 import type { TextWebSocketConnection } from "../../src/gateway/server/websocket.js";
 import type { SessionRouter } from "../../src/gateway/SessionRouter.js";
@@ -60,7 +60,7 @@ test('Python status is routed through remote and authenticated WebSocket Gateway
       describeServer: async () => ({ mode: 'in_process' }), getPythonRuntimeStatus: async () => expected,
     } as unknown as Gateway,
   });
-  socket.dispatch({ type: 'hello', protocolVersion: PILOTDECK_GATEWAY_PROTOCOL_VERSION, clientName: 'test', clientVersion: 'test', token: 'fixture-token' });
+  socket.dispatch({ type: 'hello', protocolVersion: NINEGCLAW_GATEWAY_PROTOCOL_VERSION, clientName: 'test', clientVersion: 'test', token: 'fixture-token' });
   await flushAsyncWork();
   socket.dispatch({ type: 'request', id: 'python', method: 'python_runtime_status', params: {} });
   await flushAsyncWork();
@@ -77,7 +77,7 @@ test('WebSocket final completion retains execution timing and run identity', asy
       submitTurn: async function* () { yield complete; },
     } as unknown as Gateway,
   });
-  socket.dispatch({ type: 'hello', protocolVersion: PILOTDECK_GATEWAY_PROTOCOL_VERSION, clientName: 'test', clientVersion: 'test', token: 'secret' });
+  socket.dispatch({ type: 'hello', protocolVersion: NINEGCLAW_GATEWAY_PROTOCOL_VERSION, clientName: 'test', clientVersion: 'test', token: 'secret' });
   await flushAsyncWork();
   socket.dispatch({ type: 'request', id: 'timed-submit', method: 'submit_turn', params: { sessionKey: 'web:timed' } });
   await flushAsyncWork();
@@ -153,7 +153,7 @@ test("status-only active turn snapshots preserve includeEvents through remote an
   });
   socket.dispatch({
     type: "hello",
-    protocolVersion: PILOTDECK_GATEWAY_PROTOCOL_VERSION,
+    protocolVersion: NINEGCLAW_GATEWAY_PROTOCOL_VERSION,
     clientName: "test",
     clientVersion: "test",
     token: "secret",

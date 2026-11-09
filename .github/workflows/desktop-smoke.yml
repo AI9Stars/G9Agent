@@ -78,7 +78,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install Web and Gateway dependencies
-        run: pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui
+        run: pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui
       - name: Build Gateway and regression tests
         run: pnpm run build
       - name: Test MCP transport, observations and managed computer use
@@ -101,7 +101,7 @@ jobs:
           server/utils/generalWorkspace.test.js
           server/utils/generalWorkspaceMigration.test.js
           server/projects.test.js
-          server/pilotdeck-bridge.sending.test.js
+          server/9gclaw-bridge.sending.test.js
       - name: Test review UI and Windows path matching
         run: >-
           pnpm --dir ui exec vitest run
@@ -147,10 +147,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Compile desktop shell
-        run: pnpm --filter pilotdeck-desktop run compile
+        run: pnpm --filter 9gclaw-desktop run compile
 
       - name: Test desktop packaging helpers
-        run: pnpm --filter pilotdeck-desktop run test
+        run: pnpm --filter 9gclaw-desktop run test
 
       - name: Test shared runtime diagnostics and inline script data
         run: node --test packages/config/tests/*.test.cjs scripts/lib/*.test.mjs

@@ -55,7 +55,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PILOTDECK_UPDATE_REPOSITORY: ${{ github.repository }}
+  NINEGCLAW_UPDATE_REPOSITORY: ${{ github.repository }}
 
 jobs:
   macos:
@@ -75,11 +75,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     env:
-      PILOTDECK_RELEASE_DATE: ${{ inputs.release_date }}
-      PILOTDECK_RELEASE_REVISION: ${{ inputs.revision }}
-      PILOTDECK_COMMIT_SHA: ${{ github.sha }}
-      PILOTDECK_DESKTOP_NODE_ARCH: ${{ matrix.arch }}
-      PILOTDECK_DESKTOP_REQUIRE_SIGNING: ${{ inputs.require_macos_signing && '1' || '0' }}
+      NINEGCLAW_RELEASE_DATE: ${{ inputs.release_date }}
+      NINEGCLAW_RELEASE_REVISION: ${{ inputs.revision }}
+      NINEGCLAW_COMMIT_SHA: ${{ github.sha }}
+      NINEGCLAW_DESKTOP_NODE_ARCH: ${{ matrix.arch }}
+      NINEGCLAW_DESKTOP_REQUIRE_SIGNING: ${{ inputs.require_macos_signing && '1' || '0' }}
       CSC_FOR_PULL_REQUEST: "true"
       CSC_IDENTITY_AUTO_DISCOVERY: ${{ inputs.require_macos_signing && 'true' || 'false' }}
       APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -111,7 +111,7 @@ jobs:
       - name: Prepare Electron before native lifecycle checks
         run: |
           for attempt in 1 2 3; do
-            if pnpm --filter pilotdeck-desktop exec node node_modules/electron/install.js; then
+            if pnpm --filter 9gclaw-desktop exec node node_modules/electron/install.js; then
               exit 0
             fi
             if [ "$attempt" -eq 3 ]; then exit 1; fi
@@ -139,8 +139,8 @@ jobs:
       - name: Verify differential transport and ZIP cache recovery
         timeout-minutes: 4
         run: |
-          pnpm --filter pilotdeck-desktop run compile
-          pnpm --filter pilotdeck-desktop exec electron scripts/verify-differential-update.cjs
+          pnpm --filter 9gclaw-desktop run compile
+          pnpm --filter 9gclaw-desktop exec electron scripts/verify-differential-update.cjs
 
       - name: Set desktop release metadata
         run: node apps/desktop/scripts/set-ci-version.mjs
@@ -150,7 +150,7 @@ jobs:
         shell: bash
         env:
           CERTIFICATE_PATH: ${{ runner.temp }}/developer-id-application.p12
-          KEYCHAIN_PATH: ${{ runner.temp }}/pilotdeck-signing.keychain-db
+          KEYCHAIN_PATH: ${{ runner.temp }}/9gclaw-signing.keychain-db
           CERTIFICATE_BASE64: ${{ secrets.MACOS_DEVELOPER_ID_APPLICATION_P12_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.MACOS_DEVELOPER_ID_APPLICATION_PASSWORD }}
           KEYCHAIN_PASSWORD_SECRET: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
@@ -169,7 +169,7 @@ jobs:
           from pathlib import Path
           Path(os.environ["CERTIFICATE_PATH"]).write_bytes(base64.b64decode(os.environ["CERTIFICATE_BASE64"]))
           PY
-          keychain_password="${KEYCHAIN_PASSWORD_SECRET:-pilotdeck-ci-keychain}"
+          keychain_password="${KEYCHAIN_PASSWORD_SECRET:-9gclaw-ci-keychain}"
           security create-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
@@ -198,10 +198,10 @@ jobs:
           # Scope the larger budget to packaging, including its bundled Node child.
           NODE_OPTIONS: --max-old-space-size=4096
         run: |
-          if [ "$PILOTDECK_DESKTOP_REQUIRE_SIGNING" = 1 ]; then
-            pnpm --filter pilotdeck-desktop run dist:mac:${{ matrix.arch }}
+          if [ "$NINEGCLAW_DESKTOP_REQUIRE_SIGNING" = 1 ]; then
+            pnpm --filter 9gclaw-desktop run dist:mac:${{ matrix.arch }}
           else
-            pnpm --filter pilotdeck-desktop run dist:mac:${{ matrix.arch }} --dir --config.mac.identity=-
+            pnpm --filter 9gclaw-desktop run dist:mac:${{ matrix.arch }} --dir --config.mac.identity=-
           fi
 
       - name: Verify macOS artifact
@@ -210,36 +210,36 @@ jobs:
           MACOS_ARCH: ${{ matrix.arch }}
           MACH_ARCH: ${{ matrix.binary_arch }}
         run: |
-          app_path="$(find apps/desktop/dist-electron -mindepth 2 -maxdepth 2 -type d -name 'PilotDeck.app' -print -quit)"
+          app_path="$(find apps/desktop/dist-electron -mindepth 2 -maxdepth 2 -type d -name '9GClaw.app' -print -quit)"
           dmg_path="$(find apps/desktop/dist-electron -maxdepth 1 -name "*-mac-${MACOS_ARCH}.dmg" -print -quit)"
           test -n "$app_path"
-          if [ "$PILOTDECK_DESKTOP_REQUIRE_SIGNING" = 1 ]; then test -n "$dmg_path"; fi
-          test "$(lipo -archs "$app_path/Contents/MacOS/PilotDeck")" = "$MACH_ARCH"
+          if [ "$NINEGCLAW_DESKTOP_REQUIRE_SIGNING" = 1 ]; then test -n "$dmg_path"; fi
+          test "$(lipo -archs "$app_path/Contents/MacOS/9GClaw")" = "$MACH_ARCH"
           test "$(lipo -archs "$app_path/Contents/Resources/node/bin/node")" = "$MACH_ARCH"
           "$app_path/Contents/Resources/node/bin/node" apps/desktop/scripts/verify-cua-driver.cjs "$app_path/Contents/Resources" "$MACOS_ARCH"
-          codesign --verify --strict "$app_path/Contents/Resources/runtime/resources/cua-driver/PilotDeck Computer Use.app"
+          codesign --verify --strict "$app_path/Contents/Resources/runtime/resources/cua-driver/9GClaw Computer Use.app"
           "$app_path/Contents/Resources/node/bin/node" apps/desktop/scripts/verify-mac-permission-probe.mjs "$app_path/Contents/Resources/runtime/resources/cua-driver"
           native_path="$(find "$app_path/Contents/Resources/runtime/node_modules/better-sqlite3" -name '*.node' -print -quit)"
           test -n "$native_path"
           test "$(lipo -archs "$native_path")" = "$MACH_ARCH"
           codesign --verify --deep --strict --verbose=2 "$app_path"
-          if [ "$PILOTDECK_DESKTOP_REQUIRE_SIGNING" = 1 ]; then hdiutil verify "$dmg_path"; fi
+          if [ "$NINEGCLAW_DESKTOP_REQUIRE_SIGNING" = 1 ]; then hdiutil verify "$dmg_path"; fi
           updater_args=()
-          if [ "$PILOTDECK_DESKTOP_REQUIRE_SIGNING" != 1 ]; then updater_args+=(--directory-only); fi
-          ELECTRON_RUN_AS_NODE=1 "$app_path/Contents/MacOS/PilotDeck" apps/desktop/scripts/verify-updater.cjs "$app_path/Contents/Resources/app.asar" "${updater_args[@]}"
+          if [ "$NINEGCLAW_DESKTOP_REQUIRE_SIGNING" != 1 ]; then updater_args+=(--directory-only); fi
+          ELECTRON_RUN_AS_NODE=1 "$app_path/Contents/MacOS/9GClaw" apps/desktop/scripts/verify-updater.cjs "$app_path/Contents/Resources/app.asar" "${updater_args[@]}"
 
       - name: Verify packaged Python and Gateway environment lifecycle
         shell: bash
         run: |
-          app_path="$(find apps/desktop/dist-electron -mindepth 2 -maxdepth 2 -type d -name 'PilotDeck.app' -print -quit)"
+          app_path="$(find apps/desktop/dist-electron -mindepth 2 -maxdepth 2 -type d -name '9GClaw.app' -print -quit)"
           test -n "$app_path"
-          PILOTDECK_PYTHON_TEST_ROOT="$app_path/Contents/Resources/python-runtime" pnpm run test:python
+          NINEGCLAW_PYTHON_TEST_ROOT="$app_path/Contents/Resources/python-runtime" pnpm run test:python
 
       - name: Verify production macOS identity and notarization
         if: ${{ inputs.require_macos_signing }}
         shell: bash
         run: |
-          app_path="$(find apps/desktop/dist-electron -mindepth 2 -maxdepth 2 -type d -name 'PilotDeck.app' -print -quit)"
+          app_path="$(find apps/desktop/dist-electron -mindepth 2 -maxdepth 2 -type d -name '9GClaw.app' -print -quit)"
           test -n "$app_path"
           codesign -dv --verbose=4 "$app_path" 2>&1 | grep -q 'Authority=Developer ID Application:'
           xcrun stapler validate "$app_path"
@@ -249,14 +249,14 @@ jobs:
         if: ${{ inputs.require_macos_signing }}
         run: |
           test -s apps/desktop/dist-electron/latest-mac.yml
-          test -s apps/desktop/dist-electron/PilotDeck-*-mac-${{ matrix.arch }}.zip
+          test -s apps/desktop/dist-electron/9GClaw-*-mac-${{ matrix.arch }}.zip
           mv apps/desktop/dist-electron/latest-mac.yml apps/desktop/dist-electron/latest-${{ matrix.arch }}-mac.yml
 
       - name: Upload macOS installer
         if: ${{ inputs.require_macos_signing }}
         uses: actions/upload-artifact@v7
         with:
-          name: pilotdeck-desktop-macos-${{ matrix.arch }}
+          name: 9gclaw-desktop-macos-${{ matrix.arch }}
           overwrite: true
           path: |
             apps/desktop/dist-electron/*-mac-${{ matrix.arch }}.dmg

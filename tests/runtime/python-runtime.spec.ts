@@ -4,10 +4,10 @@ import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { PythonRuntimeManager, withPythonMcpEnvironment, pythonRuntimeContext } from '../../src/runtime/pythonRuntime.js';
-import type { PilotDeckMcpServerSpec } from '../../src/mcp/protocol/types.js';
+import type { NineGClawMcpServerSpec } from '../../src/mcp/protocol/types.js';
 
 async function fixture(t: test.TestContext) {
-  const home = await mkdtemp(join(tmpdir(), 'pilotdeck-python-'));
+  const home = await mkdtemp(join(tmpdir(), '9gclaw-python-'));
   t.after(() => rm(home, { recursive: true, force: true }));
   const root = join(home, '应用 with spaces');
   await mkdir(root);
@@ -26,7 +26,7 @@ async function fixture(t: test.TestContext) {
     }
     return JSON.stringify({ version: manifest.version, prefix: dirname(dirname(command)) });
   };
-  const env = { Path: '/host/bin', PILOTDECK_PYTHON_ROOT: root, PYTHONHOME: '/wrong', PYTHONPATH: '/wrong', SECRET: 'never-publish' };
+  const env = { Path: '/host/bin', NINEGCLAW_PYTHON_ROOT: root, PYTHONHOME: '/wrong', PYTHONPATH: '/wrong', SECRET: 'never-publish' };
   return { home, root, manifest, env, calls, run, manager: new PythonRuntimeManager({ pilotHome: home, env, run }) };
 }
 
@@ -116,7 +116,7 @@ test('MCP receives only the capability variables and preserves explicit override
   if (patched.transport !== 'stdio') throw new Error('wrong transport');
   assert.equal(patched.env?.UV_PYTHON, runtime.status.executable);
   assert.equal(patched.env?.CUSTOM, 'value'); assert.equal(patched.env?.SECRET, undefined);
-  const explicit: PilotDeckMcpServerSpec[] = [{ ...bare, command: join(f.home, 'project-python') }, { ...bare, command: './.venv/bin/python' },
+  const explicit: NineGClawMcpServerSpec[] = [{ ...bare, command: join(f.home, 'project-python') }, { ...bare, command: './.venv/bin/python' },
     { ...bare, env: { Path: '/custom' } }, { ...bare, env: { UV_PYTHON: '/custom/python' } },
     { id: 'http', transport: 'streamable_http' as const, url: 'https://example.test' }];
   for (const spec of explicit) {

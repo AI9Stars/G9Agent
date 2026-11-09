@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
 // Route fixtures must own their API responses instead of the app's PWA worker.
-test.use({ channel: process.env.PILOTDECK_TEST_BROWSER_CHANNEL, serviceWorkers: 'block' });
+test.use({ channel: process.env.NINEGCLAW_TEST_BROWSER_CHANNEL, serviceWorkers: 'block' });
 for (const language of ['en', 'zh-CN']) test(`Git and Python status, manual checks and timeout recovery: ${language}`, async ({ page, context }, info) => {
   test.setTimeout(90000);
   const text = JSON.parse(await readFile(new URL(`../src/i18n/locales/${language}/settings.json`, import.meta.url), 'utf8'));
@@ -17,7 +17,7 @@ for (const language of ['en', 'zh-CN']) test(`Git and Python status, manual chec
     const pathname = new URL(route.request().url()).pathname;
     let body = {};
     if (pathname === '/api/auth/status') body = { authDisabled: true };
-    else if (pathname === '/api/config') body = { exists: true, path: '/fixture/pilotdeck.yaml', raw: JSON.stringify(config), config, revision: '1', validation: { valid: true, errors: [], warnings: [] } };
+    else if (pathname === '/api/config') body = { exists: true, path: '/fixture/9gclaw.yaml', raw: JSON.stringify(config), config, revision: '1', validation: { valid: true, errors: [], warnings: [] } };
     else if (pathname === '/api/settings/general-workspace') body = { directory: '', effectiveDirectory: '/fixture/general', defaultDirectory: '/fixture/general' };
     else if (pathname === '/api/config/python-runtime') { reads++; body = { enabled: true, state: 'available', version: '3.12.16', executable: '/fixture/base/python', packages: { requests: '2' } }; }
     else if (pathname === '/api/config/python-runtime/check') {

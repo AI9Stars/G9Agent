@@ -26,7 +26,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PILOTDECK_UPDATE_REPOSITORY: ${{ github.repository }}
+  NINEGCLAW_UPDATE_REPOSITORY: ${{ github.repository }}
 
 jobs:
   detect:
@@ -113,25 +113,25 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          pattern: pilotdeck-desktop-*
+          pattern: 9gclaw-desktop-*
           path: release-assets
           merge-multiple: true
 
       - name: Resolve release metadata
         id: metadata
         env:
-          PILOTDECK_RELEASE_DATE: ${{ needs.detect.outputs.release_date }}
-          PILOTDECK_RELEASE_REVISION: ${{ needs.detect.outputs.revision }}
-          PILOTDECK_COMMIT_SHA: ${{ needs.detect.outputs.source_sha }}
+          NINEGCLAW_RELEASE_DATE: ${{ needs.detect.outputs.release_date }}
+          NINEGCLAW_RELEASE_REVISION: ${{ needs.detect.outputs.revision }}
+          NINEGCLAW_COMMIT_SHA: ${{ needs.detect.outputs.source_sha }}
         run: node apps/desktop/scripts/set-ci-version.mjs
 
       - name: Create release manifest and checksums
         env:
-          PILOTDECK_DIFFERENTIAL_UPDATES: ${{ vars.PILOTDECK_DIFFERENTIAL_UPDATES }}
-          PILOTDECK_RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
-          PILOTDECK_RELEASE_TAG: ${{ steps.metadata.outputs.release_tag }}
-          PILOTDECK_RELEASE_DATE: ${{ steps.metadata.outputs.release_date }}
-          PILOTDECK_COMMIT_SHA: ${{ needs.detect.outputs.source_sha }}
+          NINEGCLAW_DIFFERENTIAL_UPDATES: ${{ vars.NINEGCLAW_DIFFERENTIAL_UPDATES }}
+          NINEGCLAW_RELEASE_VERSION: ${{ steps.metadata.outputs.version }}
+          NINEGCLAW_RELEASE_TAG: ${{ steps.metadata.outputs.release_tag }}
+          NINEGCLAW_RELEASE_DATE: ${{ steps.metadata.outputs.release_date }}
+          NINEGCLAW_COMMIT_SHA: ${{ needs.detect.outputs.source_sha }}
         run: node apps/desktop/scripts/create-release-manifest.mjs release-assets
 
       - name: Verify complete cross-platform release and updater feeds
@@ -157,7 +157,7 @@ jobs:
   sync-obs:
     name: Verify and publish the same release to OBS
     needs: release
-    if: ${{ github.repository == 'OpenBMB/PilotDeck' }}
+    if: ${{ github.repository == 'AI9Stars/9GClaw' }}
     uses: ./.github/workflows/release-to-obs.yml
     with:
       release_tag: ${{ needs.release.outputs.release_tag }}

@@ -58,7 +58,7 @@ jobs:
           cache: pnpm
 
       - name: Install Web/Gateway dependencies only
-        run: pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui
+        run: pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui
 
       - name: Build Gateway and Web UI
         run: pnpm run build:web
@@ -87,7 +87,7 @@ jobs:
 
       - name: Test tool, prompt and extension contracts
         env:
-          PILOT_HOME: ${{ runner.temp }}/pilotdeck-contract-tests
+          NINEGCLAW_HOME: ${{ runner.temp }}/9gclaw-contract-tests
         run: >-
           node --test --test-timeout 60000
           dist/tests/tool/execution-contracts.spec.js
@@ -160,13 +160,13 @@ jobs:
           context: .
           push: false
           load: true
-          tags: pilotdeck:web-regression
+          tags: 9gclaw:web-regression
           cache-from: type=gha,scope=web-image
           cache-to: type=gha,scope=web-image,mode=max
       - name: Verify isolated image startup dependencies
         run: >-
-          docker run --rm --entrypoint node pilotdeck:web-regression
+          docker run --rm --entrypoint node 9gclaw:web-regression
           --import tsx --input-type=module -e
-          "import { classifyRuntimeError } from '@pilotdeck/config';
+          "import { classifyRuntimeError } from '@9gclaw/config';
           import './ui/server/runtimeBootstrap.js';
           if (classifyRuntimeError({code:'ENOENT'}) !== 'PD_RESOURCE_NOT_FOUND') process.exit(1);"

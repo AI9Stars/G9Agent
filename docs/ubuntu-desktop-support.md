@@ -1,6 +1,6 @@
 # Ubuntu desktop support
 
-PilotDeck provides architecture-matched DEB installers for Ubuntu 22.04 and later.
+9GClaw provides architecture-matched DEB installers for Ubuntu 22.04 and later.
 The build baseline and required checks below define compatibility; headless CI
 does not certify every desktop environment.
 
@@ -30,7 +30,7 @@ does not certify every desktop environment.
   release.
 - Display: support both X11/Xorg and native Wayland. Electron 42's Ozone
   selection defaults to `auto` on Linux. On a Wayland session, users can force
-  XWayland with `pilotdeck-desktop --ozone-platform=x11` if a compositor-specific
+  XWayland with `9gclaw-desktop --ozone-platform=x11` if a compositor-specific
   problem occurs. Do not force X11 for everyone.
 - Background: closing the window hides it when the desktop tray is available.
   Ubuntu's top-panel AppIndicators host shows the menu to reopen or quit;

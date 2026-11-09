@@ -65,7 +65,7 @@ test('native startup script preserves progress and presents the classified cause
   };
   let update;
   const desktop = { onRuntimeStatus(callback) { update = callback; }, getRuntimeStatus() { return { phase: 'gateway', progress: 78 }; } };
-  const browser = { pilotdeckDesktop: desktop };
+  const browser = { ninegclawDesktop: desktop };
   // This is our generated template's script, not an HTML sanitization routine.
   const start = html.indexOf('<script>');
   const end = html.lastIndexOf('</script>');
@@ -78,5 +78,5 @@ test('native startup script preserves progress and presents the classified cause
   assert.match(get('reason').textContent, /内存不足/);
   assert.equal(get('log').textContent, '运行日志: C:/logs/runtime.log');
   assert.ok([...nodes.values()].every(node => !node.textContent.includes('native-private-stack')));
-  browser.__pilotdeckStartupCleanup();
+  browser.__ninegclawStartupCleanup();
 });

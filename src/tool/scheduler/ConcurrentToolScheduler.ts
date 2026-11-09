@@ -1,8 +1,8 @@
-import type { PilotDeckToolResult } from "../protocol/result.js";
-import type { PilotDeckToolCall, PilotDeckToolRuntimeContext } from "../protocol/types.js";
+import type { NineGClawToolResult } from "../protocol/result.js";
+import type { NineGClawToolCall, NineGClawToolRuntimeContext } from "../protocol/types.js";
 import type { ToolRuntime } from "../execution/ToolRuntime.js";
 import type { ToolRegistry } from "../registry/ToolRegistry.js";
-import type { PilotDeckToolScheduler } from "./ToolScheduler.js";
+import type { NineGClawToolScheduler } from "./ToolScheduler.js";
 
 export type ConcurrentToolSchedulerOptions = {
   /** Maximum active runtime calls in one batch. Defaults to four. */
@@ -10,7 +10,7 @@ export type ConcurrentToolSchedulerOptions = {
 };
 
 /** Executes consecutive safe calls in a bounded pool; exclusive calls are barriers. */
-export class ConcurrentToolScheduler implements PilotDeckToolScheduler {
+export class ConcurrentToolScheduler implements NineGClawToolScheduler {
   private readonly maxConcurrency: number;
 
   constructor(
@@ -25,13 +25,13 @@ export class ConcurrentToolScheduler implements PilotDeckToolScheduler {
   }
 
   async executeAll(
-    calls: PilotDeckToolCall[],
-    context: PilotDeckToolRuntimeContext,
-  ): Promise<PilotDeckToolResult[]> {
+    calls: NineGClawToolCall[],
+    context: NineGClawToolRuntimeContext,
+  ): Promise<NineGClawToolResult[]> {
     if (calls.length === 0) return [];
     if (calls.length === 1) return [await this.runtime.execute(calls[0], context)];
 
-    const results = new Array<PilotDeckToolResult>(calls.length);
+    const results = new Array<NineGClawToolResult>(calls.length);
     const active = new Set<Promise<void>>();
     // Presence is separate from the rejected value (which may be undefined).
     let failure: { reason: unknown } | undefined;

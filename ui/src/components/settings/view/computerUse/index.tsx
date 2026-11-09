@@ -17,7 +17,7 @@ export default function ComputerUseSections() {
   const [pathCopied, setPathCopied] = useState(false);
   const requestSequence = useRef(0);
   const operationPending = useRef(false);
-  const permissionOwner = status?.permissionOwner || 'PilotDeck';
+  const permissionOwner = status?.permissionOwner || '9GClaw';
 
   useEffect(() => {
     let active = true;

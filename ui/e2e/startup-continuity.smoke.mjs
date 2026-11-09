@@ -41,7 +41,7 @@ try {
         localStorage.setItem('userLanguage', 'en');
         const runtimeStartedAt = Date.now() - 6000;
         const phaseStartedAt = Date.now() - 1000;
-        if (desktop) window.pilotdeckDesktop = {
+        if (desktop) window.ninegclawDesktop = {
           getAppearance: () => ({ language: 'en', themeMode: dark ? 'dark' : 'light' }),
           getRuntimeStatus: () => ({ phase: 'ready', progress: 96, startedAt: runtimeStartedAt, phaseStartedAt }),
           onRuntimeStatus: () => () => {},

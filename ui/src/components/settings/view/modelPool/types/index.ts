@@ -14,7 +14,7 @@ export type V2Provider = {
   };
 };
 
-export type PilotDeckConfig = {
+export type NineGClawConfig = {
   runtime?: { python?: { enabled?: boolean } };
   agent?: {
     model?: string;

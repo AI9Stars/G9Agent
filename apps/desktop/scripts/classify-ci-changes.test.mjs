@@ -59,7 +59,7 @@ test('runtime Markdown and native updater changes retain packaging gates', () =>
 });
 
 test('CLI uses the PR merge-base and retains the removed side of a rename', () => {
-  const directory = mkdtempSync(path.join(os.tmpdir(), 'pilotdeck-ci-scope-'));
+  const directory = mkdtempSync(path.join(os.tmpdir(), '9gclaw-ci-scope-'));
   const git = (...args) => execFileSync('git', ['-c', 'commit.gpgsign=false', '-c', `core.hooksPath=${path.join(directory, 'hooks')}`, ...args], { cwd: directory, encoding: 'utf8' }).trim();
   try {
     git('init', '--initial-branch=main');

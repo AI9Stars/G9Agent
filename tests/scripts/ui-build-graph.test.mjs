@@ -25,7 +25,7 @@ const manifestFixture = () => ({
 });
 
 async function fixture(t, mutate = () => {}) {
-  const dist = await mkdtemp(path.join(tmpdir(), 'pilotdeck-build-graph-'));
+  const dist = await mkdtemp(path.join(tmpdir(), '9gclaw-build-graph-'));
   t.after(() => rm(dist, { recursive: true, force: true }));
   const manifest = manifestFixture();
   mutate(manifest);

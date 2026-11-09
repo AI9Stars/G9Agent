@@ -2,7 +2,7 @@
 // Center in the viewport throughout startup: the late caption overlays this
 // layer and must not resize it or move the already-painted progress track.
 export const startupStyle = `
-#root[data-pilotdeck-startup="complete"] > :not(.pd-startup-screen){visibility:hidden}
+#root[data-9gclaw-startup="complete"] > :not(.pd-startup-screen){visibility:hidden}
 .pd-startup-screen{position:fixed;inset:0;z-index:50;display:grid;place-items:center;box-sizing:border-box;padding:24px;background:var(--startup-bg,#fff);color:var(--startup-fg,#171717);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;opacity:1;transition:opacity .18s ease}
 .pd-startup-screen[data-leaving=true]{animation:none;opacity:0;pointer-events:none}
 .pd-startup-screen main{width:min(360px,100%);margin:0;text-align:center}

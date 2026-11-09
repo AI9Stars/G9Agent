@@ -14,14 +14,14 @@ Run from the repository root unless noted.
 | Checkpoint execution and restore | `pnpm test:checkpoints` (build Core first) |
 | Changed/related imports | `pnpm --dir ui test:changed` or `pnpm --dir ui test:related src/path/to/file.ts` |
 | Model protocol/streaming | `node --import tsx --test "tests/model/**/*.spec.ts"` |
-| Desktop helpers | `pnpm --filter pilotdeck-desktop test` |
+| Desktop helpers | `pnpm --filter 9gclaw-desktop test` |
 | Complete built backend suite | `pnpm test` |
 | UI type check / build | `pnpm --dir ui typecheck` / `pnpm --dir ui build` |
-| Desktop TypeScript | `pnpm --filter pilotdeck-desktop compile` |
+| Desktop TypeScript | `pnpm --filter 9gclaw-desktop compile` |
 
 Changed/related selection follows import edges, not every dynamically read template, workflow, icon or plugin. Broaden checks for shared protocols, native resources, dependency locks and build inputs. Real browser acceptance belongs under ui/e2e/ and is separate from Vitest discovery.
 
-Run chat browser regressions with `pnpm --dir ui exec playwright test -c e2e/streaming-scroll.config.mjs`. With desktop Electron installed, set `PILOTDECK_SCROLL_ELECTRON=1` and select `streaming-scroll.spec.mjs chat-media-scroll.spec.mjs` to repeat scroll gestures, live generation/disclosure interactions and media reflow in isolated native renderer profiles. These fixtures start no application services or model providers.
+Run chat browser regressions with `pnpm --dir ui exec playwright test -c e2e/streaming-scroll.config.mjs`. With desktop Electron installed, set `NINEGCLAW_SCROLL_ELECTRON=1` and select `streaming-scroll.spec.mjs chat-media-scroll.spec.mjs` to repeat scroll gestures, live generation/disclosure interactions and media reflow in isolated native renderer profiles. These fixtures start no application services or model providers.
 
 ## Pull request CI selection
 
@@ -61,7 +61,7 @@ production build with synthetic APIs and checks editor/PDF requests and tab stat
 
 - Every retained case must identify a meaningful regression it would catch. Assert user outcomes, wire payloads, persisted contents, exit results and resource release.
 - Mock external providers and uncontrolled systems while exercising the target implementation. Do not preserve obsolete implementation-text assertions after a feature is removed, or delete unique safety cases because they are slow.
-- Use isolated PILOT_HOME, profiles, databases and workspaces. Some server modules open a database at import time, so establish isolation before importing them. Declare real Git, Python, shell, symlink and platform prerequisites.
+- Use isolated NINEGCLAW_HOME, profiles, databases and workspaces. Some server modules open a database at import time, so establish isolation before importing them. Declare real Git, Python, shell, symlink and platform prerequisites.
 - Use readiness signals, controlled clocks and observable state instead of fixed sleeps. Keep distinct timing, authorization, path-escape, rollback and account-isolation cases; avoid multiplying every language/theme/platform combination without a distinct behavior.
 - Small fixtures may be shared; do not create one giant test file or an end-to-end flow for unrelated behavior. Real provider calls require explicit opt-in and synthetic credentials must not be mistaken for production secrets.
 - Follow [CONTRIBUTING](../CONTRIBUTING.md) for placement, English documentation and artifact rules. New module tests remain visible to Git; only root test/ and test.ts drafts are ignored.
@@ -85,7 +85,7 @@ First build the relevant Core/Desktop/Web outputs when a command consumes compil
 | Real desktop fault injection | `node scripts/benchmark-startup.mjs --desktop --fault slow-start --artifacts artifacts/startup --hold-ms 180000`; also abort, oom, module-missing, web-module-missing and config-invalid; a stop file ends the isolated instance |
 | Windows installer/shortcut | `node apps/desktop/scripts/verify-installer.cjs` and `node apps/desktop/scripts/verify-installer-shortcut.cjs`; require Windows and desktop build dependencies |
 | Windows uninstall boundary | `node apps/desktop/scripts/verify-uninstaller.cjs`; verifies default data retention, localization and update guards |
-| Windows native notifications | `pnpm --filter pilotdeck-desktop exec electron scripts/verify-windows-notifications.cjs`; compiled Desktop and an isolated notification identity |
+| Windows native notifications | `pnpm --filter 9gclaw-desktop exec electron scripts/verify-windows-notifications.cjs`; compiled Desktop and an isolated notification identity |
 | TUI permissions | `node --import tsx --test tests/adapters/tui-permissions.spec.tsx`; automatic temporary profile, mocked Gateway, no model calls |
 | UI import/export analysis | `node scripts/audit-ui-reachability.mjs --exports`; read-only candidates, not automatic deletion authority |
 

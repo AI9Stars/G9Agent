@@ -8,8 +8,8 @@ import { gzipSync } from 'node:zlib';
 import { verifyReleaseAssets } from './verify-release-assets.mjs';
 
 function fixture(differentialUpdates) {
-  const directory = mkdtempSync(join(tmpdir(), 'pilotdeck-complete-release-'));
-  const prefix = 'PilotDeck-2026.1004.0';
+  const directory = mkdtempSync(join(tmpdir(), '9gclaw-complete-release-'));
+  const prefix = '9GClaw-2026.1004.0';
   const assets = [];
   const feeds = [];
   function add(name, contents, platform, arch) {
@@ -92,7 +92,7 @@ for (const [reason, contents] of [
   });
 }
 
-for (const name of ['PilotDeck-2026.1004.0-win-arm64-setup.exe', 'PilotDeck-2026.1004.0-linux-arm64.rpm', 'PilotDeck-2026.1004.0-linux-x64.rpm',
+for (const name of ['9GClaw-2026.1004.0-win-arm64-setup.exe', '9GClaw-2026.1004.0-linux-arm64.rpm', '9GClaw-2026.1004.0-linux-x64.rpm',
   'latest-arm64.yml', 'latest-x64.yml', 'latest-arm64-mac.yml', 'latest-x64-mac.yml',
   'latest-linux.yml', 'latest-linux-arm64.yml', 'latest-rpm-linux.yml', 'latest-rpm-linux-arm64.yml']) {
   test(`refuses publication when ${name} is absent`, () => {
@@ -109,7 +109,7 @@ for (const [description, transform] of [
   ['wrong version', feed => feed.replace('version: 2026.1004.0', 'version: 2026.1003.0')],
   ['wrong checksum', feed => feed.replace(/sha512: \S+/, `sha512: ${'A'.repeat(86)}==`)],
   ['wrong size', feed => feed.replace(/size: \d+/, 'size: 1')],
-  ['unknown payload', feed => feed.replaceAll('PilotDeck-', 'Unknown-')],
+  ['unknown payload', feed => feed.replaceAll('9GClaw-', 'Unknown-')],
 ]) {
   test(`refuses a Windows ARM64 feed with ${description}`, () => {
     const f = fixture();
@@ -124,7 +124,7 @@ for (const [description, transform] of [
 test('refuses a stale installer even when the current packages are present', () => {
   const f = fixture();
   try {
-    writeFileSync(join(f.directory, 'PilotDeck-2026.1003.0-win-x64-setup.exe'), 'stale');
+    writeFileSync(join(f.directory, '9GClaw-2026.1003.0-win-x64-setup.exe'), 'stale');
     assert.throws(() => verifyReleaseAssets(f.directory), /Unexpected (installer|release files)/);
   } finally { f.cleanup(); }
 });

@@ -146,7 +146,7 @@
     background: var(--pd-accent-tint, #eef0f8);
     font-synthesis: none;
 
-    /* PilotDeck brand palette */
+    /* 9GClaw brand palette */
     --brand: var(--pd-accent, #5b5ce2);
     --brand-strong: var(--pd-accent-strong, #4948cf);
     --violet: var(--pd-accent, #7c5bf1);
@@ -810,22 +810,22 @@
     box-shadow: 0 0 0 3px var(--search-match-ring);
   }
 
-  .textLayer .pilotdeck-document-search-highlight {
+  .textLayer .ninegclaw-document-search-highlight {
     --highlight-bg-color: var(--file-search-highlight-bg);
     --highlight-selected-bg-color: var(--file-search-highlight-active-bg);
   }
 
-  .textLayer .pilotdeck-document-search-highlight-active {
+  .textLayer .ninegclaw-document-search-highlight-active {
     outline: 1px solid var(--file-search-highlight-active-border);
     box-shadow: 0 0 0 2px var(--file-search-highlight-active-ring);
   }
 
-  .dark .textLayer .pilotdeck-document-search-highlight {
+  .dark .textLayer .ninegclaw-document-search-highlight {
     --highlight-bg-color: var(--file-search-highlight-bg);
     --highlight-selected-bg-color: var(--file-search-highlight-active-bg);
   }
 
-  .dark .textLayer .pilotdeck-document-search-highlight-active {
+  .dark .textLayer .ninegclaw-document-search-highlight-active {
     outline-color: var(--file-search-highlight-active-border);
     box-shadow: 0 0 0 2px var(--file-search-highlight-active-ring);
   }

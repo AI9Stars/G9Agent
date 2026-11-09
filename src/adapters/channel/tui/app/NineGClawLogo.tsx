@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text, useStdout } from "ink";
-import { pilotDeckDarkBlueTheme } from "./theme.js";
+import { nineGClawDarkBlueTheme } from "./theme.js";
 
 const ANSI_SHADOW_LOGO = [
   "██████╗ ██╗██╗      ██████╗ ████████╗██████╗ ███████╗ ██████╗██╗  ██╗",
@@ -25,7 +25,7 @@ const STANDARD_LOGO = [
   " |_|   |_|_|\\___/ \\__|____/ \\___|\\___|_|\\_\\",
 ];
 
-export function PilotDeckLogo({ tagline }: { tagline?: string } = {}): React.ReactNode {
+export function NineGClawLogo({ tagline }: { tagline?: string } = {}): React.ReactNode {
   const { stdout } = useStdout();
   const cols = stdout?.columns ?? 80;
   const useShadow = cols >= ANSI_SHADOW_MIN_TERMINAL_COLS;
@@ -38,26 +38,26 @@ export function PilotDeckLogo({ tagline }: { tagline?: string } = {}): React.Rea
             const deck = line.slice(ANSI_SHADOW_PILOT_WIDTH);
             return (
               <Text key={index}>
-                <Text color={pilotDeckDarkBlueTheme.brand} bold>
+                <Text color={nineGClawDarkBlueTheme.brand} bold>
                   {pilot}
                 </Text>
-                <Text color={pilotDeckDarkBlueTheme.brandAccent} bold>
+                <Text color={nineGClawDarkBlueTheme.brandAccent} bold>
                   {deck}
                 </Text>
               </Text>
             );
           })
         : STANDARD_LOGO.map((line, index) => (
-            <Text key={index} color={pilotDeckDarkBlueTheme.brandAccent} bold>
+            <Text key={index} color={nineGClawDarkBlueTheme.brandAccent} bold>
               {line}
             </Text>
           ))}
       {tagline ? (
         <Box marginTop={1}>
-          <Text color={pilotDeckDarkBlueTheme.brandAccent} bold>
+          <Text color={nineGClawDarkBlueTheme.brandAccent} bold>
             {"↗  "}
           </Text>
-          <Text color={pilotDeckDarkBlueTheme.subtle}>{tagline}</Text>
+          <Text color={nineGClawDarkBlueTheme.subtle}>{tagline}</Text>
         </Box>
       ) : null}
     </Box>
@@ -67,13 +67,13 @@ export function PilotDeckLogo({ tagline }: { tagline?: string } = {}): React.Rea
 export function CondensedLogo(): React.ReactNode {
   return (
     <Text>
-      <Text color={pilotDeckDarkBlueTheme.brand} bold>
+      <Text color={nineGClawDarkBlueTheme.brand} bold>
         Pilot
       </Text>
-      <Text color={pilotDeckDarkBlueTheme.brandAccent} bold>
+      <Text color={nineGClawDarkBlueTheme.brandAccent} bold>
         Deck
       </Text>
-      <Text color={pilotDeckDarkBlueTheme.brandAccent}> ↗</Text>
+      <Text color={nineGClawDarkBlueTheme.brandAccent}> ↗</Text>
     </Text>
   );
 }

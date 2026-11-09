@@ -5,10 +5,10 @@ import test, { type TestContext } from "node:test";
 import { createPlanTodoStateManager } from "../../src/agent/runtime/PlanTodoState.js";
 import { NullLifecycleRuntime } from "../../src/lifecycle/index.js";
 import { createDefaultPermissionContext, PermissionRuntime } from "../../src/permission/index.js";
-import { ConcurrentToolScheduler, ToolRegistry, ToolRuntime, type PilotDeckToolDefinition, type PilotDeckToolRuntimeContext } from "../../src/tool/index.js";
-import type { PilotDeckToolAuditRecord } from "../../src/tool/audit/ToolAuditRecorder.js";
+import { ConcurrentToolScheduler, ToolRegistry, ToolRuntime, type NineGClawToolDefinition, type NineGClawToolRuntimeContext } from "../../src/tool/index.js";
+import type { NineGClawToolAuditRecord } from "../../src/tool/audit/ToolAuditRecorder.js";
 
-function definition(overrides: Partial<PilotDeckToolDefinition> = {}): PilotDeckToolDefinition {
+function definition(overrides: Partial<NineGClawToolDefinition> = {}): NineGClawToolDefinition {
   return {
     name: "probe", description: "Synthetic tool contract", kind: "custom", inputSchema: { type: "object" },
     isReadOnly: () => true, isConcurrencySafe: () => true,
@@ -16,7 +16,7 @@ function definition(overrides: Partial<PilotDeckToolDefinition> = {}): PilotDeck
   };
 }
 
-function context(overrides: Partial<PilotDeckToolRuntimeContext> = {}): PilotDeckToolRuntimeContext {
+function context(overrides: Partial<NineGClawToolRuntimeContext> = {}): NineGClawToolRuntimeContext {
   return {
     sessionId: "tool-contract", turnId: "turn-1", cwd: process.cwd(), permissionMode: "bypassPermissions",
     permissionContext: createDefaultPermissionContext({ cwd: process.cwd(), mode: "bypassPermissions", canPrompt: false, bypassAvailable: true }),
@@ -24,10 +24,10 @@ function context(overrides: Partial<PilotDeckToolRuntimeContext> = {}): PilotDec
   };
 }
 
-function rewrittenRuntime(t: TestContext, stage: "pre" | "permission", tool: PilotDeckToolDefinition, updatedInput: Record<string, unknown>) {
+function rewrittenRuntime(t: TestContext, stage: "pre" | "permission", tool: NineGClawToolDefinition, updatedInput: Record<string, unknown>) {
   const registry = new ToolRegistry();
   const executed: unknown[] = [];
-  const audited: PilotDeckToolAuditRecord[] = [];
+  const audited: NineGClawToolAuditRecord[] = [];
   registry.register({ ...tool, execute: async (input) => { executed.push(input); return { content: [] }; } });
   const lifecycle = new NullLifecycleRuntime();
   t.mock.method(lifecycle, "dispatch", async ({ event }: { event: string }) => ({
@@ -44,7 +44,7 @@ function rewrittenRuntime(t: TestContext, stage: "pre" | "permission", tool: Pil
   const runtime = new ToolRuntime(registry, permission, lifecycle);
   return {
     registry, runtime, executed, audited, permissionCalls,
-    run(input: Record<string, unknown>, overrides: Partial<PilotDeckToolRuntimeContext> = {}) {
+    run(input: Record<string, unknown>, overrides: Partial<NineGClawToolRuntimeContext> = {}) {
       return runtime.execute({ id: "call-1", name: tool.name, input }, context({
         auditRecorder: { recordPermission: () => {}, recordTool: (entry) => { audited.push(entry); } }, ...overrides,
       }));
@@ -52,7 +52,7 @@ function rewrittenRuntime(t: TestContext, stage: "pre" | "permission", tool: Pil
   };
 }
 
-const plans = join(process.cwd(), ".pilotdeck", "plans");
+const plans = join(process.cwd(), ".9gclaw", "plans");
 
 test("group replacement validates every alias before publishing removals or additions", () => {
   const registry = new ToolRegistry();
@@ -158,7 +158,7 @@ test("cancellation while permission auditing prevents a tool body from starting"
   const registry = new ToolRegistry();
   let ran = false;
   registry.register(definition({ execute: async () => { ran = true; return { content: [] }; } }));
-  const audited: PilotDeckToolAuditRecord[] = [];
+  const audited: NineGClawToolAuditRecord[] = [];
   const result = await new ToolRuntime(registry, new PermissionRuntime()).execute({ id: "abort", name: "probe", input: {} }, context({
     abortSignal: controller.signal,
     auditRecorder: { recordPermission: () => { controller.abort(); }, recordTool: (entry) => { audited.push(entry); } },

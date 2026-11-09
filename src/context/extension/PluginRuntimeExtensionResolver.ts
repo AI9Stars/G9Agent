@@ -1,4 +1,4 @@
-import type { PilotDeckLoadedPlugin } from "../../extension/index.js";
+import type { NineGClawLoadedPlugin } from "../../extension/index.js";
 import type {
   ContributedCommand,
   ContributedSkill,
@@ -12,7 +12,7 @@ import type {
  * Existing list aggregators and snapshot-only integrations remain compatible.
  */
 export type PluginRuntimeLike = {
-  snapshot(): PilotDeckLoadedPlugin[];
+  snapshot(): NineGClawLoadedPlugin[];
   getPromptContributions?(): PromptContributions;
   /** Optional aggregator preferred when available. */
   getAllCommands?(): ContributedCommand[];
@@ -23,7 +23,7 @@ export type PluginRuntimeLike = {
 
 /**
  * Wraps a `PluginRuntime` (or compatible) so context can read plugin-derived
- * info without reaching into `PilotDeckLoadedPlugin` directly.
+ * info without reaching into `NineGClawLoadedPlugin` directly.
  */
 export class PluginRuntimeExtensionResolver implements ExtensionResolver {
   constructor(

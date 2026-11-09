@@ -12,12 +12,12 @@ export async function verifyMemoryScheduleSettings({ browser, base, output, case
  await mkdir(output, { recursive: true });
  for (const [language, mode, preset, width] of cases) {
   const translations = JSON.parse(await readFile(new URL(`../src/i18n/locales/${language}/settings.json`, import.meta.url), 'utf8'));
-  const text = translations.pilotDeckConfig.panels, actions = translations.settingsPage.actions;
+  const text = translations.nineGClawConfig.panels, actions = translations.settingsPage.actions;
   const common = JSON.parse(await readFile(new URL(`../src/i18n/locales/${language}/alwaysOn.json`, import.meta.url), 'utf8'));
   const context = await browser.newContext({ viewport: { width, height: 1000 }, serviceWorkers: 'block' });
   await context.addInitScript(({language,mode,preset}) => {
    localStorage.setItem('userLanguage', language); localStorage.setItem('themeMode', mode);
-   localStorage.setItem('pilotdeck-light-appearance-v1', JSON.stringify({ preset }));
+   localStorage.setItem('9gclaw-light-appearance-v1', JSON.stringify({ preset }));
   }, { language, mode, preset });
   let config = { agent: { model: 'fixture/test' }, model: { providers: { fixture: { protocol: 'openai', url: 'https://example.invalid/v1', models: { test: {} } } } }, memory: { enabled: true, autoIndexIntervalMinutes: 60, autoDreamIntervalMinutes: 120 }, cron: { enabled: true, timezone: 'UTC', maxConcurrentRuns: 2 } };
   let revision = 1; const requests = [], errors = [];
@@ -106,7 +106,7 @@ export async function verifyMemoryScheduleSettings({ browser, base, output, case
    await page.locator('.workspace-header button[aria-haspopup=menu]').click();
    await page.getByRole('menuitem', { name: /Memory|记忆/ }).click();
    const memory = page.frameLocator('iframe');
-   await expect(memory.locator('#pilotdeck-memory-controls')).toBeAttached({timeout:30000});
+   await expect(memory.locator('#9gclaw-memory-controls')).toBeAttached({timeout:30000});
    const hostTokens = await page.evaluate(async ({ preset, mode }) => {
     const { deriveAppearanceColors, normalizeLightAppearance } = await import('/src/lib/lightAppearance.ts');
     const colors = deriveAppearanceColors(normalizeLightAppearance({ preset }), mode === 'dark');
@@ -132,7 +132,7 @@ export async function verifyMemoryScheduleSettings({ browser, base, output, case
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
- const browser = await chromium.launch({ channel: process.env.PILOTDECK_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
- try { await verifyMemoryScheduleSettings({ browser, base: process.env.PILOTDECK_SMOKE_URL || 'http://127.0.0.1:5187', output: path.resolve('artifacts/settings-consistency') }); }
+ const browser = await chromium.launch({ channel: process.env.NINEGCLAW_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
+ try { await verifyMemoryScheduleSettings({ browser, base: process.env.NINEGCLAW_SMOKE_URL || 'http://127.0.0.1:5187', output: path.resolve('artifacts/settings-consistency') }); }
  finally { await browser.close(); }
 }

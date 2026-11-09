@@ -4,16 +4,16 @@ import formControlsCss from '../form-controls.css?inline';
 /** Only the owned same-origin memory dashboard receives interface tokens.
  * Its document text, status badges and data visualizations retain their colors. */
 export function applyMemoryAppearance(doc: Document, appearance: LightAppearance, dark: boolean, reducedMotion: boolean) {
-  let controls = doc.getElementById('pilotdeck-memory-controls');
+  let controls = doc.getElementById('9gclaw-memory-controls');
   if (!controls) {
     controls = doc.createElement('style');
-    controls.id = 'pilotdeck-memory-controls';
+    controls.id = '9gclaw-memory-controls';
     controls.textContent = formControlsCss;
     doc.head.append(controls);
   }
   doc.documentElement.classList.toggle('dark', dark);
-  let style = doc.getElementById('pilotdeck-memory-appearance');
-  if (!style) { style = doc.createElement('style'); style.id = 'pilotdeck-memory-appearance'; doc.head.append(style); }
+  let style = doc.getElementById('9gclaw-memory-appearance');
+  if (!style) { style = doc.createElement('style'); style.id = '9gclaw-memory-appearance'; doc.head.append(style); }
   const c = deriveAppearanceColors(appearance, dark);
   const tokens = {
     bg: c.surface, 'bg-raised': c.sidebar, 'bg-hover': c.hover, 'bg-active': c.selected,

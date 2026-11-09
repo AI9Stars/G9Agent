@@ -1,7 +1,7 @@
 {
   "pythonRuntime": {
     "title": "Python environment",
-    "description": "Python 3.12 and common agent, data and document libraries, provided by PilotDeck.",
+    "description": "Python 3.12 and common agent, data and document libraries, provided by 9GClaw.",
     "enable": "Use bundled Python",
     "toggleHint": "Enabled by default. Changes apply to later turns; running tasks keep their current environment. Additional packages are stored in your user profile.",
     "checking": "Checking the execution host’s Python environment…",
@@ -27,7 +27,7 @@
     "unavailable": "Git is unavailable. Repair the Windows desktop installation or install Git on the execution host, then check again.",
     "statusFailed": "Could not check the execution host. Retry when the Gateway is connected.",
     "statusTimedOut": "The Git check took too long. Please try again.",
-    "sources": { "bundled": "Provided by PilotDeck", "configured": "Explicitly configured Git", "system": "System Git" },
+    "sources": { "bundled": "Provided by 9GClaw", "configured": "Explicitly configured Git", "system": "System Git" },
     "executable": "Executable",
     "refresh": "Check again"
   },
@@ -43,14 +43,14 @@
     "saved": "General conversation directory updated",
     "notEmptyError": "This folder is not empty. Choose an empty folder; the current directory has not changed.",
     "unavailableError": "The saved working directory is unavailable or its identity could not be verified. Existing files have not been moved. Restore the folder or choose a new empty directory.",
-    "defaultAdjusted": "The default folder {{originalDirectory}} conflicts with an installation or an occupied path. PilotDeck is using {{directory}} instead. Existing files have been kept in their original folder.",
+    "defaultAdjusted": "The default folder {{originalDirectory}} conflicts with an installation or an occupied path. 9GClaw is using {{directory}} instead. Existing files have been kept in their original folder.",
     "loadError": "Could not load the working directory. Please try again.",
     "saveError": "Could not use this folder. Check that it is writable and try again.",
-    "unsafeError": "Choose a folder separate from PilotDeck's configuration and session data.",
+    "unsafeError": "Choose a folder separate from 9GClaw's configuration and session data.",
     "invalidError": "Enter an absolute folder path or a path starting with ~."
   },
   "uninstall": {
-    "title": "Uninstall PilotDeck",
+    "title": "Uninstall 9GClaw",
     "description": "Choose whether to keep personal data before the system asks to remove the application.",
     "systemHint": "Use your system package manager to remove this application. Personal data is retained.",
     "failed": "Uninstall did not finish. Your personal data has been retained."
@@ -108,14 +108,14 @@
     "systemSettings": "System notification settings",
     "openSettings": "Open system settings",
     "showHelp": "How to enable notifications",
-    "systemControlled": "Banners and sounds are controlled by your system. Allow notifications for PilotDeck in system settings.",
+    "systemControlled": "Banners and sounds are controlled by your system. Allow notifications for 9GClaw in system settings.",
     "granted": "Browser notification permission is granted. System banner and sound settings still apply.",
     "denied": "Notifications are blocked. Allow them in your system or browser settings.",
     "notGranted": "When enabling notifications, allow the browser to send them.",
     "unsupported": "System notifications are unavailable. For the web app, use HTTPS or a localhost address.",
     "unsupportedDesktop": "System notifications are unavailable in this desktop environment. Conversation indicators remain available.",
     "browserHelp": "Open site settings beside the browser address bar and allow notifications for this site. Also allow the browser in your system notification settings.",
-    "desktopHelp": "Open Notifications in system settings, find PilotDeck, and allow notifications. On Linux, the location depends on your desktop environment.",
+    "desktopHelp": "Open Notifications in system settings, find 9GClaw, and allow notifications. On Linux, the location depends on your desktop environment.",
     "saveError": "Could not save notification settings. Please try again."
   },
   "openModelSettings": "Open model settings",
@@ -205,7 +205,7 @@
       "about": "About"
     },
     "descriptions": {
-      "general": "Set PilotDeck's interface appearance, chat input, and code editing experience.",
+      "general": "Set 9GClaw's interface appearance, chat input, and code editing experience.",
       "modelPool": "Centrally manage model providers, connection credentials, and available models. Enabled models are used by agents, routing, and memory.",
       "usage": "See today’s token usage and daily activity.",
       "agentRoute": "Configure agent routing, model tiers, and fallbacks.",
@@ -218,7 +218,7 @@
       "integrations": "Connect Feishu, WeChat, and WeCom message channels.",
       "mcpServers": "Connect local tools and remote services so agents can safely use external capabilities and context.",
       "officePreview": "Choose how Office documents are previewed. PDFs always open in the built-in viewer.",
-      "computerUse": "Let PilotDeck view your screen and operate local applications.",
+      "computerUse": "Let 9GClaw view your screen and operate local applications.",
       "privacy": "Manage tool rules and anonymous usage data. The chat composer controls global access permissions.",
       "advanced": "Manage application retry, service, and environment variable settings.",
       "about": "View the current version and check for updates.",
@@ -321,7 +321,7 @@
         "localChanges": "Local changes exist, or this build includes modified source. Update manually with Git.",
         "notGit": "This is not a standard Git deployment. Update using your original deployment method.",
         "shallow": "Git history is incomplete. Update manually.",
-        "unofficial": "This checkout is not connected to the official PilotDeck repository. Update manually.",
+        "unofficial": "This checkout is not connected to the official 9GClaw repository. Update manually.",
         "unknownVersion": "The running build cannot be identified. Rebuild and restart before checking again.",
         "runtimeMismatch": "Source or build files differ from the running version. Check manually and restart.",
         "ahead": "This checkout is ahead of the latest release. Automatic downgrades are disabled.",
@@ -632,7 +632,7 @@
     "apiDocsLink": "API Documentation",
     "documentation": {
       "title": "External API Documentation",
-      "description": "Learn how to use the external API to trigger PilotDeck sessions from your applications.",
+      "description": "Learn how to use the external API to trigger 9GClaw sessions from your applications.",
       "viewLink": "View API Documentation →"
     },
     "loading": "Loading...",
@@ -682,8 +682,8 @@
       "gemini": {
         "description": "Google Gemini AI assistant"
       },
-      "pilotdeck": {
-        "description": "OpenBMB PilotDeck AI assistant"
+      "9gclaw": {
+        "description": "OpenBMB 9GClaw AI assistant"
       }
     },
     "connectionStatus": "Connection Status",
@@ -797,13 +797,13 @@
     },
     "telemetry": {
       "title": "Anonymous usage data",
-      "description": "Send anonymous feature usage and performance data to help improve PilotDeck. Conversations, file contents, and credentials are never included."
+      "description": "Send anonymous feature usage and performance data to help improve 9GClaw. Conversations, file contents, and credentials are never included."
     }
   },
   "mcpServers": {
     "title": "MCP Servers",
     "description": {
-      "pilotdeck": "Model Context Protocol servers provide additional tools and data sources to PilotDeck",
+      "9gclaw": "Model Context Protocol servers provide additional tools and data sources to 9GClaw",
       "cursor": "Model Context Protocol servers provide additional tools and data sources to Cursor",
       "codex": "Model Context Protocol servers provide additional tools and data sources to Codex"
     },
@@ -836,7 +836,7 @@
   },
   "mcpConfig": {
     "title": "MCP Servers",
-    "description": "Edit PilotDeck MCP config. Global config lives in ~/.pilotdeck/mcp.json; project config lives in .pilotdeck/mcp.json and overrides global servers with the same name.",
+    "description": "Edit 9GClaw MCP config. Global config lives in ~/.9gclaw/mcp.json; project config lives in .9gclaw/mcp.json and overrides global servers with the same name.",
     "project": "Project for project-scoped config",
     "scopes": {
       "global": "Global",
@@ -858,8 +858,8 @@
     "addStdioServer": "Add STDIO server",
     "globalTitle": "Global MCP servers",
     "projectTitle": "Project MCP servers",
-    "globalLocation": "Stored in ~/.pilotdeck/mcp.json and available to every project.",
-    "projectLocation": "Stored in .pilotdeck/mcp.json; servers with the same name override global config.",
+    "globalLocation": "Stored in ~/.9gclaw/mcp.json and available to every project.",
+    "projectLocation": "Stored in .9gclaw/mcp.json; servers with the same name override global config.",
     "servers": "Servers",
     "projects": "Projects",
     "searchServer": "Search servers",
@@ -915,8 +915,8 @@
       "addHeader": "Add header"
     }
   },
-  "pilotDeckConfig": {
-    "loading": "Loading PilotDeck config...",
+  "nineGClawConfig": {
+    "loading": "Loading 9GClaw config...",
     "header": {
       "configFile": "Config file",
       "configPreview": "Config preview",
@@ -1015,7 +1015,7 @@
       },
       "memory": {
         "label": "Memory",
-        "description": "PilotDeck memory service"
+        "description": "9GClaw memory service"
       },
       "tools": {
         "label": "Search",
@@ -1027,7 +1027,7 @@
       },
       "router": {
         "label": "Router",
-        "description": "PilotDeck Router"
+        "description": "9GClaw Router"
       },
       "gateway": {
         "label": "Gateway",
@@ -1040,7 +1040,7 @@
     },
     "panels": {
       "advancedPage": {
-        "configFilePrefix": "PILOTDECK configuration is stored at",
+        "configFilePrefix": "9GCLAW configuration is stored at",
         "configFileSuffix": " and can be edited directly when needed."
       },
       "advancedRetry": {
@@ -1105,17 +1105,17 @@
           },
           "proxyUrl": {
             "label": "HTTPS proxy",
-            "description": "Outbound HTTPS proxy URL. Applies to both Gateway and UI Server (proxy.url in pilotdeck.yaml)."
+            "description": "Outbound HTTPS proxy URL. Applies to both Gateway and UI Server (proxy.url in 9gclaw.yaml)."
           },
           "proxyNoProxy": {
             "label": "No-proxy list",
-            "description": "Comma-separated hostnames/IPs that bypass the proxy (proxy.noProxy in pilotdeck.yaml). 127.0.0.1 and localhost are always excluded."
+            "description": "Comma-separated hostnames/IPs that bypass the proxy (proxy.noProxy in 9gclaw.yaml). 127.0.0.1 and localhost are always excluded."
           }
         }
       },
       "officePreview": {
         "title": "Office File Preview Service",
-        "description": "Choose how Office files are previewed in read-only mode. PDF always uses PilotDeck's built-in viewer.",
+        "description": "Choose how Office files are previewed in read-only mode. PDF always uses 9GClaw's built-in viewer.",
         "fields": {
           "service": {
             "label": "Preview service",
@@ -1349,7 +1349,7 @@
           "label": "Subagents default",
           "description": "Default model for subagents on non-router paths.",
           "inherit": "Inherit main agent model",
-          "routerNote": "When PilotDeck Router or Token Saver is enabled, subagent requests enter the router first. By default, the subagent policy re-judges each subagent turn and picks a tier model. This default only acts as a direct subagent fallback or inherited baseline; it does not override the subagent routing policy in Router advanced settings."
+          "routerNote": "When 9GClaw Router or Token Saver is enabled, subagent requests enter the router first. By default, the subagent policy re-judges each subagent turn and picks a tier model. This default only acts as a direct subagent fallback or inherited baseline; it does not override the subagent routing policy in Router advanced settings."
         }
       },
       "customEnv": {
@@ -1659,7 +1659,7 @@
         }
       },
       "router": {
-        "title": "PilotDeck Router",
+        "title": "9GClaw Router",
         "description": "Embedded router for fan-out across providers (tier-based routing, token saver, auto-orchestrate).",
         "enabled": {
           "label": "Enabled",
@@ -1844,7 +1844,7 @@
   },
   "pluginSettings": {
     "title": "Plugins",
-    "description": "Extend the interface with custom plugins. Install from git or drop a folder in ~/.pilotdeck/plugins/",
+    "description": "Extend the interface with custom plugins. Install from git or drop a folder in ~/.9gclaw/plugins/",
     "installPlaceholder": "https://github.com/user/my-plugin",
     "installButton": "Install",
     "installing": "Installing…",
@@ -1900,11 +1900,11 @@
     "updateComplete": "Update complete!",
     "updateFailed": "Update failed",
     "restartToApply": "Restart to Apply",
-    "restartingTitle": "Restarting PilotDeck...",
+    "restartingTitle": "Restarting 9GClaw...",
     "restartingDescription": "Page will reload automatically when server is ready.",
     "restartWaitingDescription": "Restart may take a little while. Please wait.",
     "restartFailedTitle": "Automatic restart ran into a problem",
-    "restartFailedDescription": "Restart PilotDeck manually from the command line, then refresh this page.",
+    "restartFailedDescription": "Restart 9GClaw manually from the command line, then refresh this page.",
     "refreshPage": "Refresh page",
     "downloadUpdate": "Download Update",
     "downloading": "Downloading... {{percent}}%",
@@ -2008,7 +2008,7 @@
       "websocketUrl": "WebSocket URL",
       "dmPolicy": "DM Policy",
       "groupPolicy": "Group Policy",
-      "policyHint": "Basic policies are written to pilotdeck.yaml; edit YAML later for finer user or group allowlists.",
+      "policyHint": "Basic policies are written to 9gclaw.yaml; edit YAML later for finer user or group allowlists.",
       "saveSuccess": "WeCom config saved"
     }
   },
@@ -2089,7 +2089,7 @@
   "computerUse": {
     "controlTitle": "Control",
     "enable": "Enable computer use",
-    "enableDescription": "Allow PilotDeck to view your screen, read application controls, and use the mouse and keyboard for tasks you authorize. Windows may switch. Actions follow the current task’s approval settings.",
+    "enableDescription": "Allow 9GClaw to view your screen, read application controls, and use the mouse and keyboard for tasks you authorize. Windows may switch. Actions follow the current task’s approval settings.",
     "permissionsTitle": "System permissions",
     "permissions": {
       "accessibility": "Accessibility",
@@ -2103,7 +2103,7 @@
     "linuxPermissions": "The component uses your current desktop login session. Capture, accessibility, and input capabilities depend on the desktop environment and system services.",
     "permissionHint": "Grant permissions to {{owner}} in System Settings. The status updates automatically when you return, and enabled instances reconnect. Follow any additional macOS restart instructions.",
     "permissionFallbackTitle": "Application missing from the permission list?",
-    "permissionFallbackIntro": "If {{owner}} is missing from the list, add the application included with PilotDeck manually. No separate download is needed.",
+    "permissionFallbackIntro": "If {{owner}} is missing from the list, add the application included with 9GClaw manually. No separate download is needed.",
     "permissionFallbackAdd": "Click Grant permission to open the relevant permission page in System Settings.",
     "permissionFallbackSelect": "Click Show permission application and drag the selected application from Finder into the permission list. Or click + below the list, press ⌘⇧G in the file picker, paste the path below, and open it.",
     "permissionFallbackFinish": "Enable the application's permission and complete system verification. This page updates automatically; you can also click Recheck. If the switch is on but permission is still missing, remove the old entry and add the application at the path below.",
@@ -2128,7 +2128,7 @@
     "refresh": "Recheck",
     "stop": "Stop and disable",
     "waylandHint": "This is a Wayland desktop. The system may request permission on the first capture; some operations require a desktop helper. Unsupported operations report a specific reason.",
-    "missingDriver": "The deployed computer use component is missing. Redeploy PilotDeck; the component is included with the runtime and needs no separate installation."
+    "missingDriver": "The deployed computer use component is missing. Redeploy 9GClaw; the component is included with the runtime and needs no separate installation."
   },
   "usage": {
     "overview": "All-time usage overview",

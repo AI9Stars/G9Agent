@@ -7,11 +7,11 @@ let gatewayEventToFrames: (event: unknown, sessionId: string, provider: string) 
 beforeAll(async () => {
   // Load the real backend once, before any React hooks or fetch mocks exist.
   // Its cold dependency graph is setup work, not part of a 5s UI assertion.
-  const bridgePath = '../../server/pilotdeck-bridge.js';
+  const bridgePath = '../../server/9gclaw-bridge.js';
   ({ gatewayEventToFrames } = await import(bridgePath));
 }, 60_000);
 const thought = (revision: number, content: string, offset?: number): NormalizedMessage => ({
-  id: 'wire', sessionId: 's', runId: 'run', kind: 'thinking', provider: 'pilotdeck', timestamp: '2026-01-01', content,
+  id: 'wire', sessionId: 's', runId: 'run', kind: 'thinking', provider: '9gclaw', timestamp: '2026-01-01', content,
   timeline: { version: 1, turnId: 'run', id: 'thought', order: 0, revision, offset },
 });
 it('history racing live updates does not change identity, regress content or lose the user anchor', async () => {
@@ -154,7 +154,7 @@ for (const method of ['fetchFromServer', 'refreshFromServer'] as const) {
     const event = { type: 'agent_status', runId: 'run', event: 'subagent_model_error',
       detail: { subagentId: 'child', errorId: 'failure-1', message: 'Timed out' } };
     // Each transport independently deserializes and converts the same event.
-    const frames = () => gatewayEventToFrames(JSON.parse(JSON.stringify(event)), 's', 'pilotdeck');
+    const frames = () => gatewayEventToFrames(JSON.parse(JSON.stringify(event)), 's', '9gclaw');
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ messages: [],
       stream: { active: true, runId: 'run', messages: frames() } }))));
     const { result } = renderHook(useSessionStore);
@@ -174,7 +174,7 @@ for (const method of ['fetchFromServer', 'refreshFromServer'] as const) {
       expect(result.current.getSubagentDetailMessages('s', 'child')).toHaveLength(1);
       act(() => {
         const separate = { ...event, detail: { ...event.detail, errorId: 'failure-2' } };
-        for (const frame of gatewayEventToFrames(separate, 's', 'pilotdeck')) {
+        for (const frame of gatewayEventToFrames(separate, 's', '9gclaw')) {
           result.current.appendSubagentDetailMessage('s', 'child', frame);
         }
       });

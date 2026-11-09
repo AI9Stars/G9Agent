@@ -65,11 +65,11 @@ test('OBS publication follows the exact completed release and retains manual rep
   assert.equal(obs.concurrency['cancel-in-progress'], false);
   const condition = obs.jobs.sync.if;
   const evaluate = context => runInNewContext(condition, context);
-  const upstream = { repository: 'OpenBMB/PilotDeck', ref: 'refs/heads/main', event_name: 'schedule' };
+  const upstream = { repository: 'AI9Stars/9GClaw', ref: 'refs/heads/main', event_name: 'schedule' };
   assert.equal(evaluate({ github: upstream, inputs: { release_tag: 'v2026.10.29' }, vars: {} }), true);
   assert.equal(evaluate({ github: upstream, inputs: { release_tag: '' }, vars: {} }), false);
   assert.equal(evaluate({ github: { ...upstream, ref: 'refs/pull/1/merge', event_name: 'pull_request' }, inputs: { release_tag: '' }, vars: {} }), false);
-  assert.equal(evaluate({ github: { ...upstream, repository: 'fork/PilotDeck' }, inputs: { release_tag: 'v2026.10.29' }, vars: {} }), false);
+  assert.equal(evaluate({ github: { ...upstream, repository: 'fork/9GClaw' }, inputs: { release_tag: 'v2026.10.29' }, vars: {} }), false);
   const steps = obs.jobs.sync.steps;
   const verify = steps.findIndex(s => s.run?.includes('verify-release-assets.mjs'));
   const publish = steps.findIndex(s => s.run?.includes('release_to_obs.py'));
@@ -162,7 +162,7 @@ test('Windows release signing failures block artifact upload and publication', (
   assert.equal(evaluate(steps[signed].if, false), false);
   assert.equal(evaluate(unsigned.if, true), false);
   assert.equal(evaluate(unsigned.if, false), true);
-  assert.equal(steps[signed].env.PILOTDECK_WINDOWS_SIGNING, 'required');
+  assert.equal(steps[signed].env.NINEGCLAW_WINDOWS_SIGNING, 'required');
   assert.match(steps[signed].run, /windows-signing\.cjs verify/);
   assert.match(steps[signed].run, /throw 'Windows signature verification failed\.'/);
   assert.notEqual(windows['continue-on-error'], true);
@@ -181,5 +181,5 @@ test('Windows and macOS publish blockmaps and run real differential qualificatio
     assert.ok(uploads.some(step => step.with.path.includes(platform === 'windows' ? '.exe.blockmap' : '.zip.blockmap')));
   }
   const createManifest = workflow('release').jobs.release.steps.find(step => step.name === 'Create release manifest and checksums');
-  assert.equal(createManifest.env.PILOTDECK_DIFFERENTIAL_UPDATES, '${{ vars.PILOTDECK_DIFFERENTIAL_UPDATES }}');
+  assert.equal(createManifest.env.NINEGCLAW_DIFFERENTIAL_UPDATES, '${{ vars.NINEGCLAW_DIFFERENTIAL_UPDATES }}');
 });

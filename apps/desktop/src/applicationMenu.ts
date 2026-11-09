@@ -26,19 +26,19 @@ export function buildApplicationMenu(
   });
   const settings = command('settings', '设置…', 'Settings…', 'CmdOrCtrl+,');
   const updates = command('check-updates', '检查更新…', 'Check for Updates…');
-  const about: MenuItemConstructorOptions = mac ? item('about', '关于 PilotDeck', 'About PilotDeck')
-    : { id: 'help-about', label: text('关于 PilotDeck', 'About PilotDeck'), click: () => actions.help?.('about') };
+  const about: MenuItemConstructorOptions = mac ? item('about', '关于 9GClaw', 'About 9GClaw')
+    : { id: 'help-about', label: text('关于 9GClaw', 'About 9GClaw'), click: () => actions.help?.('about') };
   const quit: MenuItemConstructorOptions = platform === 'win32' && requestQuit
     ? { id: 'quit', label: text('退出', 'Exit'), accelerator: 'Ctrl+Q', click: requestQuit }
-    : { ...item('quit', '退出 PilotDeck', 'Quit PilotDeck'), id: 'quit' };
+    : { ...item('quit', '退出 9GClaw', 'Quit 9GClaw'), id: 'quit' };
   const help = (id: 'docs' | 'issues' | 'logs' | 'version', zh: string, en: string): MenuItemConstructorOptions => ({
     id: `help-${id}`, label: text(zh, en), click: () => actions.help?.(id),
   });
   return [
-    ...(mac ? [{ label: 'PilotDeck', submenu: [
+    ...(mac ? [{ label: '9GClaw', submenu: [
       about, updates, separator, settings, separator,
       item('services', '服务', 'Services'), separator,
-      item('hide', '隐藏 PilotDeck', 'Hide PilotDeck'), item('hideOthers', '隐藏其他', 'Hide Others'),
+      item('hide', '隐藏 9GClaw', 'Hide 9GClaw'), item('hideOthers', '隐藏其他', 'Hide Others'),
       item('unhide', '显示全部', 'Show All'), separator, quit,
     ] }] : []),
     { id: 'menu-file', label: text('文件', mac ? 'File' : '&File'), submenu: [

@@ -4,7 +4,7 @@ import retry from './retry-release-build.cjs';
 
 const run = {
   id: 34277867930, name: 'Daily Release', path: '.github/workflows/release.yml',
-  head_repository: { full_name: 'OpenBMB/PilotDeck' }, head_branch: 'main',
+  head_repository: { full_name: 'AI9Stars/9GClaw' }, head_branch: 'main',
   head_sha: '17aa46d0c55b83ae1d35658971ecc1c2a1e4ce14',
   event: 'schedule', status: 'completed', conclusion: 'failure', run_attempt: 1,
 };
@@ -24,7 +24,7 @@ function fixture({ event = run, current = event, results = jobs } = {}) {
       return { data: route.startsWith('GET ') ? current : undefined };
     },
   };
-  const context = { repo: { owner: 'OpenBMB', repo: 'PilotDeck' }, payload: { workflow_run: event } };
+  const context = { repo: { owner: 'OpenBMB', repo: '9GClaw' }, payload: { workflow_run: event } };
   return { github, context, calls, execute: () => retry.retryReleaseBuild({ github, context }) };
 }
 
@@ -35,10 +35,10 @@ for (const event of ['schedule', 'workflow_dispatch']) {
     assert.deepEqual(f.calls, [
       {
         route: 'GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs',
-        params: { owner: 'OpenBMB', repo: 'PilotDeck', run_id: run.id, attempt_number: 1, per_page: 100 },
+        params: { owner: 'OpenBMB', repo: '9GClaw', run_id: run.id, attempt_number: 1, per_page: 100 },
       },
-      { route: 'GET /repos/{owner}/{repo}/actions/runs/{run_id}', params: { owner: 'OpenBMB', repo: 'PilotDeck', run_id: run.id } },
-      { route: 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun-failed-jobs', params: { owner: 'OpenBMB', repo: 'PilotDeck', run_id: run.id } },
+      { route: 'GET /repos/{owner}/{repo}/actions/runs/{run_id}', params: { owner: 'OpenBMB', repo: '9GClaw', run_id: run.id } },
+      { route: 'POST /repos/{owner}/{repo}/actions/runs/{run_id}/rerun-failed-jobs', params: { owner: 'OpenBMB', repo: '9GClaw', run_id: run.id } },
     ]);
   });
 }
@@ -68,7 +68,7 @@ for (const [name, patch] of [
   ['missing attempt', { run_attempt: undefined }], ['successful run', { conclusion: 'success' }],
   ['cancelled run', { conclusion: 'cancelled' }], ['unfinished run', { status: 'in_progress' }],
   ['another branch', { head_branch: 'feature' }], ['PR event', { event: 'pull_request' }],
-  ['another repository', { head_repository: { full_name: 'someone/PilotDeck' } }],
+  ['another repository', { head_repository: { full_name: 'someone/9GClaw' } }],
   ['another workflow', { name: 'Desktop Smoke' }], ['another workflow path', { path: '.github/workflows/other.yml' }],
 ]) {
   test(`ignores ${name} without requesting a rerun`, async () => {

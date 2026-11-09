@@ -33,9 +33,9 @@ const general: Project = {
 };
 
 const project: Project = {
-  name: 'pilotdeck',
-  displayName: 'PilotDeck',
-  fullPath: '/workspace/PilotDeck',
+  name: '9gclaw',
+  displayName: '9GClaw',
+  fullPath: '/workspace/9GClaw',
   sessions: [],
 };
 
@@ -63,7 +63,7 @@ function renderSidebar(selectedProject: Project | null, extra?: Partial<Componen
 afterEach(() => {
   cleanup();
   localStorage.clear();
-  delete window.pilotdeckDesktop;
+  delete window.ninegclawDesktop;
 });
 
 describe('Sidebar layout', () => {
@@ -84,16 +84,16 @@ describe('Sidebar layout', () => {
   it('shows brand text, quick actions, projects and conversations together', () => {
     renderSidebar(null);
 
-    const brand = screen.getByRole('img', { name: 'PILOTDECK' });
+    const brand = screen.getByRole('img', { name: '9GCLAW' });
     const brandSources = Array.from(brand.querySelectorAll('img')).map((image) =>
       image.getAttribute('src'),
     );
     expect(brandSources).toHaveLength(2);
-    expect(brandSources[0]).toContain('pilotdeck-wordmark-light.png');
-    expect(brandSources[1]).toContain('pilotdeck-wordmark-dark.png');
+    expect(brandSources[0]).toContain('9gclaw-wordmark-light.png');
+    expect(brandSources[1]).toContain('9gclaw-wordmark-dark.png');
     expect(screen.getByRole('navigation', { name: /Quick actions|Primary actions/ })).toBeTruthy();
     expect(screen.getByText(/New conversation|新对话/)).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Start a new conversation in PilotDeck|在 PilotDeck 中新建对话/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Start a new conversation in 9GClaw|在 9GClaw 中新建对话/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Start a general conversation|新建通用对话/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Create new project|创建新项目/ })).toBeTruthy();
     expect(screen.getByText('Skills')).toBeTruthy();
@@ -108,18 +108,18 @@ describe('Sidebar layout', () => {
 
     expect(screen.getByText('Projects')).toBeTruthy();
     expect(screen.getByText('Conversations')).toBeTruthy();
-    expect(screen.getByText('PilotDeck')).toBeTruthy();
+    expect(screen.getByText('9GClaw')).toBeTruthy();
   });
 
   it('keeps a sidebar expansion control when the wordmark is collapsed', () => {
     localStorage.setItem('sidebar-v2-width', '76');
     renderSidebar(null);
 
-    expect(screen.queryByRole('img', { name: 'PILOTDECK' })).toBeNull();
+    expect(screen.queryByRole('img', { name: '9GCLAW' })).toBeNull();
     const expand = screen.getByRole('button', { name: /Expand project sidebar|展开项目侧栏/ });
     expect(expand.querySelector('img')).toBeNull();
     fireEvent.click(expand);
-    expect(screen.getByRole('img', { name: 'PILOTDECK' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: '9GCLAW' })).toBeTruthy();
   });
 
   it('opens scheduled tasks from the sidebar quick action', () => {
@@ -170,7 +170,7 @@ describe('Sidebar layout', () => {
     const onSelectProject = vi.fn();
     renderSidebar(null, { onSelectProject });
 
-    fireEvent.click(screen.getByRole('button', { name: /^PilotDeck$/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^9GClaw$/ }));
 
     expect(onSelectProject).toHaveBeenCalledWith(project);
   });
@@ -182,16 +182,16 @@ describe('Sidebar layout', () => {
     const projectsHeading = screen.getByRole('button', { name: 'Collapse projects' }).closest('.tree-heading') as HTMLElement;
     const conversationsHeading = screen.getByRole('button', { name: 'Collapse conversations' }).closest('.tree-heading') as HTMLElement;
 
-    expect(screen.getByText('PilotDeck')).toBeTruthy();
+    expect(screen.getByText('9GClaw')).toBeTruthy();
     expect(within(projectsHeading).getByRole('button', { name: /Create new project|创建新项目/ })).toBeTruthy();
     expect(within(conversationsHeading).getByRole('button', { name: /Start a general conversation|新建通用对话/ })).toBeTruthy();
 
     fireEvent.click(screen.getByText('Projects'));
-    expect(screen.getByText('PilotDeck')).toBeTruthy();
+    expect(screen.getByText('9GClaw')).toBeTruthy();
     fireEvent.click(within(projectsHeading).getByRole('button', { name: 'Collapse projects' }));
-    expect(screen.queryByText('PilotDeck')).toBeNull();
+    expect(screen.queryByText('9GClaw')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Expand projects' }));
-    expect(screen.getByText('PilotDeck')).toBeTruthy();
+    expect(screen.getByText('9GClaw')).toBeTruthy();
 
     fireEvent.click(screen.getByText('Conversations'));
     expect(within(conversationsHeading).getByRole('button', { name: 'Collapse conversations' })).toBeTruthy();
@@ -210,7 +210,7 @@ describe('Sidebar layout', () => {
 
     expect(screen.getByRole('button', { name: 'Collapse conversations' })).toBeTruthy();
     expect(screen.getByText('hello world')).toBeTruthy();
-    expect(screen.getByText('PilotDeck')).toBeTruthy();
+    expect(screen.getByText('9GClaw')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Collapse conversations' }));
     expect(screen.queryByText('hello world')).toBeNull();
@@ -237,7 +237,7 @@ describe('Sidebar layout', () => {
     renderSidebar(null, { onStartNewSession });
 
     fireEvent.click(screen.getByRole('button', {
-      name: /Start a new conversation in PilotDeck|在 PilotDeck 中新建对话/,
+      name: /Start a new conversation in 9GClaw|在 9GClaw 中新建对话/,
     }));
     expect(onStartNewSession).toHaveBeenLastCalledWith(project);
 
@@ -278,7 +278,7 @@ describe('desktop working-directory actions', () => {
     ['linux', 'en', 'Open in File Manager'], ['linux', 'zh-CN', '在文件管理器中打开'],
   ])('opens the session working directory on %s in %s', async (platform, language, label) => {
     const openDirectory = vi.fn().mockResolvedValue(true);
-    window.pilotdeckDesktop = { platform, openDirectory } as never;
+    window.ninegclawDesktop = { platform, openDirectory } as never;
     const withSessions = { ...project, sessions: [{ id: 'native', title: 'Native chat', cwd: '/worktree/space 中文' }] };
     const onSelectSession = vi.fn();
     renderSidebar(withSessions, { projects: [withSessions], onSelectSession }, await localizedOptions(language));
@@ -291,20 +291,20 @@ describe('desktop working-directory actions', () => {
 
   it('opens the project directory when a conversation has no recorded cwd', async () => {
     const openDirectory = vi.fn().mockResolvedValue(true);
-    window.pilotdeckDesktop = { platform: 'win32', openDirectory } as never;
+    window.ninegclawDesktop = { platform: 'win32', openDirectory } as never;
     const withSessions = { ...project, sessions: [{ id: 'fallback', title: 'Fallback chat' }] };
     renderSidebar(withSessions, { projects: [withSessions] }, await localizedOptions());
     fireEvent.contextMenu(screen.getByText('Fallback chat'));
     fireEvent.click(screen.getByRole('menuitem', { name: /Open in File Explorer|在文件资源管理器中打开/ }));
     await waitFor(() => expect(openDirectory).toHaveBeenCalledWith(project.fullPath));
-    fireEvent.contextMenu(screen.getByText('PilotDeck'));
+    fireEvent.contextMenu(screen.getByText('9GClaw'));
     fireEvent.click(screen.getByRole('menuitem', { name: /Open in File Explorer|在文件资源管理器中打开/ }));
     await waitFor(() => expect(openDirectory).toHaveBeenCalledTimes(2));
   });
 
   it.each([general.fullPath, '/previous/general'])('uses the current General workspace instead of stale cwd %s', async (cwd) => {
     const openDirectory = vi.fn().mockResolvedValue(true);
-    window.pilotdeckDesktop = { platform: 'darwin', openDirectory } as never;
+    window.ninegclawDesktop = { platform: 'darwin', openDirectory } as never;
     const withSessions = { ...general, workspaceCwd: '/managed/workspace', sessions: [{ id: 'general-chat', title: 'General chat', cwd }] };
     renderSidebar(withSessions, { projects: [withSessions] }, await localizedOptions());
     fireEvent.contextMenu(screen.getByText('General chat'));
@@ -314,13 +314,13 @@ describe('desktop working-directory actions', () => {
 
   it('keeps native file manager actions out of the browser', () => {
     renderSidebar(project);
-    fireEvent.contextMenu(screen.getByText('PilotDeck'));
+    fireEvent.contextMenu(screen.getByText('9GClaw'));
     expect(screen.getAllByRole('menuitem')).toHaveLength(2);
   });
 
   it('inherits the parent working directory for a background conversation', async () => {
     const openDirectory = vi.fn().mockResolvedValue(true);
-    window.pilotdeckDesktop = { platform: 'linux', openDirectory } as never;
+    window.ninegclawDesktop = { platform: 'linux', openDirectory } as never;
     const withSessions: Project = { ...project, sessions: [
       { id: 'parent', title: 'Parent chat', cwd: '/worktree/parent' },
       { id: 'background', title: 'Background chat', parentSessionId: 'parent', sessionKind: 'background_task' },
@@ -332,7 +332,7 @@ describe('desktop working-directory actions', () => {
   });
 
   it('hides the action when General has no working directory', async () => {
-    window.pilotdeckDesktop = { platform: 'darwin', openDirectory: vi.fn() } as never;
+    window.ninegclawDesktop = { platform: 'darwin', openDirectory: vi.fn() } as never;
     const withSessions = { ...general, sessions: [{ id: 'legacy', title: 'Legacy general chat', cwd: general.fullPath }] };
     renderSidebar(withSessions, { projects: [withSessions] }, await localizedOptions());
     fireEvent.contextMenu(screen.getByText('Legacy general chat'));
@@ -341,16 +341,16 @@ describe('desktop working-directory actions', () => {
 
   it.each([false, 'reject'])('reports a localized failure when opening returns %s', async failure => {
     const openDirectory = failure === false ? vi.fn().mockResolvedValue(false) : vi.fn().mockRejectedValue(new Error('missing'));
-    window.pilotdeckDesktop = { platform: 'win32', openDirectory } as never;
+    window.ninegclawDesktop = { platform: 'win32', openDirectory } as never;
     const toast = vi.fn();
-    window.addEventListener('pilotdeck:toast', toast);
+    window.addEventListener('9gclaw:toast', toast);
     try {
       renderSidebar(project, undefined, await localizedOptions(failure === false ? 'en' : 'zh-CN'));
-      fireEvent.contextMenu(screen.getByText('PilotDeck'));
+      fireEvent.contextMenu(screen.getByText('9GClaw'));
       fireEvent.click(screen.getByRole('menuitem', { name: /Open in File Explorer|在文件资源管理器中打开/ }));
       await waitFor(() => expect(toast).toHaveBeenCalledOnce());
       expect(toast.mock.calls[0][0].detail).toMatchObject({ kind: 'error' });
       expect(toast.mock.calls[0][0].detail.message).toMatch(/Could not open the working directory|无法打开工作目录/);
-    } finally { window.removeEventListener('pilotdeck:toast', toast); }
+    } finally { window.removeEventListener('9gclaw:toast', toast); }
   });
 });

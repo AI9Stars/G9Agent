@@ -39,10 +39,10 @@ export class JsonReleaseProvider extends Provider<UpdateInfo> {
     // Never derive a host or arbitrary path from metadata. Unsupported historic
     // layouts fall back to full download through electron-updater.
     if (newVersion !== this.info.version || !this.base.pathname.endsWith(`/${newTag}/`)
-      || !name?.startsWith(`PilotDeck-${newVersion}-`) || !/^[\w.-]+$/.test(name)) {
+      || !name?.startsWith(`9GClaw-${newVersion}-`) || !/^[\w.-]+$/.test(name)) {
       throw new Error("Unsupported differential release layout");
     }
-    const oldName = name.replace(`PilotDeck-${newVersion}-`, `PilotDeck-${oldVersion}-`);
+    const oldName = name.replace(`9GClaw-${newVersion}-`, `9GClaw-${oldVersion}-`);
     return [new URL(`../${oldTag}/${oldName}.blockmap`, this.base), new URL(`${name}.blockmap`, this.base)];
   }
 }

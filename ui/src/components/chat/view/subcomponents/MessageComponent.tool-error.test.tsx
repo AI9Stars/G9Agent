@@ -20,7 +20,7 @@ function renderToolMessage(
       message={message}
       prevMessage={null}
       createDiff={() => []}
-      provider="pilotdeck"
+      provider="9gclaw"
       onShowSettings={() => {}}
       {...options}
     />,
@@ -60,7 +60,7 @@ describe('MessageComponent tool errors', () => {
       isToolUse: true,
       toolName: 'web_search',
       toolId: 'tool-web-search',
-      toolInput: '{"query":"PilotDeck"}',
+      toolInput: '{"query":"9GClaw"}',
       toolResult: {
         isError: true,
         content: 'Web search requires an API key.',

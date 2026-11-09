@@ -21,8 +21,8 @@
  *   Cache is invalidated on reconnect.
  *
  * Errors raised by `callTool` / `listTools` always carry one of the
- * PilotDeck-style `mcp_*` error codes via the `code` field on the thrown
- * error, so the caller can map them back to `PilotDeckToolErrorCode`.
+ * 9GClaw-style `mcp_*` error codes via the `code` field on the thrown
+ * error, so the caller can map them back to `NineGClawToolErrorCode`.
  */
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -40,13 +40,13 @@ import { networkFetch } from "../../network/fetch.js";
 import { awaitWithAbort } from "../../runtime/abort.js";
 import { toolContractFingerprint } from "../runtime/toolContract.js";
 import type {
-  PilotDeckMcpServerSpec,
-  PilotDeckMcpStatus,
-  PilotDeckMcpToolSpec,
+  NineGClawMcpServerSpec,
+  NineGClawMcpStatus,
+  NineGClawMcpToolSpec,
 } from "../protocol/types.js";
 
 const DEFAULT_CALL_TIMEOUT_MS = parseInt(
-  process.env.PILOTDECK_MCP_TOOL_TIMEOUT_MS ?? "60000",
+  process.env.NINEGCLAW_MCP_TOOL_TIMEOUT_MS ?? "60000",
   10,
 );
 const LIST_TOOLS_CACHE_TTL_MS = 5 * 60 * 1000;
@@ -56,7 +56,7 @@ export type McpClientOptions = {
   /** Connect handshake timeout. Default 10s. */
   handshakeTimeoutMs?: number;
   /** Optional override for testing — supply a pre-built Transport instance. */
-  transportFactory?: (spec: PilotDeckMcpServerSpec) => Transport;
+  transportFactory?: (spec: NineGClawMcpServerSpec) => Transport;
   /** Optional fetch override for testing streamable HTTP transports. */
   fetch?: typeof fetch;
 };
@@ -80,15 +80,15 @@ export class McpClientError extends Error {
 
 type ListToolsCache = {
   expiresAt: number;
-  tools: PilotDeckMcpToolSpec[];
+  tools: NineGClawMcpToolSpec[];
 };
 
 export class McpClient {
   private client: Client | null = null;
   private transport: Transport | null = null;
-  private status: PilotDeckMcpStatus = "idle";
+  private status: NineGClawMcpStatus = "idle";
   private listToolsCache: ListToolsCache | null = null;
-  private listToolsInFlight?: Promise<PilotDeckMcpToolSpec[]>;
+  private listToolsInFlight?: Promise<NineGClawMcpToolSpec[]>;
   private catalogVersion = 0;
   private closeVersion = 0;
   private serverInstructions = "";
@@ -97,11 +97,11 @@ export class McpClient {
   private perSessionDir: string | null = null;
 
   constructor(
-    public readonly spec: PilotDeckMcpServerSpec,
+    public readonly spec: NineGClawMcpServerSpec,
     private readonly options: McpClientOptions = {},
   ) {}
 
-  getStatus(): PilotDeckMcpStatus {
+  getStatus(): NineGClawMcpStatus {
     return this.status;
   }
 
@@ -128,7 +128,7 @@ export class McpClient {
     const transport = this.buildTransport();
     const ownedDirectory = this.perSessionDir;
     const client = new Client(
-      { name: "pilotdeck", version: "0.1.0" },
+      { name: "9gclaw", version: "0.1.0" },
       { capabilities: { elicitation: {} } },
     );
     client.setNotificationHandler(ToolListChangedNotificationSchema, () => {
@@ -182,7 +182,7 @@ export class McpClient {
     if (this.spec.transport === "stdio") {
       let args = this.spec.args;
       if (this.spec.perSession) {
-        const dir = mkdtempSync(join(tmpdir(), `pilotdeck-mcp-${this.spec.id}-`));
+        const dir = mkdtempSync(join(tmpdir(), `9gclaw-mcp-${this.spec.id}-`));
         this.perSessionDir = dir;
         args = [...(args ?? []), `--user-data-dir=${dir}`];
       }
@@ -213,7 +213,7 @@ export class McpClient {
         },
       });
     }
-    const fallback = this.spec as PilotDeckMcpServerSpec;
+    const fallback = this.spec as NineGClawMcpServerSpec;
     throw new McpClientError(
       `Unsupported transport: ${(fallback as { transport: string }).transport}`,
       "mcp_unsupported_transport",
@@ -222,7 +222,7 @@ export class McpClient {
   }
 
   /** M6 — LRU-cached tools/list. */
-  async listTools(options: { signal?: AbortSignal } = {}): Promise<PilotDeckMcpToolSpec[]> {
+  async listTools(options: { signal?: AbortSignal } = {}): Promise<NineGClawMcpToolSpec[]> {
     options.signal?.throwIfAborted();
     const cached = this.listToolsCache;
     if (cached && cached.expiresAt > Date.now()) return structuredClone(cached.tools);
@@ -239,13 +239,13 @@ export class McpClient {
     this.listToolsCache = null;
   }
 
-  private async refreshToolCatalog(): Promise<PilotDeckMcpToolSpec[]> {
+  private async refreshToolCatalog(): Promise<NineGClawMcpToolSpec[]> {
     const closeVersion = this.closeVersion;
     while (true) {
       if (closeVersion !== this.closeVersion) throw new McpClientError("MCP client closed during tool discovery", "mcp_call_failed", this.spec.id);
       await this.start();
       const version = this.catalogVersion;
-      const tools: PilotDeckMcpToolSpec[] = [];
+      const tools: NineGClawMcpToolSpec[] = [];
       const cursors = new Set<string>();
       let cursor: string | undefined;
       do {
@@ -271,7 +271,7 @@ export class McpClient {
     options: { signal?: AbortSignal; timeoutMs?: number; expectedContract?: string } = {},
   ): Promise<{ content: unknown; structuredContent?: unknown; isError?: boolean }> {
     options.signal?.throwIfAborted();
-    let tools: PilotDeckMcpToolSpec[];
+    let tools: NineGClawMcpToolSpec[];
     let version: number;
     do {
       version = this.catalogVersion;
@@ -282,14 +282,14 @@ export class McpClient {
       throw new McpClientError("Client not connected", "mcp_handshake_failed", this.spec.id);
     }
     const timeoutMs = options.timeoutMs ?? this.options.callTimeoutMs ?? this.spec.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS;
-    const matchesContract = (catalog: PilotDeckMcpToolSpec[]) => {
+    const matchesContract = (catalog: NineGClawMcpToolSpec[]) => {
       if (!options.expectedContract) return true;
       const current = catalog.find(tool => tool.toolName === toolName);
       return current !== undefined && toolContractFingerprint(current) === options.expectedContract;
     };
     if (!matchesContract(tools)) throw new McpClientError(
       "MCP tool catalog changed before dispatch. Retry using the refreshed tool schema and permissions.", "mcp_catalog_changed", this.spec.id);
-    const advertisedReplay = (tools: PilotDeckMcpToolSpec[]) => {
+    const advertisedReplay = (tools: NineGClawMcpToolSpec[]) => {
       const annotations = tools.find(tool => tool.toolName === toolName)?.annotations;
       return annotations?.readOnlyHint === true || annotations?.idempotentHint === true;
     };
@@ -438,12 +438,12 @@ export class McpClient {
     removeSessionDirectory(directory);
   }
 
-  private toToolSpec(raw: unknown): PilotDeckMcpToolSpec {
+  private toToolSpec(raw: unknown): NineGClawMcpToolSpec {
     const sanitized = recursivelySanitizeUnicode(raw) as {
       name: string;
       description?: string;
       inputSchema?: unknown;
-      annotations?: PilotDeckMcpToolSpec["annotations"];
+      annotations?: NineGClawMcpToolSpec["annotations"];
       _meta?: Record<string, unknown>;
     };
     const wireName = buildMcpToolWireName(this.spec.id, sanitized.name);
@@ -462,7 +462,7 @@ export class McpClient {
 function removeSessionDirectory(directory: string | null): void {
   if (!directory) return;
   const target = resolve(directory);
-  if (dirname(target) !== resolve(tmpdir()) || !basename(target).startsWith("pilotdeck-mcp-")) return;
+  if (dirname(target) !== resolve(tmpdir()) || !basename(target).startsWith("9gclaw-mcp-")) return;
   try { rmSync(target, { recursive: true, force: true }); } catch { /* best effort cleanup of owned temporary storage */ }
 }
 

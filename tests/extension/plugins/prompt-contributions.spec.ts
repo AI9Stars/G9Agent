@@ -9,13 +9,13 @@ import { PluginRuntime } from "../../../src/extension/plugins/runtime/PluginRunt
 import { writeSkillEnabled } from "../../../src/extension/skills/skillPreferences.js";
 
 test("prompt snapshots honor live skill preferences and precedence without loading unrelated contributions", async (t) => {
-  const root = await mkdtemp(join(tmpdir(), "pilotdeck-prompt-snapshot-"));
+  const root = await mkdtemp(join(tmpdir(), "9gclaw-prompt-snapshot-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const pilotHome = join(root, "home");
   const projectRoot = join(root, "project");
   const builtinSkillsRoot = join(root, "builtin");
   for (const [directory, description] of [[builtinSkillsRoot, "Builtin guide"], [join(pilotHome, "skills"), "User guide"],
-    [join(projectRoot, ".pilotdeck", "skills"), "Project guide"]]) {
+    [join(projectRoot, ".9gclaw", "skills"), "Project guide"]]) {
     await mkdir(join(directory, "guide"), { recursive: true });
     await writeFile(join(directory, "guide", "SKILL.md"), `---\nname: guide\ndescription: ${description}\n---\nSynthetic guide.`);
   }
@@ -40,7 +40,7 @@ test("prompt snapshots honor live skill preferences and precedence without loadi
   assert.deepEqual(resolver.getPromptContributions().mcpInstructions, [{ serverName: "connected", instructions: "Live server guide" }]);
 
   writeSkillEnabled(pilotHome, { scope: "project", projectKey: projectRoot, slug: "guide" }, true);
-  await writeFile(join(projectRoot, ".pilotdeck", "skills", "guide", "SKILL.md"), "---\nname: guide\ndescription: Updated project guide\n---\nUpdated.");
+  await writeFile(join(projectRoot, ".9gclaw", "skills", "guide", "SKILL.md"), "---\nname: guide\ndescription: Updated project guide\n---\nUpdated.");
   await runtime.refresh();
   assert.equal(resolver.getPromptContributions().skills[0].description, "Updated project guide");
 });

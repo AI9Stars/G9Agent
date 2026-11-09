@@ -18,13 +18,13 @@ vi.mock('../../../contexts/WebSocketContext', () => ({
   useWebSocket: () => ({ sendMessage: mocks.sendMessage, subscribe: mocks.subscribe }),
 }));
 
-const provider = 'pilotdeck' as SessionProvider;
+const provider = '9gclaw' as SessionProvider;
 const noop = () => undefined;
 let gatewayEventToFrames: (event: Record<string, unknown>, sessionId: string, provider: SessionProvider) => unknown[];
 beforeAll(async () => {
   // Keep cold backend initialization outside React test lifetimes and the
   // per-assertion timeout while still exercising the real transport mapper.
-  const bridgePath = '../../../../server/pilotdeck-bridge.js';
+  const bridgePath = '../../../../server/9gclaw-bridge.js';
   ({ gatewayEventToFrames } = await import(bridgePath));
 }, 60_000);
 afterEach(cleanup);
@@ -72,7 +72,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: { sessionId: null, startedAt: Date.now() } },
@@ -82,7 +82,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
     act(() => {
       mocks.listener?.({ kind: 'session_created', sessionId: 'web:s_failed', newSessionId: 'web:s_failed', runId: 'workspace-failed-start' });
       mocks.listener?.({ kind: 'error', sessionId: 'web:s_failed', runId: 'workspace-failed-start', terminal: true,
-        code: 'gateway_bridge_error', content: 'General workspace must be separate from PILOT_HOME.' });
+        code: 'gateway_bridge_error', content: 'General workspace must be separate from NINEGCLAW_HOME.' });
     });
     expect(setIsLoading).toHaveBeenCalledWith(false);
     expect(setCanAbortSession).toHaveBeenCalledWith(false);
@@ -107,7 +107,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -141,7 +141,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -183,7 +183,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -219,7 +219,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -261,7 +261,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -298,7 +298,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -338,7 +338,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -366,7 +366,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
     expect(mocks.sendMessage).toHaveBeenCalledWith({
       type: 'check-session-status',
       sessionId: 'cron:task-1',
-      provider: 'pilotdeck',
+      provider: '9gclaw',
       expectedActiveRunId: null,
       includeActiveTurnMessages: true,
       statusRequestId: 1,
@@ -390,7 +390,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -429,7 +429,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -484,7 +484,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -547,7 +547,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -579,7 +579,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
     expect(mocks.sendMessage).toHaveBeenCalledWith({
       type: 'check-session-status',
       sessionId: 'cron:task-1',
-      provider: 'pilotdeck',
+      provider: '9gclaw',
       expectedActiveRunId: 'run-current',
       includeActiveTurnMessages: true,
       statusRequestId: 1,
@@ -605,7 +605,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -645,7 +645,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -713,7 +713,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -780,7 +780,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },
@@ -841,7 +841,7 @@ describe('useChatRealtimeHandlers terminal errors', () => {
       setCanAbortSession: noop,
       setIsAborting: noop,
       setClaudeStatus: noop,
-      setPilotDeckStatus: noop,
+      setNineGClawStatus: noop,
       setTokenBudget: noop,
       setPendingPermissionRequests: noop,
       pendingViewSessionRef: { current: null },

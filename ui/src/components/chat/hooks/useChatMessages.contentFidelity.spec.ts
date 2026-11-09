@@ -10,7 +10,7 @@ $\text{test}$` + '\n\tactual tab\r\nactual CRLF';
 describe('chat message content fidelity', () => {
   it('preserves authoritative reasoning timing independently of history timestamps', () => {
     const msg: NormalizedMessage = {
-      id: 'thought', sessionId: 's', runId: 'turn', timestamp: '2026-01-01T01:00:00Z', provider: 'pilotdeck',
+      id: 'thought', sessionId: 's', runId: 'turn', timestamp: '2026-01-01T01:00:00Z', provider: '9gclaw',
       kind: 'thinking', content: 'Plan', streamState: 'closed',
       timeline: { version: 1, turnId: 'turn', id: 'thought', order: 0, revision: 2,
         startedAt: '2026-01-01T00:00:00Z', durationMs: 4200 },
@@ -27,7 +27,7 @@ describe('chat message content fidelity', () => {
     ['assistant', 'thinking', 'thinking-1'], ['assistant', 'thinking', '__streaming_thinking_1'],
   ] as const)('preserves %s %s content (%s)', (role, kind, id) => {
     const msg: NormalizedMessage = {
-      id, sessionId: 's', timestamp: '2026-09-09T00:00:00Z', provider: 'pilotdeck', role, kind, content,
+      id, sessionId: 's', timestamp: '2026-09-09T00:00:00Z', provider: '9gclaw', role, kind, content,
     };
     expect(normalizedToChatMessages([msg])[0].content).toBe(content);
     // History reload creates fresh objects; it must not decode content again.
@@ -39,7 +39,7 @@ describe('chat message content fidelity', () => {
       const partial = content.slice(0, i);
       expect(normalizedToChatMessages([{
         id: '__streaming_assistant_1', sessionId: 's', timestamp: '2026-09-09T00:00:00Z',
-        provider: 'pilotdeck', kind: 'stream_delta', role: 'assistant', content: partial,
+        provider: '9gclaw', kind: 'stream_delta', role: 'assistant', content: partial,
       }])[0].content).toBe(partial);
     }
   });

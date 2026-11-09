@@ -3,10 +3,10 @@ import { chromium, expect } from '@playwright/test';
 import { mkdir, readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { parse } from 'yaml';
-const base = process.env.PILOTDECK_SMOKE_URL || 'http://127.0.0.1:5187';
+const base = process.env.NINEGCLAW_SMOKE_URL || 'http://127.0.0.1:5187';
 const output = resolve('artifacts/settings-integrations');
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ channel: process.env.PILOTDECK_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
+const browser = await chromium.launch({ channel: process.env.NINEGCLAW_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
 const cases = [
   ['zh-CN', 'light', 'default', 'win32'], ['en', 'dark', 'blue', 'win32'],
   ['en', 'light', 'gray', 'darwin'], ['zh-CN', 'dark', 'gray', 'linux'],
@@ -20,17 +20,17 @@ async function ready(page) { await expect(page.locator('.pd-startup-screen')).to
 try {
   for (const [language, mode, preset, platform] of cases) {
     const translations = JSON.parse(await readFile(new URL(`../src/i18n/locales/${language}/settings.json`, import.meta.url), 'utf8'));
-    const office = translations.pilotDeckConfig.panels.officePreview, computer = translations.computerUse;
+    const office = translations.nineGClawConfig.panels.officePreview, computer = translations.computerUse;
     const context = await browser.newContext({ viewport: { width: 1129, height: 1039 } });
     await context.addInitScript(({ language, mode, preset }) => {
       localStorage.setItem('userLanguage', language); localStorage.setItem('themeMode', mode);
-      localStorage.setItem('pilotdeck-light-appearance-v1', JSON.stringify({ preset }));
+      localStorage.setItem('9gclaw-light-appearance-v1', JSON.stringify({ preset }));
     }, { language, mode, preset });
     let config = { agent: { model: 'test/model' }, webui: { officePreview: { service: 'libreoffice', binaryPath: '' } } };
     let revision = 1, rejectSave = 0, officePlatform = platform, rechecks = 0;
     const probes = [], operations = [], errors = [];
     let computerStatus = { platform, available: true, enabled: false, phase: 'disabled', version: '0.34.1',
-      ...(platform === 'darwin' ? { permissionAppPath: '/Applications/PilotDeck.app', permissions: { accessibility: false, screenRecording: false } } : {}),
+      ...(platform === 'darwin' ? { permissionAppPath: '/Applications/9GClaw.app', permissions: { accessibility: false, screenRecording: false } } : {}),
       ...(platform === 'linux' ? { desktopSession: 'wayland' } : {}) };
     await context.route('**/api/**', async route => {
       const request = route.request(), url = new URL(request.url()), path = url.pathname;

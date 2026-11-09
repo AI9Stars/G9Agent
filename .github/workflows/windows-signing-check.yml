@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   sign:
-    if: ${{ github.repository == 'OpenBMB/PilotDeck' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.repository == 'AI9Stars/9GClaw' && github.ref == 'refs/heads/main' }}
     runs-on: windows-latest
     environment: windows-signing
     timeout-minutes: 15
@@ -33,7 +33,7 @@ jobs:
         shell: pwsh
         run: |
           $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
-          $fixture = Join-Path $env:RUNNER_TEMP 'pilotdeck-signing-check.exe'
+          $fixture = Join-Path $env:RUNNER_TEMP '9gclaw-signing-check.exe'
           $source = Join-Path $env:GITHUB_WORKSPACE 'apps\desktop\resources\installer\InstallPayload.cs'
           & $compiler /nologo /optimize+ /target:exe /platform:anycpu "/out:$fixture" $source
           if ($LASTEXITCODE -ne 0) { throw 'Signing fixture compilation failed.' }
@@ -41,23 +41,23 @@ jobs:
       - name: Sign and verify certificate identity and trusted timestamp
         shell: pwsh
         env:
-          PILOTDECK_WINDOWS_SIGNING: required
-          PILOTDECK_WINDOWS_SIGNING_PROVIDER: ssign
-          PILOTDECK_WINDOWS_CERT_SHA1: ${{ vars.WINDOWS_CERT_SHA1 }}
-          PILOTDECK_WINDOWS_PUBLISHER: ${{ vars.WINDOWS_PUBLISHER }}
+          NINEGCLAW_WINDOWS_SIGNING: required
+          NINEGCLAW_WINDOWS_SIGNING_PROVIDER: ssign
+          NINEGCLAW_WINDOWS_CERT_SHA1: ${{ vars.WINDOWS_CERT_SHA1 }}
+          NINEGCLAW_WINDOWS_PUBLISHER: ${{ vars.WINDOWS_PUBLISHER }}
           CERTUM_EMAIL: ${{ secrets.CERTUM_EMAIL }}
           CERTUM_OTP: ${{ secrets.CERTUM_OTP }}
-          XDG_RUNTIME_DIR: ${{ runner.temp }}/pilotdeck-signing-session
+          XDG_RUNTIME_DIR: ${{ runner.temp }}/9gclaw-signing-session
         run: |
           if (-not $env:CERTUM_EMAIL -or -not $env:CERTUM_OTP) { throw 'Configure the windows-signing environment secrets first.' }
-          node apps/desktop/scripts/windows-signing.cjs sign (Join-Path $env:RUNNER_TEMP 'pilotdeck-signing-check.exe')
+          node apps/desktop/scripts/windows-signing.cjs sign (Join-Path $env:RUNNER_TEMP '9gclaw-signing-check.exe')
           if ($LASTEXITCODE -ne 0) { throw 'Cloud signature verification failed.' }
 
       - name: Remove temporary authentication session
         if: ${{ always() }}
         shell: pwsh
         run: |
-          $sessionRoot = [IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP 'pilotdeck-signing-session'))
+          $sessionRoot = [IO.Path]::GetFullPath((Join-Path $env:RUNNER_TEMP '9gclaw-signing-session'))
           $expectedParent = [IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\', '/')
           if ([IO.Path]::GetDirectoryName($sessionRoot) -ne $expectedParent) { throw 'Unexpected signing cache location.' }
           if (Test-Path -LiteralPath $sessionRoot) { Remove-Item -LiteralPath $sessionRoot -Recurse -Force }

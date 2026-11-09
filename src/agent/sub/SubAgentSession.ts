@@ -26,9 +26,9 @@ import type { AgentRuntimeConfig } from "../runtime/AgentRuntimeConfig.js";
 import type { AgentRuntimeDependencies } from "../runtime/AgentRuntimeDependencies.js";
 import { ToolRegistry } from "../../tool/registry/ToolRegistry.js";
 import type {
-  PilotDeckReadFileStateMap,
-  PilotDeckToolDefinition,
-  PilotDeckWriteSnapshotMap,
+  NineGClawReadFileStateMap,
+  NineGClawToolDefinition,
+  NineGClawWriteSnapshotMap,
 } from "../../tool/index.js";
 import { ConcurrentToolScheduler } from "../../tool/scheduler/ConcurrentToolScheduler.js";
 import { ToolRuntime } from "../../tool/execution/ToolRuntime.js";
@@ -59,9 +59,9 @@ export type SubAgentSessionOptions = {
   /** Parent agent's runtime dependencies (model, scheduler factory, ...). */
   parentDependencies: AgentRuntimeDependencies;
   /** Parent agent's read-file deduplication cache (cloned into the child). */
-  parentReadFileState?: PilotDeckReadFileStateMap;
+  parentReadFileState?: NineGClawReadFileStateMap;
   /** Parent agent's write snapshots (cloned into the child). */
-  parentWriteSnapshots?: PilotDeckWriteSnapshotMap;
+  parentWriteSnapshots?: NineGClawWriteSnapshotMap;
   /** Parent session/turn scope used for forwarding child activity to hosts. */
   parentSessionId: string;
   parentTurnId: string;
@@ -215,12 +215,12 @@ export class SubAgentSession {
     const scoped = new ToolRegistry();
     for (const tool of this.options.parentDependencies.tools.registry.list()) {
       if (!this.includesTool(tool)) continue;
-      scoped.register(tool as PilotDeckToolDefinition);
+      scoped.register(tool as NineGClawToolDefinition);
     }
     return scoped;
   }
 
-  private includesTool(tool: PilotDeckToolDefinition): boolean {
+  private includesTool(tool: NineGClawToolDefinition): boolean {
     const allowed = this.options.definition.allowedTools;
     return (allowed.includes("*") || allowed.includes(tool.name))
       && !["enter_plan_mode", "exit_plan_mode", "agent", "ask_user_question"].includes(tool.name)

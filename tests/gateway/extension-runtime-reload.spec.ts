@@ -15,8 +15,8 @@ function deferred() {
 }
 
 async function fixture(t: TestContext, beforeTools?: () => Promise<void>) {
-  const home = await mkdtemp(join(tmpdir(), 'pilotdeck-extension-reload-'));
-  const configPath = join(home, 'pilotdeck.yaml');
+  const home = await mkdtemp(join(tmpdir(), '9gclaw-extension-reload-'));
+  const configPath = join(home, '9gclaw.yaml');
   const projects = [join(home, 'project-a'), join(home, 'project-b')];
   const clients: McpClient[] = [];
   const running = new Set<McpClient>();
@@ -61,18 +61,18 @@ extension:
 telemetry: { enabled: false }
 `);
   for (const [index, project] of projects.entries()) {
-    await mkdir(join(project, '.pilotdeck'), { recursive: true });
+    await mkdir(join(project, '.9gclaw'), { recursive: true });
     const registration = join(home, 'projects', `project-${index}`);
     await mkdir(registration, { recursive: true });
     await writeFile(join(registration, '.cwd'), project);
-    await writeFile(join(project, '.pilotdeck', 'mcp.json'), JSON.stringify({ mcpServers: {
+    await writeFile(join(project, '.9gclaw', 'mcp.json'), JSON.stringify({ mcpServers: {
       [`project${index}_shared`]: { command: 'synthetic-mcp' },
       [`project${index}_session`]: { command: 'synthetic-mcp', perSession: true },
     } }));
   }
   const local = createLocalGateway({ pilotHome: home, projectRoot: home, builtinSkillsRoot: join(home, 'skills'),
     permissionMode: 'bypassPermissions',
-    env: { PATH: process.env.PATH, PILOT_HOME: home, PILOTDECK_CONFIG_PATH: configPath },
+    env: { PATH: process.env.PATH, NINEGCLAW_HOME: home, NINEGCLAW_CONFIG_PATH: configPath },
     __testModelFactory(snapshot) {
       return { ...createModelRuntime(snapshot.config.model),
         async *stream(request): AsyncIterable<CanonicalModelEvent> {

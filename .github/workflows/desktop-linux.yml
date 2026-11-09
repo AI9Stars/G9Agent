@@ -31,7 +31,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PILOTDECK_UPDATE_REPOSITORY: ${{ github.repository }}
+  NINEGCLAW_UPDATE_REPOSITORY: ${{ github.repository }}
 
 jobs:
   deb:
@@ -43,10 +43,10 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04' }}
     timeout-minutes: 90
     env:
-      PILOTDECK_RELEASE_DATE: ${{ inputs.release_date }}
-      PILOTDECK_RELEASE_REVISION: ${{ inputs.revision }}
-      PILOTDECK_COMMIT_SHA: ${{ github.sha }}
-      PILOTDECK_DESKTOP_NODE_ARCH: ${{ matrix.arch }}
+      NINEGCLAW_RELEASE_DATE: ${{ inputs.release_date }}
+      NINEGCLAW_RELEASE_REVISION: ${{ inputs.revision }}
+      NINEGCLAW_COMMIT_SHA: ${{ github.sha }}
+      NINEGCLAW_DESKTOP_NODE_ARCH: ${{ matrix.arch }}
       NODE_OPTIONS: --max-old-space-size=2560
     steps:
       - uses: actions/checkout@v7
@@ -87,7 +87,7 @@ jobs:
         run: node apps/desktop/scripts/set-ci-version.mjs
 
       - name: Build Ubuntu ${{ matrix.arch }} DEB
-        run: pnpm --filter pilotdeck-desktop run dist:linux:${{ matrix.arch }}
+        run: pnpm --filter 9gclaw-desktop run dist:linux:${{ matrix.arch }}
 
       - name: Verify Ubuntu artifact and updater
         shell: bash
@@ -107,7 +107,7 @@ jobs:
           app_dir="apps/desktop/dist-electron/$UNPACKED_DIR"
           test -f "$app_dir/resources/package-type"
           test "$(cat "$app_dir/resources/package-type")" = deb
-          ELECTRON_RUN_AS_NODE=1 "$app_dir/pilotdeck-desktop" \
+          ELECTRON_RUN_AS_NODE=1 "$app_dir/9gclaw-desktop" \
             apps/desktop/scripts/verify-updater.cjs "$app_dir/resources/app.asar"
           echo "DEB_PATH=$deb_path" >> "$GITHUB_ENV"
 
@@ -122,13 +122,13 @@ jobs:
           EXPECTED_ARCH: ${{ matrix.arch }}
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "./$DEB_PATH"
-          desktop-file-validate /usr/share/applications/pilotdeck-desktop.desktop
-          /opt/PilotDeck/resources/node/bin/node \
+          desktop-file-validate /usr/share/applications/9gclaw-desktop.desktop
+          /opt/9GClaw/resources/node/bin/node \
             apps/desktop/scripts/verify-linux-package.cjs "$EXPECTED_ARCH"
 
       - name: Verify installed Python and Gateway environment lifecycle
         env:
-          PILOTDECK_PYTHON_TEST_ROOT: /opt/PilotDeck/resources/python-runtime
+          NINEGCLAW_PYTHON_TEST_ROOT: /opt/9GClaw/resources/python-runtime
         run: pnpm run test:python
 
       - name: Smoke installed app under X11
@@ -150,7 +150,7 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: pilotdeck-linux-chrome-${{ matrix.arch }}
+          name: 9gclaw-linux-chrome-${{ matrix.arch }}
           path: outputs/desktop-chrome-review/linux-*/linux-*.png
           if-no-files-found: ignore
           retention-days: 14
@@ -158,7 +158,7 @@ jobs:
       - name: Upload Ubuntu installer
         uses: actions/upload-artifact@v7
         with:
-          name: pilotdeck-desktop-ubuntu-${{ matrix.arch }}
+          name: 9gclaw-desktop-ubuntu-${{ matrix.arch }}
           overwrite: true
           path: |
             apps/desktop/dist-electron/*-linux-${{ matrix.arch }}.deb
@@ -176,10 +176,10 @@ jobs:
     container: rockylinux:9
     timeout-minutes: 90
     env:
-      PILOTDECK_RELEASE_DATE: ${{ inputs.release_date }}
-      PILOTDECK_RELEASE_REVISION: ${{ inputs.revision }}
-      PILOTDECK_COMMIT_SHA: ${{ github.sha }}
-      PILOTDECK_DESKTOP_NODE_ARCH: ${{ matrix.arch }}
+      NINEGCLAW_RELEASE_DATE: ${{ inputs.release_date }}
+      NINEGCLAW_RELEASE_REVISION: ${{ inputs.revision }}
+      NINEGCLAW_COMMIT_SHA: ${{ github.sha }}
+      NINEGCLAW_DESKTOP_NODE_ARCH: ${{ matrix.arch }}
       USE_SYSTEM_FPM: "true"
       NODE_OPTIONS: --max-old-space-size=2560
     steps:
@@ -205,7 +205,7 @@ jobs:
       - name: Set desktop release metadata
         run: node apps/desktop/scripts/set-ci-version.mjs
       - name: Build RPM
-        run: pnpm --filter pilotdeck-desktop run dist:linux:rpm:${{ matrix.arch }}
+        run: pnpm --filter 9gclaw-desktop run dist:linux:rpm:${{ matrix.arch }}
       - name: Verify RPM architecture, updater and baseline installation
         shell: bash
         env:
@@ -222,12 +222,12 @@ jobs:
           grep -Fq "$(basename "$rpm_path")" "apps/desktop/dist-electron/$feed"
           test "$(cat "apps/desktop/dist-electron/$UNPACKED_DIR/resources/package-type")" = rpm
           bash apps/desktop/scripts/verify-rpm-upgrade.sh "$rpm_path"
-          desktop-file-validate /usr/share/applications/pilotdeck-desktop.desktop
-          /opt/PilotDeck/resources/node/bin/node apps/desktop/scripts/verify-linux-package.cjs '${{ matrix.arch }}' rpm
-          ELECTRON_RUN_AS_NODE=1 /opt/PilotDeck/pilotdeck-desktop apps/desktop/scripts/verify-updater.cjs /opt/PilotDeck/resources/app.asar
+          desktop-file-validate /usr/share/applications/9gclaw-desktop.desktop
+          /opt/9GClaw/resources/node/bin/node apps/desktop/scripts/verify-linux-package.cjs '${{ matrix.arch }}' rpm
+          ELECTRON_RUN_AS_NODE=1 /opt/9GClaw/9gclaw-desktop apps/desktop/scripts/verify-updater.cjs /opt/9GClaw/resources/app.asar
       - name: Verify installed Python and Gateway environment lifecycle
         env:
-          PILOTDECK_PYTHON_TEST_ROOT: /opt/PilotDeck/resources/python-runtime
+          NINEGCLAW_PYTHON_TEST_ROOT: /opt/9GClaw/resources/python-runtime
         run: pnpm run test:python
       - name: Install headless display tools
         # Weston is a test-only EPEL dependency; verify the RPM baseline first.
@@ -246,14 +246,14 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: pilotdeck-rpm-chrome-${{ matrix.arch }}
+          name: 9gclaw-rpm-chrome-${{ matrix.arch }}
           path: outputs/desktop-chrome-review/linux-*/linux-*.png
           if-no-files-found: ignore
           retention-days: 14
       - name: Upload RPM installer and feed
         uses: actions/upload-artifact@v7
         with:
-          name: pilotdeck-desktop-rpm-${{ matrix.arch }}
+          name: 9gclaw-desktop-rpm-${{ matrix.arch }}
           path: |
             apps/desktop/dist-electron/*-linux-${{ matrix.arch }}.rpm
             apps/desktop/dist-electron/latest-rpm-linux*.yml

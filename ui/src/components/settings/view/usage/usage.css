@@ -1,8 +1,8 @@
-:where(.pilotdeck-settings-app) .settings-page.usage-page { min-width: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; }
-:where(.pilotdeck-settings-app) .usage-page > .page-header { display: none; }
-:where(.pilotdeck-settings-app) .usage-content { width: 100%; min-width: 0; color: var(--ink); }
+:where(.ninegclaw-settings-app) .settings-page.usage-page { min-width: 0; width: 100%; overflow-y: auto; scrollbar-width: thin; }
+:where(.ninegclaw-settings-app) .usage-page > .page-header { display: none; }
+:where(.ninegclaw-settings-app) .usage-content { width: 100%; min-width: 0; color: var(--ink); }
 .usage-body { width: 100%; max-width: 760px; margin-inline: auto; min-width: 0; }
-:where(.pilotdeck-settings-app) .usage-header { align-items: center; }
+:where(.ninegclaw-settings-app) .usage-header { align-items: center; }
 .usage-header-actions { display: flex; align-items: center; gap: 8px; }
 .usage-refresh { display: inline-grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; color: var(--muted); background: transparent; }
 .usage-refresh:hover:not(:disabled) { background: var(--pd-neutral-hover, var(--brand-soft)); color: var(--ink); }
@@ -65,7 +65,7 @@ button.usage-cell:hover, button.usage-cell[aria-pressed=true] { outline: 1px sol
   .usage-stat strong { font-size: 21px; }
 }
 @media (max-width: 680px) {
-  :where(.pilotdeck-settings-app) .usage-header { gap: 12px; }
+  :where(.ninegclaw-settings-app) .usage-header { gap: 12px; }
   .usage-summary { grid-template-columns: repeat(6, minmax(0, 1fr)); padding: 22px 8px; gap: 22px 0; }
   .usage-stat { grid-column: span 2; padding: 0 6px; }
   .usage-stat:nth-child(4), .usage-stat:nth-child(5) { grid-column: span 3; }

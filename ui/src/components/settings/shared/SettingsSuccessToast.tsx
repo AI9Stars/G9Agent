@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-const SETTINGS_SUCCESS_EVENT = "pilotdeck:settings-success";
-const SETTINGS_SAVE_SUCCESS_EVENT = "pilotdeck:settings-save-success";
+const SETTINGS_SUCCESS_EVENT = "9gclaw:settings-success";
+const SETTINGS_SAVE_SUCCESS_EVENT = "9gclaw:settings-save-success";
 const TOAST_DURATION_MS = 2400;
 const pendingSaveMessages: string[] = [];
 
@@ -72,7 +72,7 @@ export function SettingsSuccessToastProvider({
     <>
       {children}
       {message ? (
-        <div className="pilotdeck-settings-notification"><div className="settings-success-toast" role="status" aria-live="polite">
+        <div className="ninegclaw-settings-notification"><div className="settings-success-toast" role="status" aria-live="polite">
           <span aria-hidden="true">
             <svg width="14" height="14" fill="none" viewBox="0 0 16 16">
               <path

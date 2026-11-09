@@ -9,13 +9,13 @@ import type { AgentContextPrepareInput, AgentPreparedContext } from "../../../sr
 import { buildCachePlan } from "../../../src/context/cache/CachePlan.js";
 import type { CanonicalMessage } from "../../../src/model/index.js";
 import { createDefaultPermissionContext } from "../../../src/permission/index.js";
-import { ToolRegistry, type PilotDeckToolDefinition } from "../../../src/tool/index.js";
+import { ToolRegistry, type NineGClawToolDefinition } from "../../../src/tool/index.js";
 
 const message = (text: string): CanonicalMessage => ({ role: "user", content: [{ type: "text", text }] });
 const project = (input: AgentContextPrepareInput): AgentPreparedContext => ({
   messages: input.messages, tools: input.tools, systemPromptParts: [], diagnostics: [], boundaries: [],
 });
-const tool = (name: string, extra: Partial<PilotDeckToolDefinition> = {}): PilotDeckToolDefinition => ({
+const tool = (name: string, extra: Partial<NineGClawToolDefinition> = {}): NineGClawToolDefinition => ({
   name, kind: "custom", description: `Synthetic ${name}`, inputSchema: { type: "object" },
   isReadOnly: () => true, isConcurrencySafe: () => true,
   execute: async () => { assert.fail("Preparing a request must not execute a tool"); }, ...extra,
@@ -124,7 +124,7 @@ for (const systemPrompt of [undefined, "", "Context prompt"]) {
 }
 
 test("media loading and plan reminders precede final cache planning without altering context input", async (t) => {
-  const root = await mkdtemp(join(tmpdir(), "pilotdeck-request-contract-"));
+  const root = await mkdtemp(join(tmpdir(), "9gclaw-request-contract-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const mediaPath = join(root, "fixture.base64");
   await writeFile(mediaPath, "c3ludGhldGlj");
@@ -181,7 +181,7 @@ test("context failure propagates without announcing loaded instructions", async 
 });
 
 test("missing media retains its preview and reports its diagnostic", async (t) => {
-  const root = await mkdtemp(join(tmpdir(), "pilotdeck-request-missing-"));
+  const root = await mkdtemp(join(tmpdir(), "9gclaw-request-missing-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const warn = t.mock.method(console, "warn", () => {});
   const result = await fixture().prepare({ messages: [{ role: "user", content: [{ type: "media_reference",

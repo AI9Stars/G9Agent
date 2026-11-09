@@ -1,12 +1,12 @@
 import type { CanonicalToolSchema } from "../../model/index.js";
 import type {
-  PilotDeckToolAvailability,
-  PilotDeckToolDefinition,
+  NineGClawToolAvailability,
+  NineGClawToolDefinition,
 } from "../protocol/types.js";
 
 export type ToolUnavailableDiagnostic = {
   toolName: string;
-  code: Exclude<PilotDeckToolAvailability, { ok: true }>["code"];
+  code: Exclude<NineGClawToolAvailability, { ok: true }>["code"];
   reason: string;
 };
 
@@ -16,11 +16,11 @@ export type ToolUnavailableDiagnosticEntry = {
 };
 
 export class ToolRegistry {
-  private readonly toolsByName = new Map<string, PilotDeckToolDefinition>();
+  private readonly toolsByName = new Map<string, NineGClawToolDefinition>();
   private readonly aliases = new Map<string, string>();
   private readonly unavailable = new Map<string, ToolUnavailableDiagnostic>();
 
-  register(tool: PilotDeckToolDefinition): void {
+  register(tool: NineGClawToolDefinition): void {
     if (this.toolsByName.has(tool.name)) {
       throw new Error(`Tool ${tool.name} is already registered.`);
     }
@@ -39,7 +39,7 @@ export class ToolRegistry {
     }
   }
 
-  get(name: string): PilotDeckToolDefinition | undefined {
+  get(name: string): NineGClawToolDefinition | undefined {
     const realName = this.aliases.get(name) ?? name;
     return this.toolsByName.get(realName);
   }
@@ -48,7 +48,7 @@ export class ToolRegistry {
     return this.get(name) !== undefined;
   }
 
-  list(): PilotDeckToolDefinition[] {
+  list(): NineGClawToolDefinition[] {
     return [...this.toolsByName.values()].sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -134,7 +134,7 @@ export class ToolRegistry {
    * exist).  Aliases from the *previous* definition are removed and
    * replaced with those from the new one.
    */
-  replace(tool: PilotDeckToolDefinition): void {
+  replace(tool: NineGClawToolDefinition): void {
     const existing = this.toolsByName.get(tool.name);
     if (!existing) {
       throw new Error(`Tool ${tool.name} is not registered — cannot replace.`);
@@ -154,7 +154,7 @@ export class ToolRegistry {
   }
 
   /** Validate a complete owned group before publishing any names or aliases. */
-  replaceGroup(previousNames: readonly string[], tools: readonly PilotDeckToolDefinition[]): void {
+  replaceGroup(previousNames: readonly string[], tools: readonly NineGClawToolDefinition[]): void {
     const candidate = this.clone();
     for (const name of previousNames) candidate.unregister(name);
     for (const tool of tools) candidate.register(tool);
@@ -166,7 +166,7 @@ export class ToolRegistry {
     for (const [name, diagnostic] of candidate.unavailable) this.unavailable.set(name, diagnostic);
   }
 
-  private validateAliases(tool: PilotDeckToolDefinition, replacing?: string): void {
+  private validateAliases(tool: NineGClawToolDefinition, replacing?: string): void {
     for (const alias of new Set(tool.aliases ?? [])) {
       if (alias !== tool.name && this.toolsByName.has(alias)) {
         throw new Error(`Alias ${alias} conflicts with an existing tool name.`);

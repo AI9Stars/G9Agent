@@ -48,11 +48,11 @@ test('all Windows ICO sizes fill their canvas, including fractional DPI sizes', 
   assert.ok(sizes.includes(20) && sizes.includes(24) && sizes.includes(40));
 });
 test('Windows ships an explicit Start/Search tile with a matching background and full-size artwork', () => {
-  const manifest = fs.readFileSync(new URL('../resources/PilotDeck.VisualElementsManifest.xml', import.meta.url), 'utf8');
+  const manifest = fs.readFileSync(new URL('../resources/9GClaw.VisualElementsManifest.xml', import.meta.url), 'utf8');
   assert.match(manifest, /BackgroundColor="#0B2353"/);
   for (const name of ['Square150x150Logo', 'Square70x70Logo']) assert.ok(manifest.includes(`${name}="resources\\icons\\icon.png"`));
   const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url)));
-  assert.ok(pkg.build.win.extraFiles.some(file => file.to === 'PilotDeck.VisualElementsManifest.xml'));
+  assert.ok(pkg.build.win.extraFiles.some(file => file.to === '9GClaw.VisualElementsManifest.xml'));
 });
 
 test('Linux packaging resolves full-canvas icons at every standard launcher size', async () => {
@@ -61,7 +61,7 @@ test('Linux packaging resolves full-canvas icons at every standard launcher size
   const { convertIcon } = builderRequire('app-builder-lib/out/util/iconConverter.js');
   const desktop = fileURLToPath(new URL('../', import.meta.url));
   const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url)));
-  const output = fs.mkdtempSync(path.join(os.tmpdir(), 'pilotdeck-linux-icons-'));
+  const output = fs.mkdtempSync(path.join(os.tmpdir(), '9gclaw-linux-icons-'));
   try {
     const { icons: resolved } = await convertIcon({ sources: [pkg.build.linux.icon], fallbackSources: [],
       roots: [desktop], format: 'set', outDir: output });

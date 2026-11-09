@@ -13,7 +13,7 @@ it('maps only interface tokens in memory and follows the selected palette in dar
   const doc = document.implementation.createHTMLDocument('Memory');
   const palette = normalizeLightAppearance({ preset: 'mint' });
   applyMemoryAppearance(doc, palette, false, true);
-  const style = doc.getElementById('pilotdeck-memory-appearance')!;
+  const style = doc.getElementById('9gclaw-memory-appearance')!;
   expect(style.textContent).toContain('--accent:');
   expect(style.textContent).not.toContain('--status-project');
   expect(style.textContent).not.toContain('--danger');
@@ -25,8 +25,8 @@ it('maps only interface tokens in memory and follows the selected palette in dar
   applyMemoryAppearance(doc, normalizeLightAppearance(), false, false);
   expect(style.textContent).toContain('--pd-elevated:');
   expect(doc.documentElement.classList.contains('dark')).toBe(false);
-  expect(doc.querySelectorAll('#pilotdeck-memory-controls')).toHaveLength(1);
-  expect(doc.querySelectorAll('#pilotdeck-memory-appearance')).toHaveLength(1);
+  expect(doc.querySelectorAll('#9gclaw-memory-controls')).toHaveLength(1);
+  expect(doc.querySelectorAll('#9gclaw-memory-appearance')).toHaveLength(1);
 });
 it('clamps image adjustments and migrates earlier configurations', () => {
   const v = normalizeLightAppearance({ background: { brightness: 900, saturation: -10, positionX: NaN, positionY: 101 } });

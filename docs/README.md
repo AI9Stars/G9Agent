@@ -15,7 +15,7 @@ Start with the [contribution rules](../CONTRIBUTING.md). Module READMEs are shor
 
 ## API and protocol reference
 
-- [Chat/composer API](dialog-improvement-api.md), [onboarding API](onboarding-api.md) and its [OpenAPI schema](pilotdeck-onboarding-api.openapi.yaml).
+- [Chat/composer API](dialog-improvement-api.md), [onboarding API](onboarding-api.md) and its [OpenAPI schema](9gclaw-onboarding-api.openapi.yaml).
 - [Model pool API](model-pool-settings-api.md), [reasoning settings](reasoning-settings.md), [settings/background-task TRDs](trd/README.md).
 - [Video generation](video-generation.md): optional configuration, durable job recovery, session-scoped media and exports.
 - [Runtime boundaries](architecture/runtime-boundaries.md), [session timeline](architecture/session-timeline.md), [telemetry receiver contract](telemetry/receiver-contract.md).

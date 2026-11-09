@@ -10,7 +10,7 @@ Checkpoints work in ordinary directories and store deduplicated content, file ex
 
 Restore and undo both preview the current version and revalidate it before writing. Conflicting edits remain protected. Restoration journals support interrupted operations. File-only, conversation-only and combined recovery retain the original transcript and project a restored branch. Forks copy referenced attachments and rebind their ownership.
 
-Project `.pilotdeck` files are hidden from user-file counts while recorded internal work files remain available for restoration. Git operations act on the actual repository and index, including other sessions' edits. Commits validate the reviewed index tree, and restore/Git operations coordinate with file operations through directory leases.
+Project `.9gclaw` files are hidden from user-file counts while recorded internal work files remain available for restoration. Git operations act on the actual repository and index, including other sessions' edits. Commits validate the reviewed index tree, and restore/Git operations coordinate with file operations through directory leases.
 
 Tests: [tests/session](../../tests/session). See the [test guide](../../docs/testing.md) for runner selection.
 

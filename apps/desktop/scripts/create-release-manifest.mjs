@@ -22,13 +22,13 @@ const assets = files.map(record);
 const manifest = {
   schemaVersion: 1,
   artifactSchemaVersion: 1,
-  differentialUpdates: process.env.PILOTDECK_DIFFERENTIAL_UPDATES !== '0',
-  version: requiredEnv("PILOTDECK_RELEASE_VERSION"),
-  tag: requiredEnv("PILOTDECK_RELEASE_TAG"),
-  date: requiredEnv("PILOTDECK_RELEASE_DATE"),
-  buildTime: requiredEnv("PILOTDECK_RELEASE_BUILD_TIME"),
-  sourceSha: requiredEnv("PILOTDECK_COMMIT_SHA"),
-  repository: requiredEnv("PILOTDECK_UPDATE_REPOSITORY"),
+  differentialUpdates: process.env.NINEGCLAW_DIFFERENTIAL_UPDATES !== '0',
+  version: requiredEnv("NINEGCLAW_RELEASE_VERSION"),
+  tag: requiredEnv("NINEGCLAW_RELEASE_TAG"),
+  date: requiredEnv("NINEGCLAW_RELEASE_DATE"),
+  buildTime: requiredEnv("NINEGCLAW_RELEASE_BUILD_TIME"),
+  sourceSha: requiredEnv("NINEGCLAW_COMMIT_SHA"),
+  repository: requiredEnv("NINEGCLAW_UPDATE_REPOSITORY"),
   assets,
 };
 

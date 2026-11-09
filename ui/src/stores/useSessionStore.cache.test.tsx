@@ -6,7 +6,7 @@ import { authenticatedFetch } from '../utils/api';
 vi.mock('../utils/api', () => ({ authenticatedFetch: vi.fn(), readAgentStatusErrorFromResponse: vi.fn() }));
 const history = (sessionId: string): NormalizedMessage => ({
   id: `history-${sessionId}`, sessionId, timestamp: '2026-01-01T00:00:00Z',
-  provider: 'pilotdeck', kind: 'text', role: 'assistant', content: `saved ${sessionId}`,
+  provider: '9gclaw', kind: 'text', role: 'assistant', content: `saved ${sessionId}`,
 });
 const response = (sessionId: string) => new Response(JSON.stringify({ messages: [history(sessionId)], total: 1, hasMore: false }));
 async function browse(store: SessionStore, sessionId: string) {

@@ -1,7 +1,7 @@
 # Core runtime
 
 TypeScript backend shared by the CLI, desktop client and Web server.
-Start at [the CLI entry](cli/pilotdeck.ts) and [local Gateway composition](cli/createLocalGateway.ts).
+Start at [the CLI entry](cli/9gclaw.ts) and [local Gateway composition](cli/createLocalGateway.ts).
 
 | Subsystem | Responsibility |
 | --- | --- |
@@ -15,7 +15,7 @@ Start at [the CLI entry](cli/pilotdeck.ts) and [local Gateway composition](cli/c
 | [Permissions](permission/README.md) | Evaluates allow/ask/deny rules and persists the shared permission preference.. |
 | [Skills and plugins](extension/README.md) | Discovers skills and plugins and composes their commands, prompts, hooks, tools and MCP contributions.. |
 | [Channels and transports](adapters/README.md) | Connects CLI/TUI, messaging channels and HTTP-facing adapters to the shared Gateway.. |
-| [Configuration and paths](pilot/README.md) | Resolves PilotDeck paths and loads, validates and updates application configuration.. |
+| [Configuration and paths](pilot/README.md) | Resolves 9GClaw paths and loads, validates and updates application configuration.. |
 | [Model routing](router/README.md) | Chooses model routes and orchestrates provider health, fallback chains and configured routing policy.. |
 
 Supporting modules: [always-on](always-on), [cron](cron), [diagnostics](diagnostics), [lifecycle](lifecycle), [network](network), [runtime](runtime), [status](status), [task](task), [telemetry](telemetry), [web](web). Small internal folders use this overview rather than duplicate READMEs.

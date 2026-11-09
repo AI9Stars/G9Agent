@@ -2,7 +2,7 @@ import type { CanonicalMessage, CanonicalToolSchema } from "../../model/index.js
 import { isRealUserRequestMessage } from "../../model/protocol/userRequest.js";
 
 const SUBAGENT_TAG_PATTERN =
-  /<(?:pilotdeck|ccr)-subagent-model>([\s\S]+?)<\/(?:pilotdeck|ccr)-subagent-model>/i;
+  /<(?:9gclaw|ccr)-subagent-model>([\s\S]+?)<\/(?:9gclaw|ccr)-subagent-model>/i;
 
 export type SubagentDetection = {
   isSubagent: boolean;

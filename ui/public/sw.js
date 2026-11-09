@@ -1,10 +1,10 @@
-// Service Worker for PilotDeck PWA
+// Service Worker for G9Agent PWA
 // Cache only manifest (needed for PWA install). HTML and JS are never pre-cached
 // so a rebuild + refresh always picks up the latest assets.
 // Bump this token whenever a cached asset's contents change (icons, manifest).
 // The activate handler below purges every cache whose name doesn't match,
 // so existing PWAs pick up the new visuals on the next page load.
-const CACHE_NAME = 'pilotdeck-v2';
+const CACHE_NAME = 'jiuge-v2';
 const urlsToCache = [
   '/manifest.json'
 ];
@@ -96,7 +96,7 @@ self.addEventListener('activate', event => {
 let notificationQueue = Promise.resolve();
 function notificationState(update) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open('pilotdeck-notifications', 1);
+    const request = indexedDB.open('9gclaw-notifications', 1);
     request.onupgradeneeded = () => request.result.createObjectStore('state');
     request.onerror = () => reject(request.error);
     request.onsuccess = () => {
@@ -200,7 +200,7 @@ async function showNotificationOnce(payload, forwardToClients = false) {
     for (const client of clients) client.postMessage({ type: 'notification:received', notification: payload.event });
   }
   if (!show) return false;
-  await self.registration.showNotification(payload.title || 'PilotDeck', {
+  await self.registration.showNotification(payload.title || 'G9Agent', {
     body: payload.body || '', icon: '/logo-256.png', badge: '/logo-128.png', data,
     tag: `${data.scope || ''}:${data.sessionId || 'global'}`, renotify: true, silent,
   });
@@ -257,7 +257,7 @@ self.addEventListener('push', event => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: 'PilotDeck', body: event.data.text() };
+    payload = { title: 'G9Agent', body: event.data.text() };
   }
 
   event.waitUntil(serializeNotifications(async () => {

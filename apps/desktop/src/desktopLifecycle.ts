@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import type { BrowserWindow, MessageBoxOptions, MessageBoxReturnValue } from 'electron';
 
 type Options = {
@@ -73,8 +74,8 @@ export function createDesktopLifecycle(options: Options) {
       if (attempt !== generation || options.isQuitting() || !owner || owner.isDestroyed()) return;
       const zh = options.isChinese();
       const { response } = await options.showDialog(owner, {
-        type: 'question', title: 'PilotDeck',
-        message: zh ? '是否要退出 PilotDeck？' : 'Quit PilotDeck?',
+        type: 'question', title: productName(zh ? 'zh-CN' : 'en'),
+        message: zh ? '是否要退出 九格智能体？' : 'Quit G9Agent?',
         detail: zh
           ? '退出后，后台服务和正在运行的任务将停止。关闭主窗口可以继续在后台运行。'
           : 'Quitting stops background services and running tasks. Close the main window to keep running in the background.',

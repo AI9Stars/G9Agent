@@ -17,7 +17,7 @@ function turn(id, query, tools = []) {
     { type: 'assistant_message', turnId: id, message: { content: tools.length ? tools.map(name => ({ type: 'tool_call', name })) : [{ type: 'text', text: 'Synthetic answer' }] } }];
 }
 async function fixture(options = {}) {
-  const home = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-dashboard-')); homes.push(home);
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), '9gclaw-dashboard-')); homes.push(home);
   const project = path.join(home, 'workspace'); const stats = path.join(home, 'router', 'stats.jsonl');
   await fs.mkdir(path.dirname(stats), { recursive: true });
   const readFile = vi.fn((...args) => fs.readFile(...args)); const readdir = vi.fn((...args) => fs.readdir(...args));

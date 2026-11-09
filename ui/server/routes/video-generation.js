@@ -8,10 +8,10 @@ import { VideoStore } from '../../../src/tool/builtin/videos/VideoStore.js';
 import { videoApiBaseUrl } from '../../../src/pilot/config/videoGenerationConfig.js';
 import { resolveApiKey } from '../../../src/model/config/resolveCredentials.js';
 import { requestOpenAIVideo } from '../../../src/tool/builtin/videos/openaiVideos.js';
-import { readPilotDeckConfigFile } from '../services/pilotdeckConfig.js';
+import { readNineGClawConfigFile } from '../services/ninegclawConfig.js';
 
 export function createVideoGenerationRouter({ store = new VideoStore(path.join(resolvePilotHome(process.env), 'generated-videos')),
-  readConfig = () => readPilotDeckConfigFile().config, fetchImpl } = {}) {
+  readConfig = () => readNineGClawConfigFile().config, fetchImpl } = {}) {
   const router = express.Router();
   const manager = new VideoJobManager({ store, getConfig: () => readConfig().tools?.videoGeneration, fetchImpl });
   router.startRecovery = () => manager.startRecovery();
@@ -48,7 +48,7 @@ export function createVideoGenerationRouter({ store = new VideoStore(path.join(r
       try {
         // An explicit probe works while the feature is off, without changing
         // the saved opt-in or creating a project/session attachment.
-        const temporary = await mkdtemp(path.join(tmpdir(), 'pilotdeck-video-probe-'));
+        const temporary = await mkdtemp(path.join(tmpdir(), '9gclaw-video-probe-'));
         let bytes;
         try {
           const response = await requestOpenAIVideo({ enabled: true, apiKey, baseUrl, extraParams, model: submitted.model.trim() },

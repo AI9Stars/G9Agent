@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { installerDownloads } from '../../../ui/shared/releaseArtifacts.js';
 
 const manifest = JSON.parse(readFileSync(resolve(process.argv[2] || 'release-assets', 'release.json'), 'utf8'));
-const base = `https://github.com/${manifest.repository}/releases/download/${manifest.tag}/`;
+const base = `https://github.com/${manifest.canonicalRepository || manifest.repository}/releases/download/${manifest.tag}/`;
 console.log('## Downloads\n\n| System | Architecture | Installer |\n| --- | --- | --- |');
 for (const asset of installerDownloads(manifest.assets)) {
   const platform = { darwin: 'macOS', win32: 'Windows', linux: 'Linux' }[asset.platform];

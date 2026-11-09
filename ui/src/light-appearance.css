@@ -6,7 +6,7 @@ html[data-appearance] .app-root {
   background: var(--pd-backdrop);
   color: var(--pd-ink);
 }
-html[data-appearance] :is(.app-shell, .pilotdeck-settings-app) { border-color: var(--pd-border); }
+html[data-appearance] :is(.app-shell, .ninegclaw-settings-app) { border-color: var(--pd-border); }
 /* Quiet neutral chrome separates navigation from the reading surface. */
 html[data-appearance] :is(.project-sidebar, .settings-sidebar) {
   background: var(--pd-sidebar-fill);
@@ -16,7 +16,7 @@ html[data-appearance] :is(.project-sidebar, .settings-sidebar) {
   color: var(--pd-sidebar-ink);
 }
 html[data-appearance] :is(.primary-action:not(.active), .tree-row:not(.active), .project-conversation:not(.active), .tree-heading, .compact-project-entry:not(.active), .settings-sidebar .nav-item:not(.active), .settings-sidebar .back-to-app, .settings-sidebar h2) { color: var(--pd-sidebar-ink); }
-html[data-appearance] :is(.sidebar-brand-row, .pilotdeck-settings-app .sidebar-brand) { background: transparent; }
+html[data-appearance] :is(.sidebar-brand-row, .ninegclaw-settings-app .sidebar-brand) { background: transparent; }
 /* Wallpaper mode: the image shows through translucent sidebar/content panels. */
 html[data-light-background=image]:not(.dark) .app-root::before {
   content: '';
@@ -30,7 +30,7 @@ html[data-light-background=image]:not(.dark) .app-root::before {
   background-size: var(--pd-image-fit);
   filter: blur(var(--pd-image-blur)) brightness(var(--pd-image-brightness)) saturate(var(--pd-image-saturation));
 }
-html[data-light-background=image]:not(.dark) :is(.app-shell, .pilotdeck-settings-app) { background: transparent; }
+html[data-light-background=image]:not(.dark) :is(.app-shell, .ninegclaw-settings-app) { background: transparent; }
 html[data-light-background=image]:not(.dark) :is(.app-main, .settings-main) {
   background: var(--pd-content-fill);
   background-attachment: fixed;
@@ -42,10 +42,10 @@ html[data-light-background=image]:not(.dark) .dock-panel.file-panel {
   background: transparent;
   color: var(--pd-ink);
 }
-html[data-light-background=image]:not(.dark) :is(.pd-workspace-content, .pd-workspace-body, .pd-composer-surround, .pd-composer-container, .pd-chat-canvas, .chat-panel-scrollbar, .settings-content, .workspace-header, .pilotdeck-settings-app .topbar) {
+html[data-light-background=image]:not(.dark) :is(.pd-workspace-content, .pd-workspace-body, .pd-composer-surround, .pd-composer-container, .pd-chat-canvas, .chat-panel-scrollbar, .settings-content, .workspace-header, .ninegclaw-settings-app .topbar) {
   background: transparent;
 }
-html[data-appearance] .pilotdeck-settings-app {
+html[data-appearance] .ninegclaw-settings-app {
   --settings-panel-ink: var(--pd-ink);
   --settings-panel-muted: var(--pd-muted);
   --surface: var(--pd-surface);
@@ -60,20 +60,20 @@ html[data-appearance] .pilotdeck-settings-app {
   --brand-soft: var(--pd-accent-soft);
   --brand-tint: var(--pd-accent-soft);
 }
-html[data-appearance] .pilotdeck-settings-app :is(.page-header h1, .general-card-header h2, .general-setting-title, .appearance-details > summary) { color: var(--pd-ink); }
-html[data-appearance] .pilotdeck-settings-app :is(.page-header p, .general-setting-copy p, .appearance-help, .general-card-header-extra, .appearance-footer > span, .appearance-slider > span) { color: var(--pd-muted); }
-html[data-appearance] .pilotdeck-settings-app :is(.general-setting-icon, .general-card-header-icon) { color: var(--pd-accent-strong); }
-html[data-appearance] .pilotdeck-settings-app :is(.general-select-wrap select, .appearance-color-control, .appearance-slider input[type=number]) {
+html[data-appearance] .ninegclaw-settings-app :is(.page-header h1, .general-card-header h2, .general-setting-title, .appearance-details > summary) { color: var(--pd-ink); }
+html[data-appearance] .ninegclaw-settings-app :is(.page-header p, .general-setting-copy p, .appearance-help, .general-card-header-extra, .appearance-footer > span, .appearance-slider > span) { color: var(--pd-muted); }
+html[data-appearance] .ninegclaw-settings-app :is(.general-setting-icon, .general-card-header-icon) { color: var(--pd-accent-strong); }
+html[data-appearance] .ninegclaw-settings-app :is(.general-select-wrap select, .appearance-color-control, .appearance-slider input[type=number]) {
   background: var(--pd-surface);
   border-color: var(--pd-border);
   color: var(--pd-ink);
 }
-html[data-appearance] .pilotdeck-settings-app .general-select-wrap select:hover { border-color: var(--pd-accent); }
-html[data-appearance] .pilotdeck-settings-app .general-select-wrap select:focus {
+html[data-appearance] .ninegclaw-settings-app .general-select-wrap select:hover { border-color: var(--pd-accent); }
+html[data-appearance] .ninegclaw-settings-app .general-select-wrap select:focus {
   border-color: var(--pd-accent);
   box-shadow: 0 0 0 3px var(--pd-accent-soft);
 }
-html[data-appearance] :is(.pilotdeck-settings-app .nav-item.active, .file-entry[aria-pressed=true], .user-message-bubble, .primary-action.active, .project-conversation.active, .tree-row.chat-row.active, .compact-project-entry.active) {
+html[data-appearance] :is(.ninegclaw-settings-app .nav-item.active, .file-entry[aria-pressed=true], .user-message-bubble, .primary-action.active, .project-conversation.active, .tree-row.chat-row.active, .compact-project-entry.active) {
   background: var(--pd-accent-selected);
   color: var(--pd-accent-strong);
   border-color: var(--pd-border);
@@ -103,11 +103,11 @@ html[data-appearance] .appearance-settings-page { max-width: none; }
 /* With a wallpaper, the reading panel supplies the only large-area fill.
    Nested cards, headers and rails must not multiply its opacity. Explicit
    surfaces leave status badges, QR codes, previews and overlays intact. */
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app {
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app {
   --settings-panel-ink: var(--pd-ink);
   --settings-panel-muted: var(--pd-muted);
 }
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app :is(
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app :is(
   [data-settings-surface=panel], .general-card, .resident-project-panel, .resident-card, .search-card, .route-card, .route-model-row.is-default-tier,
   .integration-gateway-card, .integration-gateway-directory-row,
   .integration-channel.expanded, .integration-setup-panel,
@@ -126,7 +126,7 @@ html[data-light-background=image]:not(.dark) .pilotdeck-settings-app :is(
 }
 /* Every form control uses the same surface, regardless of its settings page.
    Compound controls paint once on their wrapper, not on each inner input. */
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .settings-content :is(
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app .settings-content :is(
   select, textarea,
   input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
   .appearance-color-control, .secret-input, .provider-search,
@@ -142,7 +142,7 @@ html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .settings-c
   background: var(--pd-surface);
   border-color: var(--pd-border);
 }
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .settings-content :is(
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app .settings-content :is(
   select, textarea,
   input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
   .appearance-color-control, .secret-input, .provider-search,
@@ -151,20 +151,20 @@ html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .settings-c
 ) {
   color: var(--pd-ink);
 }
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .button.destructive-outline {
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app .button.destructive-outline {
   background: var(--pd-surface);
 }
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .settings-content :is(
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app .settings-content :is(
   .appearance-color-control, .secret-input, .provider-search,
   .candidate-model-search, .mcp-server-search, .mcp-project-search,
   .mcp-repeatable-row
 ) input {
   background: transparent;
 }
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app .settings-content :is(input, select, textarea)[aria-invalid=true] {
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app .settings-content :is(input, select, textarea)[aria-invalid=true] {
   border-color: var(--danger);
 }
-html[data-light-background=image]:not(.dark) .pilotdeck-settings-app :is(
+html[data-light-background=image]:not(.dark) .ninegclaw-settings-app :is(
   .settings-sidebar .nav-item:not(.active):hover, .settings-sidebar .back-to-app:hover,
   .provider-row:hover, .integration-channel-summary:hover,
   .mcp-server-options > button:hover, .mcp-server-options > button.selected,
@@ -181,32 +181,32 @@ html[data-reduced-motion] *, html[data-reduced-motion] *::before, html[data-redu
 }
 
 /* Neutral surfaces carry the structure; hue marks interaction, not every panel. */
-html[data-appearance] :is(.app-shell, .pilotdeck-settings-app, .general-card, .settings-card) { box-shadow: none; }
+html[data-appearance] :is(.app-shell, .ninegclaw-settings-app, .general-card, .settings-card) { box-shadow: none; }
 html[data-appearance] :is(.primary-action, .tree-row, .project-conversation, .compact-project-entry, .settings-sidebar .nav-item):not(.active):hover {
   background: var(--pd-neutral-hover); color: var(--pd-ink); border-color: transparent;
 }
 html[data-appearance] :is(.settings-sidebar .nav-item.active svg, .settings-sidebar .nav-item.active) { color: var(--pd-accent-strong); }
-html[data-appearance] .pilotdeck-settings-app :is(.button.primary, .route-switch.on, .mcp-edit-server-button.primary) {
+html[data-appearance] .ninegclaw-settings-app :is(.button.primary, .route-switch.on, .mcp-edit-server-button.primary) {
   background: var(--pd-accent); border-color: var(--pd-accent); color: #fff; box-shadow: none;
 }
-html[data-appearance] .pilotdeck-settings-app :is(.button.primary, .route-switch.on, .mcp-edit-server-button.primary):hover:not(:disabled) {
+html[data-appearance] .ninegclaw-settings-app :is(.button.primary, .route-switch.on, .mcp-edit-server-button.primary):hover:not(:disabled) {
   background: var(--pd-button-hover); border-color: var(--pd-button-hover);
 }
 html[data-appearance] :is(.provider-row.selected, .provider-option.selected, .mcp-server-options > button.selected, .mcp-project-options button.selected) {
   background: var(--pd-accent-selected); color: var(--pd-accent-strong); border-color: var(--pd-accent-border);
 }
-html[data-appearance] .pilotdeck-settings-app .provider-row.selected .provider-row-copy :is(strong, small) { color: var(--pd-accent-strong); }
-html[data-appearance] .pilotdeck-settings-app .model-count { color: var(--pd-accent-strong); }
-.pilotdeck-settings-app :is(.provider-row.selected .provider-row-copy small, .model-count) { color: var(--pd-accent-strong, var(--brand-strong)); }
-.pilotdeck-settings-app .status-badge:not(.pending) { color: #136f53; }
-html[data-appearance].dark .pilotdeck-settings-app .status-badge:not(.pending) { color: #8cd7bd; background: #243d34; }
+html[data-appearance] .ninegclaw-settings-app .provider-row.selected .provider-row-copy :is(strong, small) { color: var(--pd-accent-strong); }
+html[data-appearance] .ninegclaw-settings-app .model-count { color: var(--pd-accent-strong); }
+.ninegclaw-settings-app :is(.provider-row.selected .provider-row-copy small, .model-count) { color: var(--pd-accent-strong, var(--brand-strong)); }
+.ninegclaw-settings-app .status-badge:not(.pending) { color: #136f53; }
+html[data-appearance].dark .ninegclaw-settings-app .status-badge:not(.pending) { color: #8cd7bd; background: #243d34; }
 html[data-appearance] :is(.appearance-choice, .appearance-color-control, .general-select-wrap select, .route-switch):focus-visible {
   outline: 2px solid var(--pd-focus); outline-offset: 3px;
 }
 html[data-appearance].dark :is(.app-main, .pd-workspace-content, .pd-workspace-body, .pd-composer-surround, .pd-composer-container, .pd-chat-canvas, .chat-panel-scrollbar, .settings-content, .workspace-header, .dock-panel.file-panel) {
   background: var(--pd-surface); color: var(--pd-ink);
 }
-html[data-appearance].dark .pilotdeck-settings-app :is(
+html[data-appearance].dark .ninegclaw-settings-app :is(
   [data-settings-surface=panel], .resident-project-panel, .resident-card,
   .search-card, .route-card, .integration-gateway-card,
   .integration-channel.expanded, .integration-setup-panel, .mcp-config-card,
@@ -217,12 +217,12 @@ html[data-appearance].dark .pilotdeck-settings-app :is(
   .agent-retry-section, .advanced-settings-card, .detail-test-section,
   .model-pool-workspace, .provider-rail, .provider-detail
 ) { background: var(--pd-surface); border-color: var(--pd-border); box-shadow: none; }
-html[data-appearance].dark .pilotdeck-settings-app :is(
+html[data-appearance].dark .ninegclaw-settings-app :is(
   select, textarea, input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=file]),
   .secret-input, .provider-search, .candidate-model-search, .mcp-server-search,
   .mcp-project-search, .mcp-repeatable-row, .button.secondary
 ) { background: var(--pd-neutral-soft); border-color: var(--pd-control-border); color: var(--pd-ink); }
-html[data-appearance].dark .pilotdeck-settings-app .settings-content :is(input, select, textarea)[aria-invalid=true] { border-color: var(--danger); }
+html[data-appearance].dark .ninegclaw-settings-app .settings-content :is(input, select, textarea)[aria-invalid=true] { border-color: var(--danger); }
 html[data-appearance].dark .appearance-settings { --appearance-surface: var(--pd-elevated); --appearance-ink: var(--pd-ink); --appearance-line: var(--pd-border); --appearance-muted: var(--pd-muted); }
 html[data-appearance].dark .appearance-color-popover { --picker-surface: var(--pd-surface); --picker-ink: var(--pd-ink); --picker-line: var(--pd-border); --picker-muted: var(--pd-muted); }
 
@@ -251,8 +251,8 @@ html[data-appearance] .zoom-indicator { background: var(--pd-elevated); color: v
 html[data-appearance] .zoom-indicator-reset { color: var(--pd-accent-strong); }
 
 /* Status hues communicate outcomes, independently of the theme hue. */
-html[data-appearance].dark .pilotdeck-settings-app {
+html[data-appearance].dark .ninegclaw-settings-app {
   --success: #8cd7bd; --success-soft: #243d34;
   --danger: #ef9ca5; --danger-soft: #412e32;
 }
-html[data-appearance].dark .pilotdeck-settings-app .button.danger { background: #b63648; border-color: #b63648; color: #fff; }
+html[data-appearance].dark .ninegclaw-settings-app .button.danger { background: #b63648; border-color: #b63648; color: #fff; }

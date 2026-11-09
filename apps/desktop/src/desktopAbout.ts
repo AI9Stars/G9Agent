@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import type { MessageBoxOptions } from 'electron';
 
 export type DesktopAboutContext = {
@@ -9,7 +10,7 @@ export type DesktopAboutContext = {
   osRelease: string;
   versions: { electron?: string; chrome?: string; node?: string };
 };
-const projectWebsite = 'https://github.com/OpenBMB/PilotDeck';
+const projectWebsite = 'https://github.com/AI9Stars/G9Agent';
 
 /** Local build information, also used by the settings page without a network request. */
 export function desktopAboutInfo(context: DesktopAboutContext) {
@@ -42,14 +43,14 @@ export function desktopAboutInformation(context: DesktopAboutContext) {
     ...(metadata.commitSha ? [`${text('提交', 'Commit')}: ${metadata.commitSha.slice(0, 12)}`] : []),
   ];
   const dialog: MessageBoxOptions = {
-    type: 'info', title: text('关于 PilotDeck', 'About PilotDeck'), message: 'PilotDeck',
+    type: 'info', title: text('关于 九格智能体', 'About G9Agent'), message: productName(context.language),
     detail: [text('开源 AI 工作台：对话、项目文件、技能与定时任务。', 'An open-source AI workspace for conversations, project files, skills and scheduled tasks.'),
       '', ...information, '', `${text('许可证', 'License')}: AGPL-3.0-only`, 'Copyright © OpenBMB', projectWebsite].join('\n'),
     buttons: [text('确定', 'OK'), text('复制版本信息', 'Copy Version Information'), text('项目主页', 'Project Website')],
     defaultId: 0, cancelId: 0, noLink: true,
   };
   const versionInformation = [
-    `PilotDeck: ${version}`, `OS: ${context.platform} ${context.osRelease} (${context.arch})`,
+    `G9Agent: ${version}`, `OS: ${context.platform} ${context.osRelease} (${context.arch})`,
     ...Object.entries(context.versions).filter(([, value]) => value).map(([name, value]) => `${name}: ${value}`),
     ...(metadata.buildTime ? [`Built: ${metadata.buildTime}`] : []),
     ...(metadata.commitSha ? [`Commit: ${metadata.commitSha}`] : []),

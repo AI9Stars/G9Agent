@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import net from 'node:net';
 import ts from 'typescript';
 import { it, expect, vi } from 'vitest';
-import { resolveConfigHome, redactDiagnostic } from '@pilotdeck/config';
+import { resolveConfigHome, redactDiagnostic } from '@9gclaw/config';
 import { waitForPortOrProcessExit } from '../../../apps/desktop/src/runtimeReadiness.ts';
 
 // Exercise the actual runtime class without booting Electron or local services.

@@ -36,12 +36,12 @@ it('switches on native cursor hover at zoomed coordinates without renderer event
   expect(closed).toBe(false);
   expect(f.popups[1].items).toEqual([{ label: 'edit' }]);
   expect(f.popups[1].options.x).toBe(75);
-  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('pilotdeck:caption-menu', 'menu-edit');
+  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('9gclaw:caption-menu', 'menu-edit');
   f.move(270, 170); // outside caption: do not switch
   expect(f.popups[1].closePopup).not.toHaveBeenCalled();
   f.popups[1].options.callback(); // Escape/outside click completes the session
   expect(closed).toBe(false);
-  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('pilotdeck:caption-menu', 'menu-edit');
+  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('9gclaw:caption-menu', 'menu-edit');
   await vi.advanceTimersByTimeAsync(1);
   await done;
   expect(closed).toBe(true);
@@ -58,13 +58,13 @@ it('coalesces repeated click requests during native close and ignores stale call
   await vi.advanceTimersByTimeAsync(1);
   expect(f.popups[1].items).toEqual([{ label: 'view' }]);
   f.popups[0].options.callback();
-  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('pilotdeck:caption-menu', 'menu-view');
+  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('9gclaw:caption-menu', 'menu-view');
   f.controller.close();
   f.popups[1].options.callback();
-  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('pilotdeck:caption-menu', 'menu-view');
+  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('9gclaw:caption-menu', 'menu-view');
   await vi.advanceTimersByTimeAsync(1);
   await Promise.all([first, second, third]);
-  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('pilotdeck:caption-menu', null);
+  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('9gclaw:caption-menu', null);
   expect(vi.getTimerCount()).toBe(0);
 });
 
@@ -76,7 +76,7 @@ it('cancels pending transitions when navigating away and rejects unknown menus',
   const second = f.controller.show({ id: 'menu-edit', buttons: f.buttons });
   f.owner.webContents.emit('did-start-navigation', {}, 'https://example.test', false, true);
   f.popups[0].options.callback();
-  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('pilotdeck:caption-menu', 'menu-file');
+  expect(f.owner.webContents.send).toHaveBeenLastCalledWith('9gclaw:caption-menu', 'menu-file');
   await vi.advanceTimersByTimeAsync(1);
   await Promise.all([first, second]);
   await vi.advanceTimersByTimeAsync(100);

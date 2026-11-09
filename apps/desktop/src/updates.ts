@@ -211,7 +211,7 @@ export function createUpdateController(options: {
     const selected = selectUpdateAssets(release, options.platform, options.arch, options.linuxPackageType)!.asset;
     const blockmap = release.assets.find(asset => asset.name === `${selected.name}.blockmap`);
     updater.disableDifferentialDownload = forceFull || options.disableDifferentialUpdates === true
-      || process.env.PILOTDECK_DISABLE_DIFFERENTIAL_UPDATES === '1'
+      || process.env.NINEGCLAW_DISABLE_DIFFERENTIAL_UPDATES === '1'
       || release.differentialUpdates !== true || !['win32', 'darwin'].includes(options.platform)
       || !blockmap || blockmap.platform !== options.platform || blockmap.arch !== options.arch
       || !Number.isSafeInteger(blockmap.size) || blockmap.size <= 0

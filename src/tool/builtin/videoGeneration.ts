@@ -1,6 +1,6 @@
 import type { VideoGenerationConfig } from "../../pilot/config/videoGenerationConfig.js";
-import { PilotDeckToolRuntimeError } from "../protocol/errors.js";
-import type { PilotDeckToolDefinition, PilotDeckToolExecutionOutput, PilotDeckToolRuntimeContext } from "../protocol/types.js";
+import { NineGClawToolRuntimeError } from "../protocol/errors.js";
+import type { NineGClawToolDefinition, NineGClawToolExecutionOutput, NineGClawToolRuntimeContext } from "../protocol/types.js";
 import { VideoStore, type GeneratedVideo, type VideoPurpose } from "./videos/VideoStore.js";
 import type { VideoRequest } from "./videos/openaiVideos.js";
 import { outputPath, publish } from "./videos/videoExport.js";
@@ -11,10 +11,10 @@ type GenerateInput = VideoRequest & { purpose: VideoPurpose; output_path?: strin
 type SaveInput = { video_id: string; output_path: string };
 function enabled(options: VideoToolOptions): VideoGenerationConfig {
   const config = options.getConfig();
-  if (config?.enabled !== true) throw new PilotDeckToolRuntimeError("tool_unavailable", "Video generation is disabled.");
+  if (config?.enabled !== true) throw new NineGClawToolRuntimeError("tool_unavailable", "Video generation is disabled.");
   return config;
 }
-function result(video: GeneratedVideo, deliver = true): PilotDeckToolExecutionOutput {
+function result(video: GeneratedVideo, deliver = true): NineGClawToolExecutionOutput {
   return {
     content: [{ type: "text", text: `Video is attached to this conversation. video_id: ${video.videoId}. purpose: ${video.purpose}. `
       + (video.savedTo ? `Saved to ${video.savedTo}.` : `Stored as a durable session attachment at ${video.path}; no project file was created. Use save_generated_video to save it later without regenerating.`) },
@@ -22,7 +22,7 @@ function result(video: GeneratedVideo, deliver = true): PilotDeckToolExecutionOu
     data: { videoGeneration: video },
   };
 }
-export function createVideoGenerationTools(options: VideoToolOptions): PilotDeckToolDefinition[] {
+export function createVideoGenerationTools(options: VideoToolOptions): NineGClawToolDefinition[] {
   const output = { type: "string", description: "Optional workspace .mp4 path. Omit for a casual video request; set only when the user asks to save or a project needs a video asset. Existing files are never overwritten." };
   return [{
     name: "generate_video", title: "Generate video", kind: "network",
@@ -38,11 +38,11 @@ export function createVideoGenerationTools(options: VideoToolOptions): PilotDeck
       output_path: output,
     } },
     isReadOnly: () => false, isConcurrencySafe: () => true,
-    validateInput: async (input: GenerateInput, context: PilotDeckToolRuntimeContext) => {
+    validateInput: async (input: GenerateInput, context: NineGClawToolRuntimeContext) => {
       if (!["intermediate", "deliverable"].includes(input.purpose)) return { ok: false, issues: [{ path: "purpose", code: "invalid_schema", message: "Specify intermediate or deliverable based on the user's goal." }] };
       if (input.output_path) outputPath(input.output_path, context); return { ok: true, input };
     },
-    execute: async (input: GenerateInput, context: PilotDeckToolRuntimeContext) => {
+    execute: async (input: GenerateInput, context: NineGClawToolRuntimeContext) => {
       const manager = new VideoJobManager({ ...options, env: context.env });
       const job = await manager.submit(enabled(options), input, context);
       const completed = await manager.wait(job, context);
@@ -53,14 +53,14 @@ export function createVideoGenerationTools(options: VideoToolOptions): PilotDeck
       if (completed.exportError) output.content.push({ type: "text", text: "Video generated, but project export failed. Use save_generated_video with the same video_id and a new path; do not regenerate." });
       return output;
     },
-  } as PilotDeckToolDefinition<GenerateInput>, {
+  } as NineGClawToolDefinition<GenerateInput>, {
     name: "save_generated_video", title: "Save generated video", kind: "filesystem",
     description: "Save an existing session video to a workspace .mp4 path without generating again. The original attachment stays available. Never overwrites files.",
     inputSchema: { type: "object", additionalProperties: false, required: ["video_id", "output_path"], properties: { video_id: { type: "string" }, output_path: output } },
     isReadOnly: () => false, isConcurrencySafe: () => true,
-    execute: async (input: SaveInput, context: PilotDeckToolRuntimeContext) => {
+    execute: async (input: SaveInput, context: NineGClawToolRuntimeContext) => {
       enabled(options); const video = await options.store.get(context.sessionId, input.video_id);
       video.savedTo = await publish(video, input.output_path, context); return result(video, false);
     },
-  } as PilotDeckToolDefinition<SaveInput>];
+  } as NineGClawToolDefinition<SaveInput>];
 }

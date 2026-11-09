@@ -32,7 +32,7 @@ const flagCases = [
 const authCases = [undefined, '0.0.0.0'].flatMap(host => flagCases.map(([value, disabled]) => [host, value, disabled]));
 it.each(authCases)('keeps Web build, HTTP and WebSocket authentication consistent on host %s with flag %s', async (host, value, disabled) => {
   vi.stubEnv('HOST', host);
-  vi.stubEnv('PILOTDECK_DISABLE_LOCAL_AUTH', value);
+  vi.stubEnv('NINEGCLAW_DISABLE_LOCAL_AUTH', value);
   vi.stubEnv('VITE_IS_PLATFORM', 'false');
   const { default: router } = await import('./auth.js');
   const { authenticateWebSocket, generateToken } = await import('../middleware/auth.js');

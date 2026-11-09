@@ -15,7 +15,7 @@ i18n.changeLanguage('en');
 
 const sid = 'scroll-fixture';
 const timestamp = '2026-09-05T00:00:00.000Z';
-const base = { sessionId: sid, provider: 'pilotdeck', timestamp, runId: 'live' };
+const base = { sessionId: sid, provider: '9gclaw', timestamp, runId: 'live' };
 function Fixture() {
   const store = useSessionStore();
   const [working, setWorking] = useState(false);
@@ -78,7 +78,7 @@ function Fixture() {
     },
     askQuestions,
     getMessages: () => store.getMessages(sid),
-    refresh: () => store.refreshFromServer(sid, { provider: 'pilotdeck' }),
+    refresh: () => store.refreshFromServer(sid, { provider: '9gclaw' }),
     prepend(count) {
       setOlderMessages((previous) => [
         ...Array.from({ length: count }, (_, index) => ({
@@ -90,7 +90,7 @@ function Fixture() {
     think(text) {
       store.finalizeStreaming(sid, 'live');
       setWorking(true);
-      store.updateStreamingThinking(sid, text, 'pilotdeck', 'live');
+      store.updateStreamingThinking(sid, text, '9gclaw', 'live');
     },
     tool(id = 'fetch-1', toolName = 'web_fetch', toolInput = { url: `https://example.com/${id}` }) {
       store.finalizeStreaming(sid, 'live');
@@ -107,11 +107,11 @@ function Fixture() {
         status, size: 42, sha256: 'a'.repeat(64), createdAt: timestamp,
       }] });
     },
-    text(text) { setWorking(true); store.finalizeStreamingThinking(sid, 'live'); store.updateStreaming(sid, text, 'pilotdeck', 'live'); },
+    text(text) { setWorking(true); store.finalizeStreamingThinking(sid, 'live'); store.updateStreaming(sid, text, '9gclaw', 'live'); },
     complete(durationMs) {
       store.finalizeStreamingThinking(sid, 'live'); store.finalizeStreaming(sid, 'live');
       if (typeof durationMs === 'number') store.appendRealtime(sid, {
-        sessionId: sid, provider: 'pilotdeck', id: 'completed-summary', kind: 'agent_activity_summary',
+        sessionId: sid, provider: '9gclaw', id: 'completed-summary', kind: 'agent_activity_summary',
         timestamp: new Date().toISOString(), status: 'completed', durationMs,
         startedAt: new Date(Date.now() - durationMs).toISOString(), endedAt: new Date().toISOString(),
       });
@@ -141,7 +141,7 @@ function Fixture() {
       hasMoreMessages={false} totalMessages={messages.length}
       loadEarlierMessages={() => {}} loadAllMessages={() => {}}
       allMessagesLoaded={false} isLoadingAllMessages={false}
-      provider="pilotdeck" selectedProject={null} selectedSession={null}
+      provider="9gclaw" selectedProject={null} selectedSession={null}
       createDiff={diff} showThinking inlineThinking={inline} setInput={() => {}}
       pendingPermissionRequests={questions}
       isAssistantWorking={working} sessionRuntimeState={working ? 'running' : 'inactive'}
@@ -154,7 +154,7 @@ function Fixture() {
             content: 'Answered', toolUseResult: { answers: decision.updatedInput.answers } });
           setQuestions([]);
           if (answerText.current) {
-            store.updateStreaming(sid, answerText.current, 'pilotdeck', 'live');
+            store.updateStreaming(sid, answerText.current, '9gclaw', 'live');
             store.finalizeStreaming(sid, 'live'); setWorking(false);
           }
         }} />

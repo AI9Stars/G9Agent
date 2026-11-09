@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Code2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { PilotDeckConfig } from '../../modelPool/types';
+import type { NineGClawConfig } from '../../modelPool/types';
 import type { PythonRuntimeStatus } from '../../../../../../../src/runtime/pythonRuntime';
 import { patch } from '../../modelPool/utils/patch';
 import SettingsToggle from '../../../shared/view/SettingsToggle';
@@ -10,7 +10,7 @@ import { useRuntimeStatus } from './useRuntimeStatus';
 const states = ['ready', 'disabled', 'external', 'unavailable', 'available', 'initializing'];
 
 export default function PythonRuntimeSection({ config, onSave, saving }: {
-  config: PilotDeckConfig; onSave: (next: PilotDeckConfig) => Promise<boolean>; saving: boolean;
+  config: NineGClawConfig; onSave: (next: NineGClawConfig) => Promise<boolean>; saving: boolean;
 }) {
   const { t } = useTranslation('settings');
   const enabled = config.runtime?.python?.enabled !== false;

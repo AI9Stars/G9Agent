@@ -1,6 +1,6 @@
 # Configuration and paths
 
-Resolves PilotDeck paths and loads, validates and updates application configuration.
+Resolves 9GClaw paths and loads, validates and updates application configuration.
 
 Entry points: [paths.ts](paths.ts), [loadPilotConfig.ts](config/loadPilotConfig.ts), [PilotConfigStore.ts](config/PilotConfigStore.ts).
 

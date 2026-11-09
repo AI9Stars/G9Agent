@@ -157,7 +157,7 @@ export function createRouterDashboard({ pilotHome, repoRoot, fs = defaultFs, max
                     sessionEntry = {
                         sessionId: record.sessionId,
                         title: record.sessionId,
-                        provider: record.provider || 'pilotdeck',
+                        provider: record.provider || '9gclaw',
                         lastActivity: record.endedAt,
                         userQueries: [],
                         routing: {

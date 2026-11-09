@@ -1,8 +1,10 @@
 # Ubuntu desktop support
 
-PilotDeck provides architecture-matched DEB installers for Ubuntu 22.04 and later.
-The build baseline and required checks below define compatibility; headless CI
-does not certify every desktop environment.
+This fork packages only Windows x64 and ARM64. The following is retained
+upstream implementation guidance, not an enabled build or release target.
+Linux package scripts, builder targets, feeds and workflows must be restored
+and validated together before these commands can be used. Shared source and
+helper scripts alone do not establish an Ubuntu release for this fork.
 
 ## Target
 
@@ -30,7 +32,7 @@ does not certify every desktop environment.
   release.
 - Display: support both X11/Xorg and native Wayland. Electron 42's Ozone
   selection defaults to `auto` on Linux. On a Wayland session, users can force
-  XWayland with `pilotdeck-desktop --ozone-platform=x11` if a compositor-specific
+  XWayland with `9gclaw-desktop --ozone-platform=x11` if a compositor-specific
   problem occurs. Do not force X11 for everyone.
 - Background: closing the window hides it when the desktop tray is available.
   Ubuntu's top-panel AppIndicators host shows the menu to reopen or quit;
@@ -39,13 +41,11 @@ does not certify every desktop environment.
 
 ## Release verification
 
-1. The release workflow builds on `ubuntu-22.04` (x64) and `ubuntu-22.04-arm`
-   (arm64). The same reusable workflow runs before PR merge and during Daily
-   Release. Each job checks the `.deb` architecture, updater feed, installed
-   launcher icon and native modules, then starts the installed app under
-   Xvfb/X11 and headless Weston/Wayland. Both architecture jobs and both Linux
-   feeds must pass before publishing. Confirm a completed workflow on the production
-   repository; local builds cannot validate hosted runner behavior.
+1. Restore native Ubuntu 22.04 x64 and ARM64 packaging workflows before
+   enabling Linux releases. Check each DEB's architecture, updater feed,
+   installed launcher icon and native modules, then start the installed app
+   under Xvfb/X11 and headless Weston/Wayland. Both architecture jobs and both
+   feeds must pass before publishing. Local builds cannot validate hosted runners.
 2. On full Ubuntu 22.04 desktop installations, test both an Xorg login and a
    Wayland login for each architecture. Install with `apt`, launch from the
    application menu, then test the onboarding window, resize/close/reopen,

@@ -10,12 +10,12 @@ Start with the [contribution rules](../CONTRIBUTING.md). Module READMEs are shor
 ## Setup and operations
 
 - [Source installation](../README_SOURCE_INSTALL.md) and [Docker](../README_DOCKER.md).
-- [Releases and signing](release.md), [Ubuntu DEB](ubuntu-desktop-support.md), [RPM](redhat-desktop-support.md), [Web updates](web-update.md).
+- [Windows releases](release.md), [upstream synchronization](upstream-sync.zh.md), [branding and identity](9gclaw-branding.md), [Web updates](web-update.md).
 - [Test selection](testing.md), [local transcription](funasr-installation.md), [cron scheduling](cron-scheduling.md), [Web search providers](web-search-providers.md).
 
 ## API and protocol reference
 
-- [Chat/composer API](dialog-improvement-api.md), [onboarding API](onboarding-api.md) and its [OpenAPI schema](pilotdeck-onboarding-api.openapi.yaml).
+- [Chat/composer API](dialog-improvement-api.md), [onboarding API](onboarding-api.md) and its [OpenAPI schema](9gclaw-onboarding-api.openapi.yaml).
 - [Model pool API](model-pool-settings-api.md), [reasoning settings](reasoning-settings.md), [settings/background-task TRDs](trd/README.md).
 - [Video generation](video-generation.md): optional configuration, durable job recovery, session-scoped media and exports.
 - [Runtime boundaries](architecture/runtime-boundaries.md), [session timeline](architecture/session-timeline.md), [telemetry receiver contract](telemetry/receiver-contract.md).

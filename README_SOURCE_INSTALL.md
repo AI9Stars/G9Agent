@@ -1,10 +1,10 @@
 # Source Installation Guide
 
-This guide is for developers who want to run PilotDeck directly from source instead of using the one-line installer or Docker.
+This guide is for developers who want to run 九格智能体平台 directly from source instead of using the one-line installer or Docker.
 
 ## Prerequisites
 
-PilotDeck requires:
+九格智能体平台 requires:
 
 - Node.js v22.13.0 or newer within the Node.js 22 line, with the built-in `node:sqlite` runtime.
 - Git.
@@ -48,7 +48,7 @@ If `process.arch` does not match the Mac you are deploying on, reinstall Node.js
 Some Python distributions, especially Python 3.12 installed through package managers, may not include `distutils`, which older `node-gyp` versions still need when native packages compile from source. The one-line installer tries to auto-select a Python that provides `distutils`. If you run npm commands manually and see `ModuleNotFoundError: No module named 'distutils'`, use a Python that provides it, for example:
 
 ```bash
-PYTHON=/usr/bin/python3 corepack pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui
+PYTHON=/usr/bin/python3 corepack pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui
 ```
 
 A CLT-only installation is enough; full Xcode is not required. If the tools are installed but `xcrun --find clang` fails, run `sudo xcode-select --reset` or reinstall Xcode Command Line Tools before retrying.
@@ -123,7 +123,7 @@ Windows supports several source-deployment paths. You do **not** need to install
 | Path | Install on Windows | Best for |
 |---|---|---|
 | WSL2 Ubuntu | WSL2, Ubuntu, then Linux build tools inside Ubuntu | Source deployment and development |
-| Docker Desktop | Docker Desktop with WSL2 backend, Git for Windows | Running PilotDeck without local Node/native build setup |
+| Docker Desktop | Docker Desktop with WSL2 backend, Git for Windows | Running 九格智能体平台 without local Node/native build setup |
 | Native Windows | Node.js, Git LFS, Python, Visual Studio C++ Build Tools, ripgrep | PowerShell-only development |
 | Portable Node | Official Node.js zip, Git for Windows, Git LFS, ripgrep | Verifying deployment without changing system Node settings |
 
@@ -141,7 +141,7 @@ docker compose version
 wsl --status
 ```
 
-Missing commands mean the corresponding tool still needs to be installed or added to `PATH`. After installing tools, close and reopen PowerShell before checking again. Git for Windows includes Git Bash; PilotDeck uses Git Bash as the default Windows terminal shell when it is available, and falls back to PowerShell only when Git Bash cannot be found.
+Missing commands mean the corresponding tool still needs to be installed or added to `PATH`. After installing tools, close and reopen PowerShell before checking again. Git for Windows includes Git Bash; 九格智能体平台 uses Git Bash as the default Windows terminal shell when it is available, and falls back to PowerShell only when Git Bash cannot be found.
 
 #### WSL2 Ubuntu (recommended)
 
@@ -200,15 +200,15 @@ rg --version
 
 Native Windows source installs are tested on x64 Node.js. If `node -p "process.arch"` does not print `x64`, switch to the official x64 Node.js 22 zip or another x64 Node.js runtime before installing dependencies.
 
-Use separate PowerShell lines instead of Bash-style chained commands when following the prerequisite commands above. For PilotDeck's in-app terminal, Git Bash is preferred automatically after Git for Windows is installed. If PowerShell blocks `npm.ps1`, call `npm.cmd` instead of `npm`.
+Use separate PowerShell lines instead of Bash-style chained commands when following the prerequisite commands above. For 九格智能体平台's in-app terminal, Git Bash is preferred automatically after Git for Windows is installed. If PowerShell blocks `npm.ps1`, call `npm.cmd` instead of `npm`.
 
 #### Portable Node for verification
 
-If you want to test PilotDeck before installing Node.js globally, use the official Windows Node.js zip for the current terminal session only:
+If you want to test 九格智能体平台 before installing Node.js globally, use the official Windows Node.js zip for the current terminal session only:
 
 ```powershell
 $NodeVersion = '22.23.1'
-$WorkDir = Join-Path $PWD '.pilotdeck-node'
+$WorkDir = Join-Path $PWD '.9gclaw-node'
 $ZipPath = Join-Path $WorkDir "node-v$NodeVersion-win-x64.zip"
 $NodeUrl = "https://nodejs.org/dist/v$NodeVersion/node-v$NodeVersion-win-x64.zip"
 
@@ -225,15 +225,15 @@ node --version
 npm.cmd --version
 ```
 
-With portable Node, keep using the source install commands below: `corepack pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui`, `corepack pnpm run build`, and `corepack pnpm --prefix ui run build`. Use `npm.cmd` only when you need to invoke npm directly and PowerShell blocks `npm.ps1`.
+With portable Node, keep using the source install commands below: `corepack pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui`, `corepack pnpm run build`, and `corepack pnpm --prefix ui run build`. Use `npm.cmd` only when you need to invoke npm directly and PowerShell blocks `npm.ps1`.
 
 ## Clone the Repository
 
 Clone the source code without downloading large Git LFS demo media:
 
 ```bash
-GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/OpenBMB/PilotDeck.git
-cd PilotDeck
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/AI9Stars/9GClaw.git
+cd 9GClaw
 ```
 
 If you need the demo videos/GIFs later, download them after cloning:
@@ -247,14 +247,14 @@ git lfs pull
 ```bash
 node --version          # must be v22.13.0 or newer, and below v23
 corepack enable         # enables the pinned pnpm version from package.json
-corepack pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui
+corepack pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui
 ```
 
 If Corepack is unavailable, or if you are using a user-directory Portable Node installation, install the pinned pnpm version globally instead:
 
 ```bash
 npm install -g pnpm@10.32.1
-pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui
+pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui
 ```
 
 Use the committed `pnpm-lock.yaml` for source installs. The workspace filters intentionally exclude Electron packaging dependencies from Web-only source installs. Do not replace this step with `npm install`; the lockfile and workspace build settings are maintained for pnpm, and pnpm is the path tested by the one-line installer.
@@ -268,13 +268,13 @@ npm install -g clawhub
 clawhub --version
 ```
 
-On Windows, use `npm.cmd install -g clawhub` if PowerShell blocks `npm.ps1`. With Portable Node, this installs `clawhub` into the portable Node prefix, so keep that Node directory on `PATH` when running PilotDeck.
+On Windows, use `npm.cmd install -g clawhub` if PowerShell blocks `npm.ps1`. With Portable Node, this installs `clawhub` into the portable Node prefix, so keep that Node directory on `PATH` when running 九格智能体平台.
 
 ## First-Run Onboarding
 
-PilotDeck reads `~/.pilotdeck/pilotdeck.yaml`. If the file is missing, start PilotDeck normally: the Web UI opens onboarding without starting the Gateway. After you save a real provider, API key, and model, PilotDeck writes the config and starts the Gateway automatically.
+九格智能体平台 reads `~/.9gclaw/9gclaw.yaml`. If the file is missing, start 九格智能体平台 normally: the Web UI opens onboarding without starting the Gateway. After you save a real provider, API key, and model, 九格智能体平台 writes the config and starts the Gateway automatically.
 
-## Start PilotDeck
+## Start 九格智能体平台
 
 Development mode with HMR:
 
@@ -297,7 +297,7 @@ Open <http://localhost:3001>.
 If the default ports are already in use, change them with environment variables, for example:
 
 ```bash
-SERVER_PORT=3002 PILOTDECK_GATEWAY_PORT=18790 PILOTDECK_GATEWAY_URL=ws://127.0.0.1:18790/ws npm run start
+SERVER_PORT=3002 NINEGCLAW_GATEWAY_PORT=18790 NINEGCLAW_GATEWAY_URL=ws://127.0.0.1:18790/ws npm run start
 ```
 
 ## API rate limits
@@ -306,24 +306,24 @@ The Web server applies per-process, one-minute admission limits. Over-budget req
 
 | Environment variable | Default per minute | Scope |
 | --- | ---: | --- |
-| `PILOTDECK_API_IP_LIMIT` | 6000 | `/api` and protected `/memory-dashboard` requests, per client IP, before body parsing/authentication |
-| `PILOTDECK_API_USER_LIMIT` | 1200 | Authenticated requests, per database user, counted once even with repeated authentication |
-| `PILOTDECK_AUTH_ATTEMPT_LIMIT` | 20 | Shared login/registration budget per IP; successful responses refund their slot |
-| `PILOTDECK_HTTP_MODEL_LIMIT` | 30 | Shared external-agent, AI commit-message and manual cron-run admissions per authenticated user |
+| `NINEGCLAW_API_IP_LIMIT` | 6000 | `/api` and protected `/memory-dashboard` requests, per client IP, before body parsing/authentication |
+| `NINEGCLAW_API_USER_LIMIT` | 1200 | Authenticated requests, per database user, counted once even with repeated authentication |
+| `NINEGCLAW_AUTH_ATTEMPT_LIMIT` | 20 | Shared login/registration budget per IP; successful responses refund their slot |
+| `NINEGCLAW_HTTP_MODEL_LIMIT` | 30 | Shared external-agent, AI commit-message and manual cron-run admissions per authenticated user |
 
 Set positive integer overrides (maximum 1,000,000) in the server environment and restart. Invalid values, including zero, use the defaults. The normal API budget accommodates a supported 500-image preview batch plus polling from multiple tabs. Changing an API key, diagnostic user/device header or session does not reset a user's budget. IPv6 client keys aggregate a /56 subnet.
 
-IP selection follows the existing `PILOTDECK_TRUST_PROXY` setting (default: loopback proxies; `false` or `0` disables trust). Only configure trusted proxy IPs/CIDRs, and have those proxies overwrite forwarding headers. Direct untrusted peers cannot select their bucket using `X-Forwarded-For`. Shared NAT/proxy deployments may need a higher ingress budget; authenticated users still receive separate user budgets. Counters are in memory, reset on server restart and are not shared across replicas. Public multi-replica deployments also need a shared gateway/proxy limit; these limits do not replace connection, body-size or WebSocket protections.
+IP selection follows the existing `NINEGCLAW_TRUST_PROXY` setting (default: loopback proxies; `false` or `0` disables trust). Only configure trusted proxy IPs/CIDRs, and have those proxies overwrite forwarding headers. Direct untrusted peers cannot select their bucket using `X-Forwarded-For`. Shared NAT/proxy deployments may need a higher ingress budget; authenticated users still receive separate user budgets. Counters are in memory, reset on server restart and are not shared across replicas. Public multi-replica deployments also need a shared gateway/proxy limit; these limits do not replace connection, body-size or WebSocket protections.
 
 ## Troubleshooting
 
 - `Node.js >=22.13.0 and <23 is required`: switch to Node.js 22.13.0 or newer within the Node.js 22 line, then reinstall dependencies.
-- Native package build errors: make sure Python 3, `make`, and a C/C++ compiler are installed, then rerun `corepack pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui`.
+- Native package build errors: make sure Python 3, `make`, and a C/C++ compiler are installed, then rerun `corepack pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui`.
 - Linux `node-pty` or `better-sqlite3` builds time out while downloading `node-v*-headers.tar.gz`: run `export npm_config_disturl=https://npmmirror.com/mirrors/node`, then reinstall dependencies.
 - `pnpm install --frozen-lockfile` times out while downloading npm packages: run `pnpm config set registry https://registry.npmmirror.com`, then retry the filtered install command above.
-- `ModuleNotFoundError: No module named 'distutils'` on macOS: the one-line installer tries to auto-select a compatible Python; for manual npm commands, retry with `PYTHON=/usr/bin/python3 corepack pnpm install --frozen-lockfile --filter pilotdeck --filter pilotdeck-ui`, or use another Python that includes `distutils`.
+- `ModuleNotFoundError: No module named 'distutils'` on macOS: the one-line installer tries to auto-select a compatible Python; for manual npm commands, retry with `PYTHON=/usr/bin/python3 corepack pnpm install --frozen-lockfile --filter 9gclaw --filter 9gclaw-ui`, or use another Python that includes `distutils`.
 - Missing compiler tools on macOS: full Xcode is not required, but `xcrun --find clang` must work. Reinstall Xcode Command Line Tools with `xcode-select --install`, or run `sudo xcode-select --reset` if CLT is already installed.
-- `EADDRINUSE` on startup: the default `3001` or `18789` port is already in use. Set `SERVER_PORT`, `PILOTDECK_GATEWAY_PORT`, and `PILOTDECK_GATEWAY_URL`, then retry.
-- An older `~/.pilotdeck/pilotdeck.yaml` still opens onboarding: historical placeholder values such as `PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE` or `_placeholder/_placeholder` are migrated when you save a real provider, API key, and model.
+- `EADDRINUSE` on startup: the default `3001` or `18789` port is already in use. Set `SERVER_PORT`, `NINEGCLAW_GATEWAY_PORT`, and `NINEGCLAW_GATEWAY_URL`, then retry.
+- An older `~/.9gclaw/9gclaw.yaml` still opens onboarding: historical placeholder values such as `PLACEHOLDER_RUN_ONBOARDING_TO_REPLACE` or `_placeholder/_placeholder` are migrated when you save a real provider, API key, and model.
 - Missing demo images/videos: install Git LFS and run `git lfs pull` from the repo root.
 - `rg` not found: install ripgrep for full file/search tool support.

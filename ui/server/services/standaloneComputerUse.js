@@ -12,11 +12,11 @@ import { probeMacPermissions } from './macComputerUsePermissions.js';
 
 const executeFile = promisify(execFile);
 const root = fileURLToPath(new URL('../../../', import.meta.url));
-const SERVER_ID = 'pilotdeck-computer-use';
+const SERVER_ID = '9gclaw-computer-use';
 
 export function findDriver(env, platform, runtimeRoot = root) {
-  const name = platform === 'darwin' ? 'PilotDeck Computer Use.app/Contents/MacOS/cua-driver' : platform === 'win32' ? 'cua-driver.exe' : 'cua-driver';
-  const candidates = env.PILOTDECK_CUA_DRIVER_PATH ? [env.PILOTDECK_CUA_DRIVER_PATH]
+  const name = platform === 'darwin' ? '9GClaw Computer Use.app/Contents/MacOS/cua-driver' : platform === 'win32' ? 'cua-driver.exe' : 'cua-driver';
+  const candidates = env.NINEGCLAW_CUA_DRIVER_PATH ? [env.NINEGCLAW_CUA_DRIVER_PATH]
     : [path.join(runtimeRoot, 'resources/cua-driver', name)];
   return candidates.find(candidate => candidate && path.isAbsolute(candidate) && fs.existsSync(candidate));
 }
@@ -28,7 +28,7 @@ export function findDriver(env, platform, runtimeRoot = root) {
  */
 export class StandaloneComputerUseController {
   constructor({ env = process.env, platform = process.platform, execute = executeFile, spawnImpl = spawn, runtimeRoot = root,
-    binary = findDriver(env, platform, runtimeRoot), managed = !env.PILOTDECK_CUA_DRIVER_PATH,
+    binary = findDriver(env, platform, runtimeRoot), managed = !env.NINEGCLAW_CUA_DRIVER_PATH,
     version = JSON.parse(fs.readFileSync(path.join(root, 'scripts/computer-use/cua-driver.json'), 'utf8')).version,
     log = console.log, macRuntimeResolver = resolveMacRuntime, macPermissionProbe = probeMacPermissions, monitorIntervalMs = 3000 } = {}) {
     this.env = env; this.platform = platform; this.execute = execute; this.spawn = spawnImpl; this.binary = binary;
@@ -48,7 +48,7 @@ export class StandaloneComputerUseController {
     try { enabled = JSON.parse(fs.readFileSync(this.settingsPath, 'utf8')).enabled === true; } catch { /* off by default */ }
     this.state = { enabled, phase: 'disabled', available: !!binary, version, platform };
     if (platform === 'darwin') {
-      this.state.permissionOwner = managed ? 'PilotDeck Computer Use' : 'CuaDriver';
+      this.state.permissionOwner = managed ? '9GClaw Computer Use' : 'CuaDriver';
       this.state.permissions = { accessibility: null, screenRecording: null };
       if (binary) {
         try { this.state.permissionAppPath = macAppForBinary(binary); }
@@ -214,7 +214,7 @@ export class StandaloneComputerUseController {
     if (this.instanceDirectory) fs.rmSync(this.instanceDirectory, { recursive: true, force: true });
     this.instanceDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'pd-cu-'));
     fs.chmodSync(this.instanceDirectory, 0o700);
-    this.endpoint = this.platform === 'win32' ? `\\\\.\\pipe\\pilotdeck-cua-${randomUUID()}` : path.join(this.instanceDirectory, 'driver.sock');
+    this.endpoint = this.platform === 'win32' ? `\\\\.\\pipe\\9gclaw-cua-${randomUUID()}` : path.join(this.instanceDirectory, 'driver.sock');
   }
 
   environment() {
@@ -402,7 +402,7 @@ export class StandaloneComputerUseController {
     this.stopPermissionRequests();
     const executable = fs.realpathSync(this.binary);
     const bundle = macAppForBinary(executable);
-    const resultFile = path.join(fs.realpathSync(os.tmpdir()), `pilotdeck-permissions-${process.pid}-${randomUUID()}.json`);
+    const resultFile = path.join(fs.realpathSync(os.tmpdir()), `9gclaw-permissions-${process.pid}-${randomUUID()}.json`);
     fs.writeFileSync(resultFile, '', { mode: 0o600, flag: 'wx' });
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'pd-cu-permissions-'));
     fs.chmodSync(directory, 0o700);

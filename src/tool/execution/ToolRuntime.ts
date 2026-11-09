@@ -1,8 +1,8 @@
 import { isAbsolute, relative, resolve } from "node:path";
 import { PermissionRuntime } from "../../permission/index.js";
-import type { LifecycleRuntime, PilotDeckHookEffect } from "../../lifecycle/index.js";
+import type { LifecycleRuntime, NineGClawHookEffect } from "../../lifecycle/index.js";
 import { toolError } from "../protocol/errors.js";
-import type { PilotDeckToolErrorCode } from "../protocol/errors.js";
+import type { NineGClawToolErrorCode } from "../protocol/errors.js";
 import {
   PLAN_MODE_ALLOWED_TOOLS,
   buildPlanModeBashViolationMessage,
@@ -13,11 +13,11 @@ import { isReadOnlyShellCommand } from "../builtin/bash/permissions.js";
 import { preloadBashParser } from "../builtin/bash/parser.js";
 import {
   applyResultSizeLimit,
-  type PilotDeckToolErrorResult,
-  type PilotDeckToolResult,
-  type PilotDeckToolSuccessResult,
+  type NineGClawToolErrorResult,
+  type NineGClawToolResult,
+  type NineGClawToolSuccessResult,
 } from "../protocol/result.js";
-import type { PilotDeckToolCall, PilotDeckToolDefinition, PilotDeckToolRuntimeContext } from "../protocol/types.js";
+import type { NineGClawToolCall, NineGClawToolDefinition, NineGClawToolRuntimeContext } from "../protocol/types.js";
 import type { ToolRegistry } from "../registry/ToolRegistry.js";
 import { validateToolInput } from "./validateToolInput.js";
 import { formatValidationError } from "./formatValidationError.js";
@@ -36,13 +36,13 @@ export class ToolRuntime {
   ) {}
 
   async execute(
-    call: PilotDeckToolCall,
-    context: PilotDeckToolRuntimeContext,
+    call: NineGClawToolCall,
+    context: NineGClawToolRuntimeContext,
     options: { requireConcurrencySafe?: boolean } = {},
-  ): Promise<PilotDeckToolResult> {
+  ): Promise<NineGClawToolResult> {
     context = withPlanDirectoryWorkspaceRoot(context);
     const startedAtDate = now(context);
-    const runtimeContext: PilotDeckToolRuntimeContext = context.executeTool
+    const runtimeContext: NineGClawToolRuntimeContext = context.executeTool
       ? context
       : {
           ...context,
@@ -87,7 +87,7 @@ export class ToolRuntime {
     if (!tool) {
       const unavailable = this.registry.getUnavailable(repairedName ?? call.name);
       if (unavailable) {
-        const code: PilotDeckToolErrorCode = unavailable.code === "setup_required"
+        const code: NineGClawToolErrorCode = unavailable.code === "setup_required"
           ? "setup_required"
           : "tool_unavailable";
         return this.errorResult(
@@ -211,7 +211,7 @@ export class ToolRuntime {
         reason: decision.message,
       });
       this.eventEmitter?.({ type: "permission_denied", sessionId: context.sessionId, turnId: context.turnId, toolName: tool.name, reason: decision.message });
-      const code: PilotDeckToolErrorCode =
+      const code: NineGClawToolErrorCode =
         decision.reason.type === "runtime" && decision.reason.message.includes("prompt") ?
           "permission_required" :
           "permission_denied";
@@ -267,12 +267,12 @@ export class ToolRuntime {
     if (context.abortSignal?.aborted) {
       return this.errorResult(call.id, tool.name, "tool_aborted", "Tool execution was aborted.", startedAt, context);
     }
-    const baseContext: PilotDeckToolRuntimeContext = {
+    const baseContext: NineGClawToolRuntimeContext = {
       ...context,
       currentToolCallId: call.id,
       currentPermissionDecision: decision,
     };
-    const executeContext: PilotDeckToolRuntimeContext = baseContext.progress
+    const executeContext: NineGClawToolRuntimeContext = baseContext.progress
       ? {
           ...baseContext,
           progress: (event) =>
@@ -297,7 +297,7 @@ export class ToolRuntime {
         { toolResponse: output.data ?? output.content },
       );
       this.eventEmitter?.({ type: "post_tool_execute", sessionId: context.sessionId, turnId: context.turnId, toolCallId: call.id, toolName: tool.name, success: true });
-      const result: PilotDeckToolSuccessResult = {
+      const result: NineGClawToolSuccessResult = {
         type: "success",
         toolCallId: call.id,
         toolName: tool.name,
@@ -333,13 +333,13 @@ export class ToolRuntime {
   }
 
   private async checkInput(
-    tool: PilotDeckToolDefinition,
+    tool: NineGClawToolDefinition,
     input: unknown,
     toolCallId: string,
     startedAt: string,
-    context: PilotDeckToolRuntimeContext,
+    context: NineGClawToolRuntimeContext,
     invalidPrefix = "",
-  ): Promise<PilotDeckToolErrorResult | undefined> {
+  ): Promise<NineGClawToolErrorResult | undefined> {
     if (context.abortSignal?.aborted) {
       return this.errorResult(toolCallId, tool.name, "tool_aborted", "Tool execution was aborted.", startedAt, context);
     }
@@ -367,12 +367,12 @@ export class ToolRuntime {
   private async errorResult(
     toolCallId: string,
     toolName: string,
-    code: PilotDeckToolErrorCode,
+    code: NineGClawToolErrorCode,
     message: string,
     startedAt: string,
-    context: PilotDeckToolRuntimeContext,
+    context: NineGClawToolRuntimeContext,
     details?: Record<string, unknown>,
-  ): Promise<PilotDeckToolErrorResult> {
+  ): Promise<NineGClawToolErrorResult> {
     const startedAtDate = new Date(startedAt);
     const result = this.createErrorResult(toolCallId, toolName, code, message, startedAt, context, details);
     await this.recordToolAudit(result, context, startedAtDate);
@@ -382,12 +382,12 @@ export class ToolRuntime {
   private createErrorResult(
     toolCallId: string,
     toolName: string,
-    code: PilotDeckToolErrorCode,
+    code: NineGClawToolErrorCode,
     message: string,
     startedAt: string,
-    context: PilotDeckToolRuntimeContext,
+    context: NineGClawToolRuntimeContext,
     details?: Record<string, unknown>,
-  ): PilotDeckToolErrorResult {
+  ): NineGClawToolErrorResult {
     const completedAt = now(context).toISOString();
     const recovery = buildToolErrorRecovery({
       code,
@@ -412,8 +412,8 @@ export class ToolRuntime {
   }
 
   private async recordToolAudit(
-    result: PilotDeckToolResult,
-    context: PilotDeckToolRuntimeContext,
+    result: NineGClawToolResult,
+    context: NineGClawToolRuntimeContext,
     startedAt: Date,
   ): Promise<void> {
     await context.auditRecorder?.recordTool({
@@ -435,7 +435,7 @@ export class ToolRuntime {
     toolName: string,
     toolCallId: string,
     toolInput: unknown,
-    context: PilotDeckToolRuntimeContext,
+    context: NineGClawToolRuntimeContext,
     extraPayload: Record<string, unknown> = {},
   ) {
     return this.lifecycle?.dispatch({
@@ -465,7 +465,7 @@ export class ToolRuntime {
   }
 }
 
-function withPlanDirectoryWorkspaceRoot(context: PilotDeckToolRuntimeContext): PilotDeckToolRuntimeContext {
+function withPlanDirectoryWorkspaceRoot(context: NineGClawToolRuntimeContext): NineGClawToolRuntimeContext {
   const planDirectoryPath = context.permissionContext.planDirectoryPath;
   if (context.permissionContext.mode !== "plan" || !planDirectoryPath) return context;
 
@@ -535,7 +535,7 @@ function readStringDetail(details: Record<string, unknown>, key: string): string
 function getPlanModeViolation(
   toolName: string,
   input: unknown,
-  context: PilotDeckToolRuntimeContext,
+  context: NineGClawToolRuntimeContext,
 ): string | undefined {
   if (context.permissionMode !== "plan") {
     return undefined;
@@ -575,7 +575,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isPlanMarkdownPath(filePath: string | undefined, context: PilotDeckToolRuntimeContext): boolean {
+function isPlanMarkdownPath(filePath: string | undefined, context: NineGClawToolRuntimeContext): boolean {
   if (!filePath || !context.planDirectory?.path) {
     return false;
   }
@@ -592,14 +592,14 @@ function isPlanMarkdownPath(filePath: string | undefined, context: PilotDeckTool
   );
 }
 
-function findEffect<Type extends PilotDeckHookEffect["type"]>(
-  effects: PilotDeckHookEffect[],
+function findEffect<Type extends NineGClawHookEffect["type"]>(
+  effects: NineGClawHookEffect[],
   type: Type,
-): Extract<PilotDeckHookEffect, { type: Type }> | undefined {
-  return effects.find((effect): effect is Extract<PilotDeckHookEffect, { type: Type }> => effect.type === type);
+): Extract<NineGClawHookEffect, { type: Type }> | undefined {
+  return effects.find((effect): effect is Extract<NineGClawHookEffect, { type: Type }> => effect.type === type);
 }
 
-function lifecycleMetadata(result: { effects: PilotDeckHookEffect[] }): Record<string, unknown> | undefined {
+function lifecycleMetadata(result: { effects: NineGClawHookEffect[] }): Record<string, unknown> | undefined {
   const blocking = result.effects.find((effect) => effect.type === "block");
   const additionalContext = result.effects.filter((effect) => effect.type === "additional_context");
   const updatedMcpOutput = result.effects.find((effect) => effect.type === "updated_mcp_tool_output");
@@ -615,7 +615,7 @@ function lifecycleMetadata(result: { effects: PilotDeckHookEffect[] }): Record<s
   };
 }
 
-function now(context: PilotDeckToolRuntimeContext): Date {
+function now(context: NineGClawToolRuntimeContext): Date {
   return context.now?.() ?? new Date();
 }
 

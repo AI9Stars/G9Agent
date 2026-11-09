@@ -3,10 +3,10 @@ import { chromium, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
-const baseUrl = process.env.PILOTDECK_SMOKE_URL || 'http://127.0.0.1:5187';
-const output = process.env.PILOTDECK_SMOKE_OUTPUT || resolve('artifacts/usage');
+const baseUrl = process.env.NINEGCLAW_SMOKE_URL || 'http://127.0.0.1:5187';
+const output = process.env.NINEGCLAW_SMOKE_OUTPUT || resolve('artifacts/usage');
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ channel: process.env.PILOTDECK_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
+const browser = await chromium.launch({ channel: process.env.NINEGCLAW_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
 const baseDays = [
   { date: '2024-02-29', tokens: 100_000, callCount: 4 },
   ...Array.from({ length: 280 }, (_, i) => ({ date: new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10), tokens: i % 9 < 2 ? 0 : Math.round((i + 3) * (i % 7 + 1) * 110), callCount: i % 9 < 2 ? 0 : i % 8 + 1 })),
@@ -149,7 +149,7 @@ try {
     const context = await browser.newContext({ viewport: { width: 1129, height: 1039 } });
     await context.addInitScript(({ language, mode, preset }) => {
       localStorage.setItem('userLanguage', language); localStorage.setItem('themeMode', mode);
-      localStorage.setItem('pilotdeck-light-appearance-v1', JSON.stringify({ preset }));
+      localStorage.setItem('9gclaw-light-appearance-v1', JSON.stringify({ preset }));
     }, { language, mode, preset });
     await fixture(context);
     const page = await context.newPage(), errors = []; page.on('pageerror', error => errors.push(error.message));

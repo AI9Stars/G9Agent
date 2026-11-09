@@ -35,30 +35,30 @@ plt.savefig(root / "synthetic.png")
 plt.close()
 assert (root / "synthetic.png").stat().st_size > 0
 book = Workbook()
-book.properties.creator = "PilotDeck Test"
+book.properties.creator = "9GClaw Test"
 book.active["A1"] = 42
 book.save(root / "synthetic.xlsx")
 assert load_workbook(root / "synthetic.xlsx").active["A1"].value == 42
 doc = Document()
-doc.core_properties.author = doc.core_properties.last_modified_by = "PilotDeck Test"
+doc.core_properties.author = doc.core_properties.last_modified_by = "9GClaw Test"
 doc.add_paragraph("Synthetic text")
 doc.save(root / "synthetic.docx")
 assert Document(root / "synthetic.docx").paragraphs[0].text == "Synthetic text"
 slides = Presentation()
-slides.core_properties.author = slides.core_properties.last_modified_by = "PilotDeck Test"
+slides.core_properties.author = slides.core_properties.last_modified_by = "9GClaw Test"
 slides.slides.add_slide(slides.slide_layouts[0]).shapes.title.text = "Synthetic title"
 slides.save(root / "synthetic.pptx")
 assert Presentation(root / "synthetic.pptx").slides[0].shapes.title.text == "Synthetic title"
 pdf = canvas.Canvas(str(root / "synthetic.pdf"))
-pdf.setAuthor("PilotDeck Test")
+pdf.setAuthor("9GClaw Test")
 pdf.drawString(30, 30, "Synthetic PDF")
 pdf.save()
 assert "Synthetic PDF" in PdfReader(root / "synthetic.pdf").pages[0].extract_text()
 with pymupdf.open(root / "synthetic.pdf") as document:
     assert document[0].get_pixmap().width > 0
-with zipfile.ZipFile(root / "pilotdeck_fixture-1.0-py3-none-any.whl", "w") as wheel:
-    wheel.writestr("pilotdeck_fixture/__init__.py", "VALUE = 42\n")
-    wheel.writestr("pilotdeck_fixture-1.0.dist-info/METADATA", "Metadata-Version: 2.1\nName: pilotdeck-fixture\nVersion: 1.0\n")
-    wheel.writestr("pilotdeck_fixture-1.0.dist-info/WHEEL", "Wheel-Version: 1.0\nGenerator: PilotDeck Test\nRoot-Is-Purelib: true\nTag: py3-none-any\n")
-    wheel.writestr("pilotdeck_fixture-1.0.dist-info/RECORD", "")
+with zipfile.ZipFile(root / "ninegclaw_fixture-1.0-py3-none-any.whl", "w") as wheel:
+    wheel.writestr("ninegclaw_fixture/__init__.py", "VALUE = 42\n")
+    wheel.writestr("ninegclaw_fixture-1.0.dist-info/METADATA", "Metadata-Version: 2.1\nName: 9gclaw-fixture\nVersion: 1.0\n")
+    wheel.writestr("ninegclaw_fixture-1.0.dist-info/WHEEL", "Wheel-Version: 1.0\nGenerator: 9GClaw Test\nRoot-Is-Purelib: true\nTag: py3-none-any\n")
+    wheel.writestr("ninegclaw_fixture-1.0.dist-info/RECORD", "")
 print(json.dumps({"executable": sys.executable, "version": sys.version.split()[0]}))

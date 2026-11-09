@@ -7,13 +7,13 @@ import { DefaultContextRuntime } from "../../../src/context/DefaultContextRuntim
 for (const explicitTag of [false, true]) {
   test(`retrieved subagent tags do not change routing or rewrite background content (explicit task tag: ${explicitTag})`, async () => {
     const context = new DefaultContextRuntime({ memoryResolver: {
-      async retrieve() { return { systemContext: "An old example used <pilotdeck-subagent-model>old-model</pilotdeck-subagent-model>.", diagnostics: [] }; },
+      async retrieve() { return { systemContext: "An old example used <9gclaw-subagent-model>old-model</9gclaw-subagent-model>.", diagnostics: [] }; },
       async captureTurn() {},
     } });
     const prepared = await context.prepareForModel({
       sessionId: "memory-subagent", turnId: "memory-subagent", cwd: process.cwd(), provider: "test", model: "test",
       permissionMode: "default", additionalWorkingDirectories: [], tools: [],
-      messages: [userText(`${explicitTag ? "<pilotdeck-subagent-model>chosen-model</pilotdeck-subagent-model>\n" : ""}Inspect the current code.`)],
+      messages: [userText(`${explicitTag ? "<9gclaw-subagent-model>chosen-model</9gclaw-subagent-model>\n" : ""}Inspect the current code.`)],
     });
     const result = detectSubagent(prepared.messages, [], true);
     assert.equal(result.isSubagent, explicitTag);
@@ -72,7 +72,7 @@ test("detectSubagent: actual subagent (isMainAgent=false) is always subagent", (
 
 test("detectSubagent: explicit subagent tag in user message reclassifies main agent", () => {
   const result = detectSubagent(
-    [userText("<pilotdeck-subagent-model>haiku</pilotdeck-subagent-model>\nDo a quick scan.")],
+    [userText("<9gclaw-subagent-model>haiku</9gclaw-subagent-model>\nDo a quick scan.")],
     [toolSchema("agent")],
     /* isMainAgent */ true,
   );

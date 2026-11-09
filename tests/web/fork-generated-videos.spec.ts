@@ -14,7 +14,7 @@ import { toCanonicalToolResultBlock } from "../../src/tool/protocol/result.js";
 import { createVideoGenerationTools } from "../../src/tool/builtin/videoGeneration.js";
 import { VideoStore, type GeneratedVideo } from "../../src/tool/builtin/videos/VideoStore.js";
 import { VideoJobManager } from "../../src/tool/builtin/videos/VideoJobManager.js";
-import type { PilotDeckToolRuntimeContext } from "../../src/tool/protocol/types.js";
+import type { NineGClawToolRuntimeContext } from "../../src/tool/protocol/types.js";
 import { forkWebSession } from "../../src/web/server/forkSession.js";
 import { readSubagentWebMessages, readWebSessionMessages } from "../../src/web/server/readSessionMessages.js";
 
@@ -82,8 +82,8 @@ for (const storage of ["ordinary", "snapshot", "restore"] as const) {
     const tools = createVideoGenerationTools({ store: f.store, getConfig: () => ({ enabled: true, apiKey: "key", model: "video" }),
       fetchImpl: async () => { throw new Error("Saving an existing video must not generate another video."); },
     });
-    const context: PilotDeckToolRuntimeContext = { sessionId: fork.newSessionKey, turnId: "save", cwd: f.projectRoot,
-      permissionMode: "default", env: { PILOT_HOME: f.home },
+    const context: NineGClawToolRuntimeContext = { sessionId: fork.newSessionKey, turnId: "save", cwd: f.projectRoot,
+      permissionMode: "default", env: { NINEGCLAW_HOME: f.home },
       permissionContext: { mode: "default", cwd: f.projectRoot, additionalWorkingDirectories: [], rules: { allow: [], deny: [], ask: [] }, canPrompt: false, bypassAvailable: false } };
     await tools[1]!.execute({ video_id: first.videoId, output_path: "saved.mp4" }, context);
     assert.deepEqual(await readFile(join(f.projectRoot, "saved.mp4")), f.mp4);
@@ -145,7 +145,7 @@ test("a missing inherited video aborts the fork without publishing a broken tran
 });
 
 const recoveryConfig = { enabled: true, apiKey: 'fixture-key', model: 'fixture-video', baseUrl: 'https://videos.example/v1' };
-function recoveryContext(f: Awaited<ReturnType<typeof fixture>>, sessionId = f.sourceId, turnId = 'draw', currentToolCallId = 'recovered-call'): PilotDeckToolRuntimeContext {
+function recoveryContext(f: Awaited<ReturnType<typeof fixture>>, sessionId = f.sourceId, turnId = 'draw', currentToolCallId = 'recovered-call'): NineGClawToolRuntimeContext {
   return { sessionId, turnId, currentToolCallId, cwd: f.projectRoot, permissionMode: 'default',
     permissionContext: { mode: 'default', cwd: f.projectRoot, additionalWorkingDirectories: [], rules: { allow: [], deny: [], ask: [] }, canPrompt: false, bypassAvailable: false } };
 }

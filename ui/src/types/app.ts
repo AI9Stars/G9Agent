@@ -1,4 +1,4 @@
-export type SessionProvider = 'claude' | 'cursor' | 'codex' | 'gemini' | 'pilotdeck';
+export type SessionProvider = 'claude' | 'cursor' | 'codex' | 'gemini' | '9gclaw';
 export type ProjectSessionKind = 'background_task';
 export type SessionMessagesUpdateTarget = {
   projectName: string;

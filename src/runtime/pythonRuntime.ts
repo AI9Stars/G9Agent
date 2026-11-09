@@ -3,7 +3,7 @@ import { execFile } from 'node:child_process';
 import { access, copyFile, mkdir, mkdtemp, readFile, realpath, rename, rm, writeFile } from 'node:fs/promises';
 import { delimiter, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
-import type { PilotDeckMcpServerSpec } from '../mcp/protocol/types.js';
+import type { NineGClawMcpServerSpec } from '../mcp/protocol/types.js';
 
 /** Public, secret-free capabilities of the executing Gateway host. */
 export type PythonRuntimeStatus = {
@@ -51,7 +51,7 @@ export class PythonRuntimeManager {
   }
   /** Settings reads metadata without creating a venv or importing every library. */
   async inspect(enabled = true): Promise<Readonly<PythonRuntimeStatus>> {
-    if (!enabled || getEnv(this.env, 'VIRTUAL_ENV') || !this.env.PILOTDECK_PYTHON_ROOT) return (await this.resolve(enabled)).status;
+    if (!enabled || getEnv(this.env, 'VIRTUAL_ENV') || !this.env.NINEGCLAW_PYTHON_ROOT) return (await this.resolve(enabled)).status;
     if (this.status) {
       if (this.status.state !== 'ready' || (await Promise.all([this.status.executable!, ...this.baseFiles].map(exists))).every(Boolean)) return this.status;
       return { enabled: true, state: 'unavailable', reason: 'not-installed' };
@@ -66,7 +66,7 @@ export class PythonRuntimeManager {
     if (!enabled) return snapshot(this.env, { enabled: false, state: 'disabled' });
     // An explicitly activated environment belongs to the caller. Do not silently replace it.
     if (getEnv(this.env, 'VIRTUAL_ENV')) return snapshot(this.env, { enabled: true, state: 'external', reason: 'active-virtualenv' });
-    if (!this.env.PILOTDECK_PYTHON_ROOT) return snapshot(this.env, { enabled: true, state: 'unavailable', reason: 'not-installed' });
+    if (!this.env.NINEGCLAW_PYTHON_ROOT) return snapshot(this.env, { enabled: true, state: 'unavailable', reason: 'not-installed' });
     if (this.ready) {
       const cached = await this.ready;
       if (cached.status.executable && (await Promise.all([cached.status.executable, ...this.baseFiles].map(exists))).every(Boolean)) return cached;
@@ -84,7 +84,7 @@ export class PythonRuntimeManager {
     return this.ready;
   }
   private async installation(): Promise<{ root: string; manifest: Manifest; basePython: string; uv: string }> {
-    const root = resolve(this.env.PILOTDECK_PYTHON_ROOT!);
+    const root = resolve(this.env.NINEGCLAW_PYTHON_ROOT!);
     const manifest: Manifest = JSON.parse(await readFile(join(root, 'manifest.json'), 'utf8'));
     if (manifest.schemaVersion !== 1 || !/^[a-f0-9]{64}$/.test(manifest.id) || !/^3\.12\.\d+$/.test(manifest.version)
       || manifest.platform !== process.platform || manifest.arch !== process.arch || !Array.isArray(manifest.modules)
@@ -104,7 +104,7 @@ export class PythonRuntimeManager {
     const environment = join(parent, key);
     const bin = join(environment, process.platform === 'win32' ? 'Scripts' : 'bin');
     const executable = join(bin, process.platform === 'win32' ? 'python.exe' : 'python');
-    const marker = join(environment, '.pilotdeck-ready');
+    const marker = join(environment, '.9gclaw-ready');
     const env = { ...this.env };
     for (const key of ['PYTHONHOME', 'PYTHONPATH', 'UV_SYSTEM_PYTHON']) setEnv(env, key);
     setEnv(env, 'PATH', [bin, dirname(uv), getEnv(this.env, 'PATH')].filter(Boolean).join(delimiter));
@@ -130,7 +130,7 @@ export class PythonRuntimeManager {
         const stagedPython = join(stagedBin, process.platform === 'win32' ? 'python.exe' : 'python');
         if (process.platform === 'win32') await copyFile(stagedPython, join(stagedBin, 'python3.exe'));
         await this.probe(execute, stagedPython, env, manifest);
-        await writeFile(join(staging, '.pilotdeck-ready'), manifest.id);
+        await writeFile(join(staging, '.9gclaw-ready'), manifest.id);
         try { await rename(staging, environment); }
         catch (error) {
           // A concurrent Gateway can win publication. Never replace a completed
@@ -152,7 +152,7 @@ export class PythonRuntimeManager {
 }
 
 /** The MCP SDK intentionally inherits few variables; carry only the Python capability. */
-export function withPythonMcpEnvironment(spec: PilotDeckMcpServerSpec, runtime: PythonRuntimeSnapshot): PilotDeckMcpServerSpec {
+export function withPythonMcpEnvironment(spec: NineGClawMcpServerSpec, runtime: PythonRuntimeSnapshot): NineGClawMcpServerSpec {
   if (spec.transport !== 'stdio' || runtime.status.state !== 'ready') return spec;
   // An explicit interpreter, PATH or activated venv remains authoritative.
   if (isAbsolute(spec.command) || /[\\/]/.test(spec.command)

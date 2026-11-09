@@ -68,7 +68,7 @@ for (const mode of ["file", "python", "task"] as const) for (const order of ["pa
 }
 
 test("child file tools protect internal work files excluded from the turn scan", async t => {
-  const internal = ".pilotdeck/work/child.txt", f = await fixture(t, { [internal]: "A" });
+  const internal = ".9gclaw/work/child.txt", f = await fixture(t, { [internal]: "A" });
   await f.toolWrite("B"); await runChild(f, "file", ["a.txt", internal]);
   const checkpoint = (await f.history.finishTurn("complete"))!;
   const diff = await f.store.diff("session", checkpoint.id, internal);

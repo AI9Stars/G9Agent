@@ -380,8 +380,8 @@ test("gateway cannot start replacement while a model metadata write holds the tr
 });
 
 test("replaceLastWebSessionTurn removes only the latest turn and leaves workspace files untouched", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-turn-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-turn-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-turn-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-turn-home-"));
   try {
     const sessionKey = "web:s_replace_tail";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -429,8 +429,8 @@ test("replaceLastWebSessionTurn removes only the latest turn and leaves workspac
 });
 
 test("replaceLastWebSessionTurn preserves session metadata written after the edited turn", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-metadata-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-metadata-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-metadata-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-metadata-home-"));
   try {
     const sessionKey = "web:s_replace_metadata";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -485,8 +485,8 @@ test("replaceLastWebSessionTurn preserves session metadata written after the edi
 });
 
 test("failed replacement submission can restore the original transcript exactly", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-rollback-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-rollback-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-rollback-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-rollback-home-"));
   try {
     const sessionKey = "web:s_replace_rollback";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -527,8 +527,8 @@ test("failed replacement submission can restore the original transcript exactly"
 });
 
 test("startup recovery restores a prepared replacement that was never accepted", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-recovery-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-recovery-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-recovery-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-recovery-home-"));
   try {
     const sessionKey = "web:s_replace_recovery";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -564,8 +564,8 @@ test("startup recovery restores a prepared replacement that was never accepted",
 });
 
 test("startup recovery recognizes a durable legacy replacement without its journal", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-commit-recovery-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-commit-recovery-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-commit-recovery-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-commit-recovery-home-"));
   try {
     const sessionKey = "web:s_replace_commit_recovery";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -618,8 +618,8 @@ test("startup recovery recognizes a durable legacy replacement without its journ
 });
 
 test("startup recovery decides from the newest replacement transaction only", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-newest-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-newest-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-newest-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-newest-home-"));
   try {
     const sessionKey = "web:s_replace_newest";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -688,8 +688,8 @@ test("startup recovery decides from the newest replacement transaction only", as
 });
 
 test("startup recovery skips a replacement owned by a live Gateway process", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-owner-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-owner-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-owner-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-owner-home-"));
   try {
     const sessionKey = "web:s_replace_owner";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -733,8 +733,8 @@ test("startup recovery skips a replacement owned by a live Gateway process", asy
 });
 
 test("replaceLastWebSessionTurn rejects a stale target without changing the transcript", async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), "pilotdeck-replace-conflict-project-"));
-  const pilotHome = await mkdtemp(join(tmpdir(), "pilotdeck-replace-conflict-home-"));
+  const projectRoot = await mkdtemp(join(tmpdir(), "g9agent-replace-conflict-project-"));
+  const pilotHome = await mkdtemp(join(tmpdir(), "g9agent-replace-conflict-home-"));
   try {
     const sessionKey = "web:s_replace_conflict";
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });

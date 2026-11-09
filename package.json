@@ -1,5 +1,5 @@
 {
-  "name": "pilotdeck",
+  "name": "g9agent",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "ui"
   ],
   "bin": {
-    "pilotdeck": "./dist/src/cli/pilotdeck.js"
+    "g9agent": "./dist/src/cli/g9agent.js"
   },
   "scripts": {
     "check:runtime": "node scripts/check-node-runtime.mjs",
@@ -21,19 +21,19 @@
     "prebuild": "npm run check:runtime && cd src/context/memory/edgeclaw-memory-core && npm run build",
     "build": "node scripts/prepare-computer-use.mjs && node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node -e \"require('fs').cpSync('src/extension/plugins/builtin','dist/src/extension/plugins/builtin',{recursive:true})\"",
     "build:web": "npm run build && pnpm --dir ui run build",
-    "build:desktop": "pnpm --filter pilotdeck-desktop run compile",
-    "package:desktop": "pnpm --filter pilotdeck-desktop run pack",
-    "server": "npm run check:runtime && tsx src/cli/pilotdeck.ts server",
-    "server:built": "npm run check:runtime && node dist/src/cli/pilotdeck.js server",
-    "skills:migrate": "tsx src/cli/pilotdeck.ts skills migrate",
+    "build:desktop": "pnpm --filter g9agent-desktop run compile",
+    "package:desktop": "pnpm --filter g9agent-desktop run pack",
+    "server": "npm run check:runtime && tsx src/cli/g9agent.ts server",
+    "server:built": "npm run check:runtime && node dist/src/cli/g9agent.js server",
+    "skills:migrate": "tsx src/cli/g9agent.ts skills migrate",
     "predev": "npm run check:runtime",
     "dev": "node scripts/prepare-computer-use.mjs && node scripts/dev-launcher.mjs",
     "test": "npm run build && node --test --test-force-exit --test-timeout 60000 \"dist/tests/**/*.test.js\" \"dist/tests/**/*.spec.js\"",
     "test:mcp": "node --test --test-timeout 60000 \"dist/tests/mcp/**/*.spec.js\" dist/tests/context/prompt-skill-path.spec.js dist/tests/context/prompt-file-delivery.spec.js",
     "test:python": "node --import tsx --test tests/runtime/python-runtime.spec.ts tests/runtime/python-native.spec.ts tests/context/python-awareness.spec.ts tests/gateway/python-reload.spec.ts tests/gateway/active-turn-snapshot.spec.ts tests/agent/sub/SubAgentSession.spec.ts",
     "test:checkpoints": "node --test --test-timeout 60000 dist/tests/session/workspace-checkpoints.spec.js dist/tests/session/shared-directory-concurrency.spec.js dist/tests/session/shared-directory-review-regressions.spec.js dist/tests/session/checkpoint-execution.spec.js dist/tests/session/checkpoint-subagents.spec.js dist/tests/session/checkpoint-background.spec.js dist/tests/session/repository-operations.spec.js dist/tests/session/file-artifact-collector.spec.js dist/tests/session/turn-file-artifacts.spec.js dist/tests/pilot/project-gitignore.spec.js dist/tests/gateway/checkpoint-restoration.spec.js dist/tests/web/replace-last-turn.spec.js dist/tests/web/fork-compact-snapshot.spec.js",
-    "e2e:real-compaction": "npm run build && PILOTDECK_RUN_REAL_COMPACTION_E2E=1 node dist/tests/agent/e2e/run-real-compaction.js",
-    "e2e:real-agent-lifecycle-hooks": "npm run build && PILOTDECK_RUN_REAL_AGENT_LIFECYCLE_E2E=1 node dist/tests/agent/e2e/run-real-agent-lifecycle-hooks.js",
+    "e2e:real-compaction": "npm run build && G9AGENT_RUN_REAL_COMPACTION_E2E=1 node dist/tests/agent/e2e/run-real-compaction.js",
+    "e2e:real-agent-lifecycle-hooks": "npm run build && G9AGENT_RUN_REAL_AGENT_LIFECYCLE_E2E=1 node dist/tests/agent/e2e/run-real-agent-lifecycle-hooks.js",
     "postbuild": "node scripts/write-web-build-metadata.mjs dist"
   },
   "devDependencies": {
@@ -44,7 +44,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@pilotdeck/config": "workspace:*",
+    "@g9agent/config": "workspace:*",
     "@google/genai": "^2.10.0",
     "@larksuiteoapi/node-sdk": "^1.65.0",
     "@modelcontextprotocol/sdk": "^1.29.0",

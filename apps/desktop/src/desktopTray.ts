@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import type { Menu, MenuItemConstructorOptions, Tray, NativeImage } from 'electron';
 
 type Options = {
@@ -23,9 +24,10 @@ export function createDesktopTray(options: Options) {
   function refreshMenu() {
     if (!available()) return;
     const zh = options.isChinese();
+    const name = productName(zh ? 'zh-CN' : 'en');
     const quittingLabel = zh ? '正在退出…' : 'Quitting…';
-    tray!.setToolTip(quitting ? `PilotDeck — ${quittingLabel}` : notificationCount
-      ? `PilotDeck — ${notificationCount} ${zh ? '个后台任务提醒' : 'background task reminders'}` : 'PilotDeck');
+    tray!.setToolTip(quitting ? `${name} — ${quittingLabel}` : notificationCount
+      ? `${name} — ${notificationCount} ${zh ? '个后台任务提醒' : 'background task reminders'}` : name);
     if (options.notificationImage) tray!.setImage(options.notificationImage(notificationCount));
     tray!.setContextMenu(options.buildMenu([
       { label: zh ? '打开主界面' : 'Open main window', enabled: !quitting, click: () => invoke(options.open) },

@@ -3,7 +3,7 @@ import type { NormalizedMessage } from '../../../stores/useSessionStore';
 import { normalizedToChatMessages } from './useChatMessages';
 
 const complete: NormalizedMessage = {
-  id: 'stop', sessionId: 'session', runId: 'run', provider: 'pilotdeck', kind: 'complete',
+  id: 'stop', sessionId: 'session', runId: 'run', provider: 'g9agent', kind: 'complete',
   timestamp: '2026-11-10T00:00:02Z', finishReason: 'aborted',
 };
 

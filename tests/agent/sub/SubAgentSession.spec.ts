@@ -27,14 +27,14 @@ import {
   createDefaultPermissionContext,
 } from "../../../src/permission/index.js";
 import { createBashTool } from "../../../src/tool/builtin/bash.js";
-import type { PilotDeckCommandRunner } from "../../../src/tool/builtin/bash/commandRunner.js";
+import type { G9AgentCommandRunner } from "../../../src/tool/builtin/bash/commandRunner.js";
 import { createExecuteCodeTool } from "../../../src/tool/builtin/executeCode.js";
 import { ToolRuntime } from "../../../src/tool/execution/ToolRuntime.js";
 import {
   ToolRegistry,
-  type PilotDeckSubagentForkApi,
-  type PilotDeckToolDefinition,
-  type PilotDeckToolRuntimeContext,
+  type G9AgentSubagentForkApi,
+  type G9AgentToolDefinition,
+  type G9AgentToolRuntimeContext,
 } from "../../../src/tool/index.js";
 import type { CanonicalMessage } from "../../../src/model/index.js";
 import { loadPilotConfig } from "../../../src/pilot/index.js";
@@ -65,13 +65,13 @@ type TestableAgentLoop = {
   buildSubagentForkApi(
     input: AgentLoopInput,
     messages: CanonicalMessage[],
-  ): PilotDeckSubagentForkApi;
+  ): G9AgentSubagentForkApi;
 };
 
 function createNoopTool(
   name: string,
-  isReadOnly: PilotDeckToolDefinition["isReadOnly"],
-): PilotDeckToolDefinition {
+  isReadOnly: G9AgentToolDefinition["isReadOnly"],
+): G9AgentToolDefinition {
   return {
     name,
     description: `${name} test tool`,
@@ -155,7 +155,7 @@ function parentConfig(): AgentRuntimeConfig {
 
 function createSubagentForkHarness(router: AgentRouterRuntime): {
   events: AgentEvent[];
-  fork: PilotDeckSubagentForkApi;
+  fork: G9AgentSubagentForkApi;
 } {
   const events: AgentEvent[] = [];
   const loop = new AgentLoop(parentConfig(), {
@@ -241,7 +241,7 @@ test("subagent catalog refresh uses its child registry and preserves its tool al
   assert.deepEqual(parent.list(), [existing]);
 });
 
-function runtimeContext(config: AgentRuntimeConfig): PilotDeckToolRuntimeContext {
+function runtimeContext(config: AgentRuntimeConfig): G9AgentToolRuntimeContext {
   return {
     sessionId: "child-session",
     turnId: "child-turn",
@@ -254,15 +254,15 @@ function runtimeContext(config: AgentRuntimeConfig): PilotDeckToolRuntimeContext
 }
 
 function writePilotConfig(raw: string): string {
-  const pilotHome = mkdtempSync(join(tmpdir(), "pilotdeck-subagent-config-"));
+  const pilotHome = mkdtempSync(join(tmpdir(), "g9agent-subagent-config-"));
   tempPilotHomes.push(pilotHome);
-  writeFileSync(join(pilotHome, "pilotdeck.yaml"), raw, "utf8");
+  writeFileSync(join(pilotHome, "g9agent.yaml"), raw, "utf8");
   return pilotHome;
 }
 
 function loadInlinePilotConfig(raw: string) {
   const pilotHome = writePilotConfig(raw);
-  return loadPilotConfig({ env: { PILOT_HOME: pilotHome } });
+  return loadPilotConfig({ env: { G9AGENT_HOME: pilotHome } });
 }
 
 function pilotConfigWithSubagentDefault(defaultValue: string): string {
@@ -674,7 +674,7 @@ test("configured subagent default remains a router baseline, not a router overri
 
 test("read-only subagent evaluates bash safety from the real command", async () => {
   const commands: string[] = [];
-  const runner: PilotDeckCommandRunner = {
+  const runner: G9AgentCommandRunner = {
     async run(command) {
       commands.push(command);
       return {
@@ -727,7 +727,7 @@ test("read-only execute_code checks the real code instead of crashing on registr
       id: "write-code",
       name: "execute_code",
       input: {
-        code: "from pilotdeck_tools import write_file\nwrite_file('blocked.txt', 'no')",
+        code: "from g9agent_tools import write_file\nwrite_file('blocked.txt', 'no')",
       },
     },
     runtimeContext(config),

@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { link, mkdir, readFile, readdir, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import type { PilotDeckToolRuntimeContext } from "../../protocol/types.js";
+import type { G9AgentToolRuntimeContext } from "../../protocol/types.js";
 import { videoApiBaseUrl, type VideoGenerationConfig } from "../../../pilot/config/videoGenerationConfig.js";
 import { VideoStore, type GeneratedVideo, type VideoPurpose } from "./VideoStore.js";
 import { videoClient, VideoApiError, VIDEO_TIMEOUT_MS, type VideoRequest } from "./openaiVideos.js";
@@ -16,7 +16,7 @@ export type VideoJob = {
   video?: GeneratedVideo; exportError?: boolean; outputPath?: string;
   /** Trusted child display scope of a completed task carried by a fork. */
   forkSubagentId?: string;
-  context: Pick<PilotDeckToolRuntimeContext, "cwd" | "permissionMode" | "permissionContext" | "messageId">;
+  context: Pick<G9AgentToolRuntimeContext, "cwd" | "permissionMode" | "permissionContext" | "messageId">;
 };
 export const unfinishedVideoJob = (job: VideoJob) => ["tracking", "reconnecting", "downloading"].includes(job.state);
 export function videoJobView(job: VideoJob) {
@@ -26,7 +26,7 @@ export function videoJobView(job: VideoJob) {
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 const uuid = /^[0-9a-f-]{36}$/;
 const active = new Map<string, Promise<void>>();
-const contexts = new Map<string, PilotDeckToolRuntimeContext>();
+const contexts = new Map<string, G9AgentToolRuntimeContext>();
 type Options = { store: VideoStore; getConfig: () => VideoGenerationConfig | undefined; fetchImpl?: typeof fetch;
   pollMs?: number; retryMs?: number; timeoutMs?: number; requestTimeoutMs?: number; env?: NodeJS.ProcessEnv };
 
@@ -88,7 +88,7 @@ export class VideoJobManager {
       + `Do not regenerate an accepted task just to recover it. The host tracks it; paused tasks can be resumed from their card. `
       + `Completed video_ids can be passed to save_generated_video.\n${JSON.stringify([...summaries, ...inherited.map(video => ({ state: "completed", video_id: video.videoId, purpose: video.purpose, attachment_path: video.path }))])}\n</session-video-status>`;
   }
-  async submit(config: VideoGenerationConfig, input: VideoRequest & { purpose: VideoPurpose; output_path?: string }, context: PilotDeckToolRuntimeContext) {
+  async submit(config: VideoGenerationConfig, input: VideoRequest & { purpose: VideoPurpose; output_path?: string }, context: G9AgentToolRuntimeContext) {
     if (input.output_path) outputPath(input.output_path, context);
     if (context.currentToolCallId) {
       const accepted = await this.forCall(context.sessionId, context.currentToolCallId, context.turnId);
@@ -194,7 +194,7 @@ export class VideoJobManager {
       }
     } finally { await release(); }
   }
-  async wait(job: VideoJob, context: PilotDeckToolRuntimeContext): Promise<VideoJob> {
+  async wait(job: VideoJob, context: G9AgentToolRuntimeContext): Promise<VideoJob> {
     const key = this.file(job.sessionId, job.id); contexts.set(key, context);
     void this.start(job);
     try {

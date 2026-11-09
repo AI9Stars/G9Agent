@@ -1,1 +1,1 @@
-export type PilotDeckExtensionSource = "builtin" | "global" | "project";
+export type G9AgentExtensionSource = "builtin" | "global" | "project";

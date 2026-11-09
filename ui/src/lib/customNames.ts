@@ -16,8 +16,8 @@ import { stripDocumentSelectionPromptBlock } from '../types/documentSelection';
  * via `useCustomNamesVersion()`.
  */
 
-const PROJECT_KEY = 'pilotdeck:customProjectNames';
-const SESSION_KEY = 'pilotdeck:customSessionTitles';
+const PROJECT_KEY = 'g9agent:customProjectNames';
+const SESSION_KEY = 'g9agent:customSessionTitles';
 const CHANGE_EVENT = 'customnames:changed';
 
 type NameMap = Record<string, string>;

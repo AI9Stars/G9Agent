@@ -34,7 +34,7 @@ const ENV_CONFIG_OVERRIDES = [
 
 export function resolvePilotConfigPath(options: PilotConfigLoadOptions = {}): string {
   const env = options.env ?? process.env;
-  const envConfigPath = env.PILOTDECK_CONFIG_PATH?.trim();
+  const envConfigPath = env.G9AGENT_CONFIG_PATH?.trim();
   return options.configPath ?? envConfigPath ?? getPilotConfigFilePath(resolvePilotHome(env));
 }
 
@@ -45,13 +45,13 @@ export function loadPilotConfig(options: PilotConfigLoadOptions = {}): PilotConf
   const sources: PilotConfigSource[] = [];
 
   const pilotHome = resolvePilotHome(env);
-  if (env.PILOT_HOME) {
+  if (env.G9AGENT_HOME) {
     sources.push({
       kind: "env",
       phase: "bootstrap",
       priority: 30,
       loadedAt,
-      contentHash: sha256("PILOT_HOME=<redacted-path>"),
+      contentHash: sha256("G9AGENT_HOME=<redacted-path>"),
     });
   }
 
@@ -106,7 +106,7 @@ export function loadPilotConfig(options: PilotConfigLoadOptions = {}): PilotConf
     // Soft-recover instead of crashing: many users update agent.model through
     // onboarding/UI without touching the router block, leaving the two out of
     // sync. Treating that as fatal locks them out of the gateway entirely
-    // (see issue: customer reinstall doesn't help because pilotdeck.yaml
+    // (see issue: customer reinstall doesn't help because g9agent.yaml
     // survives the wipe). Auto-align router.scenarios.default to agent.model
     // and warn — agent.model is the canonical source of truth.
     const previousId = router.scenarios.default.id;
@@ -298,7 +298,7 @@ function validateTopLevel(rawConfig: PilotRawConfig, diagnostics: PilotConfigDia
     diagnostics.push({
       code: "CONFIG_PILOT_SECTION_FORBIDDEN",
       severity: "fatal",
-      message: "YAML config must not contain a pilot section. Use PILOT_HOME for PilotHome.",
+      message: "YAML config must not contain a pilot section. Use G9AGENT_HOME for PilotHome.",
       path: "pilot",
       recoverable: false,
     });
@@ -318,9 +318,9 @@ function validateTopLevel(rawConfig: PilotRawConfig, diagnostics: PilotConfigDia
     "cron",
     "tools",
     "proxy",
-    // Reserved namespace for ui/server (Web UI Express bridge). The PilotDeck
+    // Reserved namespace for ui/server (Web UI Express bridge). The G9Agent
     // gateway does not parse `webui.*` itself but tolerates it so a single
-    // ~/.pilotdeck/pilotdeck.yaml can carry both gateway-side and ui-side
+    // ~/.g9agent/g9agent.yaml can carry both gateway-side and ui-side
     // config without producing diagnostic noise.
     "webui",
     "telemetry",
@@ -778,7 +778,7 @@ function parseProxyConfig(
           severity: "info",
           message:
             "webui.runtime.httpsProxy has been migrated to the top-level proxy.url field. " +
-            "Please update your pilotdeck.yaml to use proxy.url instead.",
+            "Please update your g9agent.yaml to use proxy.url instead.",
           path: "webui.runtime.httpsProxy",
           recoverable: true,
         });

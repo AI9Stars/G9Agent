@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-public static class PilotDeckJob {
+public static class G9AgentJob {
   [StructLayout(LayoutKind.Sequential)] struct BasicLimits {
     public long ProcessTime, JobTime; public uint Flags;
     public UIntPtr MinWorking, MaxWorking; public uint ActiveLimit;

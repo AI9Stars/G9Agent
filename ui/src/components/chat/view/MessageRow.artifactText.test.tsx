@@ -41,7 +41,7 @@ describe('MessageRow generated file presentation', () => {
       <MessageRow
         message={message}
         prevMessage={null}
-        provider="pilotdeck"
+        provider="g9agent"
         selectedProject={{
           name: 'office',
           displayName: 'office',

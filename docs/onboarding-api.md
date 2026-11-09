@@ -1,6 +1,6 @@
 # Onboarding API
 
-Local first-run configuration on the UI Server. Base URL: `http://127.0.0.1:{SERVER_PORT}/api/v1` (default port 3001). The [OpenAPI schema](pilotdeck-onboarding-api.openapi.yaml) is the canonical field/type reference; this guide records workflow and safety rules.
+Local first-run configuration on the UI Server. Base URL: `http://127.0.0.1:{SERVER_PORT}/api/v1` (default port 3001). The [OpenAPI schema](g9agent-onboarding-api.openapi.yaml) is the canonical field/type reference; this guide records workflow and safety rules.
 
 ## Authentication and errors
 
@@ -35,7 +35,7 @@ Manual confirmation submits `{ "models": [{ "modelId": "model-a", "imageInput": 
 `PUT /model-configuration` requires the testId, provider, complete model capability choices and retryPolicy from a passed, unexpired test owned by the caller. Provider, protocol, endpoint, model set, capabilities and retry policy must match. `models` entries contain `modelId`, boolean `textInput` and boolean `imageInput`.
 
 - A new provider requires apiKey except for Ollama. For an existing provider, apiKey=null preserves its saved key; an empty string is invalid.
-- The first model becomes agent.model. Keys are stored locally in pilotdeck.yaml and are never returned.
+- The first model becomes agent.model. Keys are stored locally in g9agent.yaml and are never returned.
 - Fresh onboarding leaves routing, memory and search disabled, resident projects inactive, and messaging integrations disabled. Re-onboarding preserves existing switches, resident projects and channels. Existing blocks without an enabled flag retain their legacy meaning; absent blocks default off.
 - HTTP 200 returns configurationId and savedAt. Invalid input returns 400, an unknown/foreign test 404, an unpassed test 409 TEST_NOT_PASSED, mismatched content 409 CONFIGURATION_MISMATCH, and an expired test 410 TEST_EXPIRED.
 
@@ -53,6 +53,6 @@ Manual confirmation submits `{ "models": [{ "modelId": "model-a", "imageInput": 
 
 Probe, resolve unknown image capabilities, save the matching configuration, then register the workspace. A client must discard a stale tested snapshot if the form changes before saving, and disable snapshot-changing controls throughout a save. Custom provider IDs must not collide with built-in IDs or aliases.
 
-Public brand resources are `/pilotdeck-logo-lockup-transparent.png`, `/pilotdeck-p-mark-transparent.png`, `/pilotdeck-p-mark-transparent-v2.png`, and provider SVGs under `/onboarding/providers/`. Provider paths and all schema components are verified by [resource tests](../ui/server/routes/onboardingResources.test.js). The image probe remains server-internal at `ui/server/assets/onboarding/image-capability-probe.png`.
+Public brand resources are `/g9agent-logo-lockup-transparent.png`, `/g9agent-p-mark-transparent.png`, `/g9agent-p-mark-transparent-v2.png`, and provider SVGs under `/onboarding/providers/`. Provider paths and all schema components are verified by [resource tests](../ui/server/routes/onboardingResources.test.js). The image probe remains server-internal at `ui/server/assets/onboarding/image-capability-probe.png`.
 
 Implementation: [onboarding routes](../ui/server/routes/onboarding.js), [shared model probes](../ui/server/services/modelConnectionProbe.js). Settings clients use the [model-pool API](model-pool-settings-api.md), whose persisted task workflow is separate from first-run onboarding.

@@ -179,7 +179,7 @@ export class EdgeClawMemoryProvider implements MemoryResolver {
       this.options.service.captureTurn(normalizedMessages, {
         sessionKey: input.sessionId,
         timestamp: this.now().toISOString(),
-        source: this.options.source ?? "pilotdeck",
+        source: this.options.source ?? "g9agent",
       });
       this.options.telemetry?.trackFeatureLoopStage({
         module: "memory",

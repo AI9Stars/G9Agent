@@ -1,16 +1,16 @@
-import type { PilotDeckLoadedPlugin } from "../protocol/plugin.js";
+import type { G9AgentLoadedPlugin } from "../protocol/plugin.js";
 
 export class PluginRegistry {
-  private readonly plugins = new Map<string, PilotDeckLoadedPlugin>();
+  private readonly plugins = new Map<string, G9AgentLoadedPlugin>();
 
-  replaceAll(plugins: PilotDeckLoadedPlugin[]): void {
+  replaceAll(plugins: G9AgentLoadedPlugin[]): void {
     this.plugins.clear();
     for (const plugin of plugins) {
       this.plugins.set(`${plugin.name}@${plugin.source}`, plugin);
     }
   }
 
-  list(): PilotDeckLoadedPlugin[] {
+  list(): G9AgentLoadedPlugin[] {
     return [...this.plugins.values()];
   }
 }

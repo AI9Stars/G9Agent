@@ -1,4 +1,4 @@
-# PilotDeck Desktop
+# G9Agent Desktop
 
 Electron shell for the shared Web UI and local Gateway. It owns native windows, menus, notifications, runtime supervision and updates; agent execution stays in [the core](../../src/README.md).
 
@@ -8,14 +8,14 @@ Use the Node.js and pnpm versions declared at the repository root. From that roo
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm --filter pilotdeck-desktop dev
-pnpm --filter pilotdeck-desktop compile
-pnpm --filter pilotdeck-desktop test
+pnpm --filter g9agent-desktop dev
+pnpm --filter g9agent-desktop compile
+pnpm --filter g9agent-desktop test
 ```
 
-Development and packaging prepare an architecture-matched runtime and pinned native resources. Packaging depends on the matching host architecture and platform toolchain. Use [release instructions](../../docs/release.md), [DEB support](../../docs/ubuntu-desktop-support.md) or [RPM support](../../docs/redhat-desktop-support.md) for build and signing setup.
+Development and packaging prepare an architecture-matched runtime and pinned native resources. This fork packages unsigned Windows x64/ARM64 installers on matching native hosts. The manual Windows Release workflow publishes to GitHub; PR packaging uploads artifacts without publishing. Updates use only this repository's GitHub Releases. See [release instructions](../../docs/release.md) and [upstream synchronization](../../docs/upstream-sync.zh.md).
 
-Desktop includes Python 3.12, uv/uvx and a curated set of agent, data, statistics, plotting and document libraries on all six Windows/macOS/Linux x64/ARM64 targets. Settings > Advanced > Python environment enables it by default. The Gateway creates an offline, writable virtual environment under `PILOT_HOME/runtimes/python`, sharing the immutable bundled base libraries. Preference changes apply to subsequent turns and retain running tasks and MCP connections. See [bundled Python release inputs](../../docs/release.md#bundled-python).
+Desktop includes Python 3.12, uv/uvx and a curated set of agent, data, statistics, plotting and document libraries on all six Windows/macOS/Linux x64/ARM64 targets. Settings > Advanced > Python environment enables it by default. The Gateway creates an offline, writable virtual environment under `G9AGENT_HOME/runtimes/python`, sharing the immutable bundled base libraries. Preference changes apply to subsequent turns and retain running tasks and MCP connections. See [bundled Python release inputs](../../docs/release.md#bundled-python).
 
 Settings > Advanced shows Git beside Python, including the executing host's source, version and path. Windows desktop already bundles Portable Git/Git Bash and puts it on the runtime PATH; other hosts use their configured/system Git. Opening settings reads Python installation metadata without preparing an environment. Status reads time out after 20 seconds; explicit full Python checks allow 90 seconds for environment creation and library imports. Both can be retried and are cancelled when the page closes.
 
@@ -26,8 +26,8 @@ Settings > Advanced shows Git beside Python, including the executing host's sour
 - [applicationMenu.ts](src/applicationMenu.ts): native commands and shortcuts.
 - [updates.ts](src/updates.ts), [JsonReleaseProvider.ts](src/JsonReleaseProvider.ts) and [updateDownload.ts](src/updateDownload.ts): pinned release identity, differential/full download recovery and transport control; see [release policy](../../docs/release.md#differential-downloads-and-recovery).
 - [build-runtime.mjs](scripts/build-runtime.mjs): runtime assembly; [installer documentation](resources/installer/README.md) explains transactional Windows payload replacement.
-- [rebuild-icon.mjs](scripts/rebuild-icon.mjs) regenerates platform icons; [rebuild-icon.ps1](scripts/rebuild-icon.ps1) preserves the Windows command entry.
-- [computerUse.ts](src/computerUse.ts): built-in native Driver lifecycle. Settings > External integrations > Computer Use controls it; macOS permissions belong to PilotDeck Computer Use, not the main app. See [MCP](../../src/mcp/README.md).
+- [rebuild-brand-assets.mjs](../../scripts/rebuild-brand-assets.mjs) regenerates the fork's platform icons and wordmarks from the preserved original logo.
+- [computerUse.ts](src/computerUse.ts): built-in native Driver lifecycle. Settings > External integrations > Computer Use controls it; macOS permissions belong to G9Agent Computer Use, not the main app. See [MCP](../../src/mcp/README.md).
 
 Closing the window keeps background work running when a supported tray is available. Explicit Quit stops owned processes; updater failure must restore a working runtime. Do not terminate unrelated user processes.
 
@@ -38,13 +38,13 @@ Caption menus retain each native popup through deferred close completion. `close
 
 Notifications follow application preferences and OS policy. Windows uses native Toasts without numeric app badges. Supported app badges count background tasks and clear when the main window gains focus; conversation unread state is independent.
 
-General uses a registered PilotDeckGeneral workspace (Documents on Windows, home on macOS/Linux). Configuration may select another location; selection and migration must preserve existing files, validate directory identity and reject overlap with installation or state directories. See [configuration and paths](../../src/pilot/README.md).
+General uses a registered G9AgentGeneral workspace (Documents on Windows, home on macOS/Linux). Configuration may select another location; selection and migration must preserve existing files, validate directory identity and reject overlap with installation or state directories. See [configuration and paths](../../src/pilot/README.md).
 
-Runtime logs are managed under userData/logs, or PILOT_HOME/logs for standalone services. The retention setting defaults to seven days. Download runtime logs exports redacted diagnostics; invalid configuration remains available for repair.
+Runtime logs are managed under userData/logs, or G9AGENT_HOME/logs for standalone services. The retention setting defaults to seven days. Download runtime logs exports redacted diagnostics; invalid configuration remains available for repair.
 
 ## Preference persistence
 
-Ordinary application updates replace the installation payload and retain the user profile. Desktop theme mode, color palette, custom colors, wallpaper parameters and interface performance preferences live in Electron's `userData/appearance.json`; managed background images live in `userData/appearance-images/`. Language/theme updates merge into the saved appearance rather than replacing it. Model, tool and skill preferences live under `PILOT_HOME` (normally `~/.pilotdeck`); device UI choices also use the Web view's local storage. These locations must stay outside the installation directory. Desktop startup selects an available localhost port beginning at 3001; if it changes, local-storage-only choices such as project sorting and code editor options use a different origin and can appear reset. File-backed appearance, images and Gateway preferences are independent of that port.
+Ordinary application updates replace the installation payload and retain the user profile. Desktop theme mode, color palette, custom colors, wallpaper parameters and interface performance preferences live in Electron's `userData/appearance.json`; managed background images live in `userData/appearance-images/`. Language/theme updates merge into the saved appearance rather than replacing it. Model, tool and skill preferences live under `G9AGENT_HOME` (normally `~/.g9agent`); device UI choices also use the Web view's local storage. These locations must stay outside the installation directory. Desktop startup selects an available localhost port beginning at 3001; if it changes, local-storage-only choices such as project sorting and code editor options use a different origin and can appear reset. File-backed appearance, images and Gateway preferences are independent of that port.
 
 Browser deployments keep appearance settings in local storage and images in IndexedDB, scoped to the browser profile and site origin (scheme, hostname and port). Reinstalling with personal-data deletion, clearing site data, changing the application profile/identity or changing the Web origin is outside normal update retention. Storage keys remain stable across palette refinements; the retired lavender preset remains readable as a custom choice without overwriting separately saved custom colors; user custom colors and image effects are preserved.
 
@@ -58,7 +58,7 @@ Use palette tokens for interactive accents (links, selection, focus, switches, p
 
 On macOS, the preload caption covers the sidebar's full top edge (or the native-controls width when collapsed). The workspace toolbar owns the remaining drag region; only session-title text and interactive controls opt out so double-click renaming and toolbar actions remain usable. Browser geometry coverage runs in `ui/e2e/desktop-drag-regions.spec.mjs`; native hit testing still requires the desktop chrome acceptance below on macOS.
 
-The Node helper suite is collected by the test command above. [Desktop chrome acceptance](../../ui/e2e/desktop-chrome.smoke.mjs), [lifecycle acceptance](scripts/verify-desktop-lifecycle.cjs) and native installer checks need their stated build/platform prerequisites and isolated profiles. They do not establish that a particular published package is signed; [release verification](../../docs/release.md) checks the actual payload.
+The Node helper suite is collected by the test command above. [Desktop chrome acceptance](../../ui/e2e/desktop-chrome.smoke.mjs), [lifecycle acceptance](scripts/verify-desktop-lifecycle.cjs) and native installer checks need their stated build/platform prerequisites and isolated profiles. [Release verification](../../docs/release.md) checks the packaged payload; this fork disables executable signing and update signature enforcement while retaining checksum validation.
 
 Caption-menu changes also require `pnpm --dir ui exec vitest run --project server server/services/windowsCaptionMenu.test.ts`; these fake-clock integration cases complement the desktop helper's real event-loop tests.
 

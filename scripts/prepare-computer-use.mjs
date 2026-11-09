@@ -29,7 +29,7 @@ const retryableTransport = error => ['AbortError', 'TimeoutError'].includes(erro
 export async function downloadDriverArchive(url, archive, { fetchImpl, wait = delay, env = process.env } = {}) {
   // Preparation runs before the Web server installs its global proxy. Node 22
   // does not honor these variables itself; keep this dispatcher download-local.
-  const proxy = env.PILOTDECK_PROXY || env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY;
+  const proxy = env.G9AGENT_PROXY || env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY;
   const dispatcher = proxy ? new EnvHttpProxyAgent({ httpProxy: proxy, httpsProxy: proxy,
     noProxy: env.no_proxy || env.NO_PROXY || '' }) : undefined;
   // Use the matching fetch implementation: undici 8 dispatchers cannot serve
@@ -81,18 +81,18 @@ const run = (command, args, options = {}) => {
 // A native GUI host gives Web deployments the same direct-parent permission
 // contract as Electron, without using a user's separately installed Driver.
 async function stageMacApp(directory, productionHost) {
-  const app = join(directory, 'PilotDeck Computer Use.app');
+  const app = join(directory, 'G9Agent Computer Use.app');
   const contents = join(app, 'Contents');
   mkdirSync(join(contents, 'MacOS'), { recursive: true });
   renameSync(join(directory, 'cua-driver'), join(contents, 'MacOS/cua-driver'));
   writeFileSync(join(contents, 'Info.plist'), `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-<key>CFBundleExecutable</key><string>pilotdeck-computer-use</string>
+<key>CFBundleExecutable</key><string>g9agent-computer-use</string>
 <key>CFBundleIdentifier</key><string>${productionHost ? MAC_HOST_ID : MAC_DEV_HOST_ID}</string>
-<key>CFBundleName</key><string>PilotDeck Computer Use${productionHost ? '' : ' Dev'}</string>
-<key>CFBundleDisplayName</key><string>PilotDeck Computer Use${productionHost ? '' : ' Dev'}</string>
-<key>PilotDeckPermissionProbeVersion</key><integer>1</integer>
+<key>CFBundleName</key><string>G9Agent Computer Use${productionHost ? '' : ' Dev'}</string>
+<key>CFBundleDisplayName</key><string>G9Agent Computer Use${productionHost ? '' : ' Dev'}</string>
+<key>G9AgentPermissionProbeVersion</key><integer>1</integer>
 <key>CFBundleDevelopmentRegion</key><string>en</string>
 <key>CFBundleIconFile</key><string>computer-use.icns</string>
 <key>CFBundlePackageType</key><string>APPL</string>
@@ -101,14 +101,14 @@ async function stageMacApp(directory, productionHost) {
 <key>LSMinimumSystemVersion</key><string>13.0</string>
 <key>LSUIElement</key><true/>
 <key>NSHighResolutionCapable</key><true/>
-<key>NSScreenCaptureUsageDescription</key><string>PilotDeck captures the screen to perform computer tasks you request.</string>
-<key>NSAppleEventsUsageDescription</key><string>PilotDeck communicates with applications to perform computer tasks you request.</string>
+<key>NSScreenCaptureUsageDescription</key><string>G9Agent captures the screen to perform computer tasks you request.</string>
+<key>NSAppleEventsUsageDescription</key><string>G9Agent communicates with applications to perform computer tasks you request.</string>
 </dict></plist>\n`);
   mkdirSync(join(contents, 'Resources'));
   copyFileSync(join(directory, 'LICENSE.txt'), join(contents, 'Resources/LICENSE.txt'));
   await writeIcns(join(scripts, 'computer-use/icon.png'), join(contents, 'Resources/computer-use.icns'));
   const source = join(scripts, 'computer-use/macos-host.m');
-  const host = join(contents, 'MacOS/pilotdeck-computer-use');
+  const host = join(contents, 'MacOS/g9agent-computer-use');
   // One universal host serves both existing macOS installer architectures.
   run('/usr/bin/xcrun', ['clang', '-fobjc-arc', '-mmacosx-version-min=13.0', '-arch', 'arm64', '-arch', 'x86_64',
     source, '-framework', 'Cocoa', '-framework', 'ApplicationServices', '-framework', 'ScreenCaptureKit', '-o', host]);
@@ -118,11 +118,11 @@ async function stageMacApp(directory, productionHost) {
 }
 
 export async function prepareComputerUse({ destination = resolve(scripts, '../resources/cua-driver'),
-  platform = process.platform, arch = process.env.PILOTDECK_DESKTOP_NODE_ARCH || process.arch, env = process.env,
-  productionHost = env.PILOTDECK_DESKTOP_REQUIRE_SIGNING === '1' } = {}) {
+  platform = process.platform, arch = process.env.G9AGENT_DESKTOP_NODE_ARCH || process.arch, env = process.env,
+  productionHost = env.G9AGENT_DESKTOP_REQUIRE_SIGNING === '1' } = {}) {
   const asset = selectDriverAsset(platform, arch);
   const binaryName = platform === 'win32' ? 'cua-driver.exe' : 'cua-driver';
-  const executable = platform === 'darwin' ? 'PilotDeck Computer Use.app/Contents/MacOS/cua-driver' : binaryName;
+  const executable = platform === 'darwin' ? 'G9Agent Computer Use.app/Contents/MacOS/cua-driver' : binaryName;
   const metadataPath = join(destination, 'manifest.json');
   if (existsSync(metadataPath) && existsSync(join(destination, executable))) {
     const installed = JSON.parse(readFileSync(metadataPath, 'utf8'));
@@ -131,24 +131,24 @@ export async function prepareComputerUse({ destination = resolve(scripts, '../re
       && (platform !== 'darwin' || installed.hostBundleId === (productionHost ? MAC_HOST_ID : MAC_DEV_HOST_ID)
         && installed.hostSourceSha256 === sha256(join(scripts, 'computer-use/macos-host.m'))
         && installed.iconSourceSha256 === sha256(join(scripts, 'computer-use/icon.png'))
-        && existsSync(join(destination, 'PilotDeck Computer Use.app/Contents/Resources/computer-use.icns'))
-        && installed.iconSha256 === sha256(join(destination, 'PilotDeck Computer Use.app/Contents/Resources/computer-use.icns')))) return destination;
+        && existsSync(join(destination, 'G9Agent Computer Use.app/Contents/Resources/computer-use.icns'))
+        && installed.iconSha256 === sha256(join(destination, 'G9Agent Computer Use.app/Contents/Resources/computer-use.icns')))) return destination;
   }
   mkdirSync(dirname(destination), { recursive: true });
   const temporary = mkdtempSync(join(dirname(destination), '.cua-driver-download-'));
   try {
-    const local = env.PILOTDECK_CUA_ARCHIVE || env.PILOTDECK_DESKTOP_CUA_ARCHIVE;
+    const local = env.G9AGENT_CUA_ARCHIVE || env.G9AGENT_DESKTOP_CUA_ARCHIVE;
     const archive = local ? resolve(local) : join(temporary, asset.name);
     if (!local) {
-      const base = env.PILOTDECK_CUA_BASE_URL || env.PILOTDECK_DESKTOP_CUA_BASE_URL || `https://github.com/${driverPin.repository}/releases/download/${driverPin.tag}`;
+      const base = env.G9AGENT_CUA_BASE_URL || env.G9AGENT_DESKTOP_CUA_BASE_URL || `https://github.com/${driverPin.repository}/releases/download/${driverPin.tag}`;
       const url = `${base.replace(/\/$/, '')}/${asset.name}`;
       console.log(`[computer-use] downloading ${url}`);
       await downloadDriverArchive(url, archive, { env });
     }
     verifyDriverArchive(readFileSync(archive), asset);
     const extracted = join(temporary, 'extracted'); mkdirSync(extracted);
-    if (platform === 'win32') run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'Expand-Archive -LiteralPath $env:PILOTDECK_CUA_EXTRACT_ARCHIVE -DestinationPath $env:PILOTDECK_CUA_EXTRACT_DIRECTORY -Force'], {
-      env: { ...env, PILOTDECK_CUA_EXTRACT_ARCHIVE: archive, PILOTDECK_CUA_EXTRACT_DIRECTORY: extracted },
+    if (platform === 'win32') run('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'Expand-Archive -LiteralPath $env:G9AGENT_CUA_EXTRACT_ARCHIVE -DestinationPath $env:G9AGENT_CUA_EXTRACT_DIRECTORY -Force'], {
+      env: { ...env, G9AGENT_CUA_EXTRACT_ARCHIVE: archive, G9AGENT_CUA_EXTRACT_DIRECTORY: extracted },
     });
     else run('tar', ['-xzf', archive, '-C', extracted]);
     const findBinary = directory => {
@@ -169,7 +169,7 @@ export async function prepareComputerUse({ destination = resolve(scripts, '../re
       ...(platform === 'darwin' ? { hostBundleId: productionHost ? MAC_HOST_ID : MAC_DEV_HOST_ID,
         hostSourceSha256: sha256(join(scripts, 'computer-use/macos-host.m')),
         iconSourceSha256: sha256(join(scripts, 'computer-use/icon.png')),
-        iconSha256: sha256(join(staged, 'PilotDeck Computer Use.app/Contents/Resources/computer-use.icns')) } : {}),
+        iconSha256: sha256(join(staged, 'G9Agent Computer Use.app/Contents/Resources/computer-use.icns')) } : {}),
       archive: asset.name, archiveSha256: asset.sha256, binarySha256: sha256(join(staged, executable)) }, null, 2));
     rmSync(destination, { recursive: true, force: true }); renameSync(staged, destination);
     console.log(`[computer-use] bundled Driver ${driverPin.version} (${platform}/${arch})`);

@@ -3,14 +3,14 @@ import test, { type TestContext } from "node:test";
 import { setImmediate } from "node:timers/promises";
 
 import { createDefaultPermissionContext, PermissionRuntime } from "../../src/permission/index.js";
-import { ConcurrentToolScheduler, ToolRegistry, ToolRuntime, type PilotDeckToolCall, type PilotDeckToolDefinition, type PilotDeckToolResult, type PilotDeckToolRuntimeContext } from "../../src/tool/index.js";
+import { ConcurrentToolScheduler, ToolRegistry, ToolRuntime, type G9AgentToolCall, type G9AgentToolDefinition, type G9AgentToolResult, type G9AgentToolRuntimeContext } from "../../src/tool/index.js";
 
-const context = (): PilotDeckToolRuntimeContext => ({
+const context = (): G9AgentToolRuntimeContext => ({
   sessionId: "scheduler-contract", turnId: "turn-1", cwd: process.cwd(), permissionMode: "bypassPermissions",
   permissionContext: createDefaultPermissionContext({ cwd: process.cwd(), mode: "bypassPermissions", canPrompt: false, bypassAvailable: true }),
 });
 
-function tool(name: string, safe = true): PilotDeckToolDefinition {
+function tool(name: string, safe = true): G9AgentToolDefinition {
   return { name, aliases: [`${name}_alias`], description: "Synthetic scheduler tool", kind: "custom", inputSchema: { type: "object" },
     isReadOnly: () => safe, isConcurrencySafe: () => safe, execute: async () => ({ content: [] }) };
 }
@@ -31,11 +31,11 @@ function controlled(t: TestContext, names: string[], maxConcurrency?: number) {
   const gates = batch.map(gate);
   const started: string[] = [];
   const finished: string[] = [];
-  const results: PilotDeckToolResult[] = batch.map((call) => ({
+  const results: G9AgentToolResult[] = batch.map((call) => ({
     type: "success", toolCallId: call.id, toolName: call.name, content: [],
     startedAt: "2026-01-01T00:00:00Z", completedAt: "2026-01-01T00:00:00Z",
   }));
-  t.mock.method(runtime, "execute", async (call: PilotDeckToolCall) => {
+  t.mock.method(runtime, "execute", async (call: G9AgentToolCall) => {
     started.push(call.id);
     await gates[Number(call.id)].promise;
     finished.push(call.id);

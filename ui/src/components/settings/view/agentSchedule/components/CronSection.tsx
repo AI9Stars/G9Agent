@@ -5,11 +5,11 @@ import SettingsToggle from "../../../shared/view/SettingsToggle";
 import { GeneralSettingRow, GeneralSelectControl, GeneralSettingsIcon } from "../../../shared/view/GeneralSettingsPrimitives";
 import { isCronConfigEnabled } from "../utils/cron";
 import { patch } from "../../modelPool/utils/patch";
-import type { PilotDeckConfig } from "../../modelPool/types";
+import type { G9AgentConfig } from "../../modelPool/types";
 
 type CronSectionProps = {
-  config: PilotDeckConfig;
-  onChange: (next: PilotDeckConfig) => void;
+  config: G9AgentConfig;
+  onChange: (next: G9AgentConfig) => void;
 };
 
 type EditingField = "timezone" | "maxConcurrentRuns";
@@ -116,14 +116,14 @@ export default function CronSection({ config, onChange }: CronSectionProps) {
   return (
     <>
     <section className="general-card">
-      <GeneralSettingRow icon={<GeneralSettingsIcon icon={Clock3} />} title={t("pilotDeckConfig.panels.cron.enableLabel")}>
-        <SettingsToggle checked={isCronConfigEnabled(config)} ariaLabel={t("pilotDeckConfig.panels.cron.enableLabel")}
+      <GeneralSettingRow icon={<GeneralSettingsIcon icon={Clock3} />} title={t("g9agentConfig.panels.cron.enableLabel")}>
+        <SettingsToggle checked={isCronConfigEnabled(config)} ariaLabel={t("g9agentConfig.panels.cron.enableLabel")}
           suppressNextSaveToast onChange={enabled => { onChange(patch(config, ["cron", "enabled"], enabled)); setEditingField(null); }} />
       </GeneralSettingRow>
     </section>
-    <section className="general-card" aria-label={t("pilotDeckConfig.panels.cron.configAria")}>
-      <GeneralSettingRow htmlFor="scheduled-timezone" title={t("pilotDeckConfig.panels.cron.timezone.label")}
-        detail={t("pilotDeckConfig.panels.cron.timezone.description")}>
+    <section className="general-card" aria-label={t("g9agentConfig.panels.cron.configAria")}>
+      <GeneralSettingRow htmlFor="scheduled-timezone" title={t("g9agentConfig.panels.cron.timezone.label")}
+        detail={t("g9agentConfig.panels.cron.timezone.description")}>
         <div className="scheduled-control-area">
           <GeneralSelectControl id="scheduled-timezone"
             value={editingField === "timezone" ? timezoneDraft : timezone}
@@ -132,8 +132,8 @@ export default function CronSection({ config, onChange }: CronSectionProps) {
           {renderActions("timezone", timezoneDraft !== timezone, saveTimezone)}
         </div>
       </GeneralSettingRow>
-      <GeneralSettingRow htmlFor="scheduled-concurrency" title={t("pilotDeckConfig.panels.cron.maxConcurrentRuns.label")}
-        detail={t("pilotDeckConfig.panels.cron.maxConcurrentRuns.description")}>
+      <GeneralSettingRow htmlFor="scheduled-concurrency" title={t("g9agentConfig.panels.cron.maxConcurrentRuns.label")}
+        detail={t("g9agentConfig.panels.cron.maxConcurrentRuns.description")}>
         <div className="scheduled-control-area">
           <input id="scheduled-concurrency" className="general-input" type="number" min={1} max={20} inputMode="numeric"
             value={editingField === "maxConcurrentRuns" ? concurrencyDraft : maxConcurrentRuns}

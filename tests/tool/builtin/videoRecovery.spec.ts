@@ -8,7 +8,7 @@ import { createServer } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
 import { VideoStore } from "../../../src/tool/builtin/videos/VideoStore.js";
 import { VideoJobManager, unfinishedVideoJob } from "../../../src/tool/builtin/videos/VideoJobManager.js";
-import type { PilotDeckToolRuntimeContext } from "../../../src/tool/protocol/types.js";
+import type { G9AgentToolRuntimeContext } from "../../../src/tool/protocol/types.js";
 
 const mp4 = Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypisom"), Buffer.alloc(64)]);
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
@@ -18,7 +18,7 @@ async function fixture(t: test.TestContext) {
   t.after(() => rm(root, { recursive: true, force: true }));
   const cwd = join(root, "project"); await mkdir(cwd);
   const store = new VideoStore(join(root, "generated-videos"));
-  const context: PilotDeckToolRuntimeContext = { cwd, sessionId: "session", turnId: "turn", currentToolCallId: "call",
+  const context: G9AgentToolRuntimeContext = { cwd, sessionId: "session", turnId: "turn", currentToolCallId: "call",
     permissionMode: "default", permissionContext: { cwd, mode: "default", additionalWorkingDirectories: [],
       rules: { allow: [], deny: [], ask: [] }, canPrompt: true, bypassAvailable: true } };
   return { root, store, context };

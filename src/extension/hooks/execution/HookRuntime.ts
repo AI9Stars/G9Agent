@@ -1,21 +1,21 @@
-import type { PilotDeckHookEffect, PilotDeckLifecycleError } from "../../../lifecycle/protocol/effects.js";
+import type { G9AgentHookEffect, G9AgentLifecycleError } from "../../../lifecycle/protocol/effects.js";
 import { matchHookMatcher } from "../config/matchHook.js";
 import { matchHookCondition } from "../config/matchHookCondition.js";
-import type { PilotDeckHookEvent } from "../protocol/events.js";
-import type { PilotDeckHookInput } from "../protocol/input.js";
-import type { PilotDeckHookOutput, PilotDeckHookSyncOutput } from "../protocol/output.js";
-import type { PilotDeckHookCommand, PilotDeckHooksSettings } from "../protocol/settings.js";
-import { CommandHookExecutor, PILOTDECK_SESSION_END_HOOK_TIMEOUT_MS } from "./CommandHookExecutor.js";
+import type { G9AgentHookEvent } from "../protocol/events.js";
+import type { G9AgentHookInput } from "../protocol/input.js";
+import type { G9AgentHookOutput, G9AgentHookSyncOutput } from "../protocol/output.js";
+import type { G9AgentHookCommand, G9AgentHooksSettings } from "../protocol/settings.js";
+import { CommandHookExecutor, G9AGENT_SESSION_END_HOOK_TIMEOUT_MS } from "./CommandHookExecutor.js";
 import { PromptHookExecutor } from "./PromptHookExecutor.js";
 import { HttpHookExecutor } from "./HttpHookExecutor.js";
 import { AgentHookExecutor } from "./AgentHookExecutor.js";
 import { AsyncHookRegistry } from "./AsyncHookRegistry.js";
 import { CallbackHookExecutor } from "./CallbackHookExecutor.js";
-import { HookExecutionEventBus, type PilotDeckHookExecutionEvent } from "../events/HookExecutionEventBus.js";
+import { HookExecutionEventBus, type G9AgentHookExecutionEvent } from "../events/HookExecutionEventBus.js";
 
 export type HookRuntimeRunInput = {
-  event: PilotDeckHookEvent;
-  hookInput: PilotDeckHookInput;
+  event: G9AgentHookEvent;
+  hookInput: G9AgentHookInput;
   matchQuery?: string;
   cwd: string;
   env?: NodeJS.ProcessEnv;
@@ -23,15 +23,15 @@ export type HookRuntimeRunInput = {
 };
 
 export type HookRuntimeRunResult = {
-  effects: PilotDeckHookEffect[];
-  events: PilotDeckHookExecutionEvent[];
-  blockingErrors: PilotDeckLifecycleError[];
-  nonBlockingErrors: PilotDeckLifecycleError[];
+  effects: G9AgentHookEffect[];
+  events: G9AgentHookExecutionEvent[];
+  blockingErrors: G9AgentLifecycleError[];
+  nonBlockingErrors: G9AgentLifecycleError[];
 };
 
 export class HookRuntime {
   constructor(
-    private readonly settings: PilotDeckHooksSettings = {},
+    private readonly settings: G9AgentHooksSettings = {},
     private readonly commandExecutor = new CommandHookExecutor(),
     private readonly eventBus = new HookExecutionEventBus(),
     private readonly asyncRegistry = new AsyncHookRegistry(),
@@ -51,14 +51,14 @@ export class HookRuntime {
   }
 
   async run(input: HookRuntimeRunInput): Promise<HookRuntimeRunResult> {
-    const effects: PilotDeckHookEffect[] = [];
-    const events: PilotDeckHookExecutionEvent[] = [];
-    const blockingErrors: PilotDeckLifecycleError[] = [];
-    const nonBlockingErrors: PilotDeckLifecycleError[] = [];
+    const effects: G9AgentHookEffect[] = [];
+    const events: G9AgentHookExecutionEvent[] = [];
+    const blockingErrors: G9AgentLifecycleError[] = [];
+    const nonBlockingErrors: G9AgentLifecycleError[] = [];
 
     for (const { matcher, hook } of this.matchHooks(input)) {
       const hookName = matcher.pluginName ? `${matcher.pluginName}:${hook.type}` : hook.type;
-      const started: PilotDeckHookExecutionEvent = {
+      const started: G9AgentHookExecutionEvent = {
         type: "started",
         hookName,
         hookEvent: input.event,
@@ -67,7 +67,7 @@ export class HookRuntime {
       this.eventBus.emit(started);
 
       const result = await this.executeHook(hook, input, matcher.pluginRoot);
-      const response: PilotDeckHookExecutionEvent = {
+      const response: G9AgentHookExecutionEvent = {
         type: "response",
         hookName,
         hookEvent: input.event,
@@ -120,8 +120,8 @@ export class HookRuntime {
   }
 
   private *matchHooks(input: HookRuntimeRunInput): Generator<{
-    matcher: NonNullable<PilotDeckHooksSettings[PilotDeckHookEvent]>[number];
-    hook: PilotDeckHookCommand;
+    matcher: NonNullable<G9AgentHooksSettings[G9AgentHookEvent]>[number];
+    hook: G9AgentHookCommand;
   }> {
     for (const matcher of this.settings[input.event] ?? []) {
       if (!matchHookMatcher(matcher.matcher, input.matchQuery)) {
@@ -141,7 +141,7 @@ export class HookRuntime {
   }
 
   private executeHook(
-    hook: PilotDeckHookCommand,
+    hook: G9AgentHookCommand,
     input: HookRuntimeRunInput,
     pluginRoot: string | undefined,
   ) {
@@ -153,7 +153,7 @@ export class HookRuntime {
           cwd: pluginRoot ?? input.cwd,
           env: input.env,
           signal: input.signal,
-          timeoutMs: input.event === "SessionEnd" ? PILOTDECK_SESSION_END_HOOK_TIMEOUT_MS : undefined,
+          timeoutMs: input.event === "SessionEnd" ? G9AGENT_SESSION_END_HOOK_TIMEOUT_MS : undefined,
         });
       case "prompt":
         return this.promptExecutor.execute({ hook, hookInput: input.hookInput, signal: input.signal });
@@ -167,12 +167,12 @@ export class HookRuntime {
   }
 }
 
-function effectsFromHookOutput(output: PilotDeckHookOutput, hookName: string): PilotDeckHookEffect[] {
+function effectsFromHookOutput(output: G9AgentHookOutput, hookName: string): G9AgentHookEffect[] {
   if (output.type === "async") {
     return [];
   }
 
-  const effects: PilotDeckHookEffect[] = [];
+  const effects: G9AgentHookEffect[] = [];
   if (output.systemMessage) {
     effects.push({ type: "system_message", content: output.systemMessage });
   }
@@ -221,6 +221,6 @@ function effectsFromHookOutput(output: PilotDeckHookOutput, hookName: string): P
   return effects;
 }
 
-function isBlockingOutput(output: PilotDeckHookSyncOutput): boolean {
+function isBlockingOutput(output: G9AgentHookSyncOutput): boolean {
   return output.continue === false || output.decision === "block";
 }

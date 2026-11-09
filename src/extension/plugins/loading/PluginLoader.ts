@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseHooksConfig } from "../../hooks/config/parseHooksConfig.js";
-import type { PilotDeckPluginManifest } from "../protocol/manifest.js";
-import type { PilotDeckLoadedPlugin, PilotDeckPluginSourceKind } from "../protocol/plugin.js";
+import type { G9AgentPluginManifest } from "../protocol/manifest.js";
+import type { G9AgentLoadedPlugin, G9AgentPluginSourceKind } from "../protocol/plugin.js";
 import { parsePluginManifest } from "../config/parsePluginManifest.js";
 import { loadPluginCommands, loadStandaloneSkill } from "./PluginCommandLoader.js";
 
@@ -12,8 +12,8 @@ import { loadPluginCommands, loadStandaloneSkill } from "./PluginCommandLoader.j
  */
 export async function loadSkillFromPath(
   skillDir: string,
-  source: PilotDeckPluginSourceKind,
-): Promise<PilotDeckLoadedPlugin> {
+  source: G9AgentPluginSourceKind,
+): Promise<G9AgentLoadedPlugin> {
   const name = skillDir.split(/[\\/]/u).at(-1) ?? "skill";
   const skill = await loadStandaloneSkill({ name, skillDir });
   return {
@@ -27,8 +27,8 @@ export async function loadSkillFromPath(
 
 export async function loadPluginFromPath(
   pluginPath: string,
-  source: PilotDeckPluginSourceKind,
-): Promise<PilotDeckLoadedPlugin> {
+  source: G9AgentPluginSourceKind,
+): Promise<G9AgentLoadedPlugin> {
   const manifestPath = join(pluginPath, "plugin.json");
   const manifest = parsePluginManifest(JSON.parse(await readFile(manifestPath, "utf8")) as unknown);
   const hooksConfig = await loadHooksConfig(pluginPath, manifest);
@@ -50,7 +50,7 @@ export async function loadPluginFromPath(
   };
 }
 
-async function loadHooksConfig(pluginPath: string, manifest: PilotDeckPluginManifest) {
+async function loadHooksConfig(pluginPath: string, manifest: G9AgentPluginManifest) {
   if (typeof manifest.hooks === "object" && manifest.hooks !== null) {
     return parseHooksConfig(manifest.hooks).settings;
   }

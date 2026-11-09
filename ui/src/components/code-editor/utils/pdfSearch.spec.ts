@@ -22,11 +22,11 @@ describe('findPdfSearchMatches', () => {
   });
 
   it('matches case-insensitively and collapses whitespace', () => {
-    const matches = findPdfSearchMatches(['Pilot', 'Deck  search'], 'pilotdeck search', 1);
+    const matches = findPdfSearchMatches(['G9', 'Agent  search'], 'g9agent search', 1);
 
     expect(matches).toHaveLength(1);
     expect(matches[0].begin).toEqual({ divIndex: 0, offset: 0 });
-    expect(matches[0].end).toEqual({ divIndex: 1, offset: 12 });
+    expect(matches[0].end).toEqual({ divIndex: 1, offset: 13 });
   });
 });
 
@@ -42,7 +42,7 @@ describe('renderPdfSearchHighlights', () => {
     expect(textDivs[0].querySelector('.highlight.selected')?.textContent).toBe('刘');
     expect(textDivs[1].querySelector('.highlight.selected')?.textContent).toBe('靖瑶');
     expect(selected?.dataset.pdfSearchMatchId).toBe(matches[0].id);
-    expect(selected?.classList.contains('pilotdeck-document-search-highlight-active')).toBe(true);
+    expect(selected?.classList.contains('g9agent-document-search-highlight-active')).toBe(true);
     expect(selected?.getAttribute('aria-current')).toBe('true');
   });
 
@@ -53,10 +53,10 @@ describe('renderPdfSearchHighlights', () => {
 
     renderPdfSearchHighlights([textDiv], textItems, matches, matches[1].id);
 
-    expect(textDiv.querySelectorAll('.pilotdeck-document-search-highlight')).toHaveLength(2);
-    expect(textDiv.querySelectorAll('.pilotdeck-document-search-highlight-active')).toHaveLength(1);
+    expect(textDiv.querySelectorAll('.g9agent-document-search-highlight')).toHaveLength(2);
+    expect(textDiv.querySelectorAll('.g9agent-document-search-highlight-active')).toHaveLength(1);
     expect(
-      textDiv.querySelector('.pilotdeck-document-search-highlight-active')?.textContent,
+      textDiv.querySelector('.g9agent-document-search-highlight-active')?.textContent,
     ).toBe('刘靖瑶');
   });
 

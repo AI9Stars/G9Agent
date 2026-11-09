@@ -29,7 +29,7 @@ function formatNodeVersion(version) {
 }
 
 function fail(message) {
-  console.error(`[pilotdeck] ${message}`);
+  console.error(`[g9agent] ${message}`);
   process.exit(1);
 }
 
@@ -43,16 +43,16 @@ process.emitWarning = (warning, typeOrOptions, ...args) => {
   emitWarning(warning, typeOrOptions, ...args);
 };
 
-const testMode = process.env.PILOTDECK_RUNTIME_CHECK_TEST_MODE === "1";
+const testMode = process.env.G9AGENT_RUNTIME_CHECK_TEST_MODE === "1";
 const nodeVersion =
-  testMode && process.env.PILOTDECK_TEST_NODE_VERSION
-    ? process.env.PILOTDECK_TEST_NODE_VERSION
+  testMode && process.env.G9AGENT_TEST_NODE_VERSION
+    ? process.env.G9AGENT_TEST_NODE_VERSION
     : process.versions.node;
-const skipSqliteCheck = testMode && process.env.PILOTDECK_TEST_SKIP_SQLITE === "1";
+const skipSqliteCheck = testMode && process.env.G9AGENT_TEST_SKIP_SQLITE === "1";
 
 if (!isAtLeastMinimum(nodeVersion) || !isSupportedMajor(nodeVersion)) {
   fail(
-    `Node.js ${nodeVersionRequirementLabel} is required because PilotDeck uses node:sqlite and native packages are built for Node.js ${supportedNodeMajor}. Current: ${formatNodeVersion(nodeVersion)}. Switch to Node.js ${supportedNodeMajor} and reinstall dependencies.`,
+    `Node.js ${nodeVersionRequirementLabel} is required because G9Agent uses node:sqlite and native packages are built for Node.js ${supportedNodeMajor}. Current: ${formatNodeVersion(nodeVersion)}. Switch to Node.js ${supportedNodeMajor} and reinstall dependencies.`,
   );
 }
 

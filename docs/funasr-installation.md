@@ -1,6 +1,6 @@
 # FunASR Local Runtime Installation
 
-PilotDeck transcribes audio through an included Node stdio MCP that invokes the official FunASR llama.cpp SenseVoice CLI locally. It does not use Docker, Python, a container image, or a cloud ASR API.
+G9Agent transcribes audio through an included Node stdio MCP that invokes the official FunASR llama.cpp SenseVoice CLI locally. It does not use Docker, Python, a container image, or a cloud ASR API.
 
 ## Supported Platforms
 
@@ -18,30 +18,30 @@ Windows runtimes require the [Microsoft Visual C++ v14 Redistributable](https://
 
 ## Install or Verify
 
-Run this from the PilotDeck source checkout:
+Run this from the G9Agent source checkout:
 
 ```bash
 npm run install:asr
 ```
 
-For an installed desktop app, run the exact command printed by its audio attachment or MCP diagnostic through PilotDeck's Bash tool. It invokes the app's bundled Node with `resources/runtime/scripts/install-asr.mjs`; a separate npm installation is not required.
+For an installed desktop app, run the exact command printed by its audio attachment or MCP diagnostic through G9Agent's Bash tool. It invokes the app's bundled Node with `resources/runtime/scripts/install-asr.mjs`; a separate npm installation is not required.
 
 The command downloads the fixed `runtime-llamacpp-v0.2.0` archive and installs SenseVoiceSmall q8 plus FSMN-VAD. Model downloads try ModelScope first and Hugging Face second. Downloads use a temporary `.part` file and are renamed into place only after a complete response, so it is safe to rerun after a network interruption.
 
 The cache is user-local:
 
 ```text
-$PILOT_HOME/funasr/
+$G9AGENT_HOME/funasr/
   runtime/v0.2.0/<platform-arch>/
   models/sensevoice-small-q8.gguf
   models/fsmn-vad.gguf
 ```
 
-When `PILOT_HOME` is unset, PilotDeck uses `~/.pilotdeck` (or the platform-equivalent user home).
+When `G9AGENT_HOME` is unset, G9Agent uses `~/.g9agent` (or the platform-equivalent user home).
 
 ## Failure Diagnostics
 
-The installer prints the failed stage and source URL. A runtime failure distinguishes download, unpacking, and missing executable errors. A model failure reports the independent ModelScope and Hugging Face causes, which usually identifies DNS, TLS, proxy, rate-limit, or blocked-source problems. Downloads honor `PILOTDECK_PROXY`/`HTTPS_PROXY` first, then `proxy.url` and `proxy.noProxy` in `$PILOT_HOME/pilotdeck.yaml`.
+The installer prints the failed stage and source URL. A runtime failure distinguishes download, unpacking, and missing executable errors. A model failure reports the independent ModelScope and Hugging Face causes, which usually identifies DNS, TLS, proxy, rate-limit, or blocked-source problems. Downloads honor `G9AGENT_PROXY`/`HTTPS_PROXY` first, then `proxy.url` and `proxy.noProxy` in `$G9AGENT_HOME/g9agent.yaml`.
 
 No half-downloaded runtime or model is used. Re-run the installation command after correcting network or proxy settings. Existing complete cache entries are reused.
 
@@ -56,7 +56,7 @@ The MCP tool is `mcp__funasr__transcribe_audio`:
 }
 ```
 
-The audio path must resolve to a real regular file inside the current PilotDeck project. Project-relative paths are accepted. URLs, missing files, project-external paths, and symlinks that resolve outside the project are rejected. The tool returns transcript text and second-based timestamp segments.
+The audio path must resolve to a real regular file inside the current G9Agent project. Project-relative paths are accepted. URLs, missing files, project-external paths, and symlinks that resolve outside the project are rejected. The tool returns transcript text and second-based timestamp segments.
 
 The built-in plugin is enabled unless configured otherwise:
 
@@ -77,9 +77,9 @@ actual local Runtime and models.
 Install into an isolated cache, then point the test at that cache:
 
 ```bash
-PILOT_HOME=/tmp/pilotdeck-funasr-e2e npm run install:asr
-PILOTDECK_RUN_FUNASR_E2E=1 \
-PILOTDECK_FUNASR_E2E_PILOT_HOME=/tmp/pilotdeck-funasr-e2e \
+G9AGENT_HOME=/tmp/g9agent-funasr-e2e npm run install:asr
+G9AGENT_RUN_FUNASR_E2E=1 \
+G9AGENT_FUNASR_E2E_G9AGENT_HOME=/tmp/g9agent-funasr-e2e \
 npx tsx --test tests/cli/funasr-meeting-e2e.spec.ts
 ```
 

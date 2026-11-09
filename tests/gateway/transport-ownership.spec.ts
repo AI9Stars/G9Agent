@@ -5,7 +5,7 @@ import test from 'node:test';
 import { GatewayWsClient, GatewayRequestError } from '../../src/gateway/client/GatewayWsClient.js';
 import { GatewayWsConnection } from '../../src/gateway/server/GatewayWsConnection.js';
 import { TextWebSocketConnection } from '../../src/gateway/server/websocket.js';
-import { PILOTDECK_GATEWAY_PROTOCOL_VERSION } from '../../src/gateway/protocol/version.js';
+import { G9AGENT_GATEWAY_PROTOCOL_VERSION } from '../../src/gateway/protocol/version.js';
 import type { Gateway, GatewayEvent } from '../../src/gateway/protocol/types.js';
 import { RemoteGateway } from '../../src/gateway/client/RemoteGateway.js';
 
@@ -34,7 +34,7 @@ async function connection(gateway: Partial<Gateway>) {
   const ws = new TextSocketDouble();
   new GatewayWsConnection(ws as unknown as TextWebSocketConnection, { token: 'synthetic', serverVersion: 'test',
     gateway: { describeServer: async () => ({ mode: 'in_process' }), ...gateway } as Gateway });
-  ws.dispatch({ type: 'hello', protocolVersion: PILOTDECK_GATEWAY_PROTOCOL_VERSION, token: 'synthetic', clientName: 'test', clientVersion: 'test' });
+  ws.dispatch({ type: 'hello', protocolVersion: G9AGENT_GATEWAY_PROTOCOL_VERSION, token: 'synthetic', clientName: 'test', clientVersion: 'test' });
   await tick(); return ws;
 }
 

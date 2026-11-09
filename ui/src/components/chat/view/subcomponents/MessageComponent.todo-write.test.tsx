@@ -17,7 +17,7 @@ async function renderToolMessage(message: ChatMessage, language = 'en') {
       message={message}
       prevMessage={null}
       createDiff={() => []}
-      provider="pilotdeck"
+      provider="g9agent"
       onShowSettings={() => {}}
     /></I18nextProvider>,
   );

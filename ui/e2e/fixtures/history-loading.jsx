@@ -22,7 +22,7 @@ function Fixture() {
     setLanguage: language => i18n.changeLanguage(language) };
   return <FindShortcutProvider activeScope="chat">
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <MessagesPane {...chat} provider="pilotdeck" selectedProject={project} selectedSession={session}
+      <MessagesPane {...chat} provider="g9agent" selectedProject={project} selectedSession={session}
         setInput={noop} showThinking isAssistantWorking={working} sessionRuntimeState={working ? 'running' : 'inactive'}
         showReturnToLatest={chat.canReturnToLatest} onPauseScroll={chat.pauseScrollFollowing} onResumeScroll={chat.scrollToBottom} />
     </div>

@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
+import { LEGACY_PROJECT_DIR } from '@g9agent/config';
 
 export const SEARCH_KINDS = ['chats', 'files'];
-export const EXCLUDED_DIRECTORIES = new Set(['.git', '.pilotdeck', 'node_modules', 'dist', 'build', 'coverage', '.next', '.venv', 'vendor']);
+export const EXCLUDED_DIRECTORIES = new Set(['.git', '.g9agent', LEGACY_PROJECT_DIR, 'node_modules', 'dist', 'build', 'coverage', '.next', '.venv', 'vendor']);
 export const TEXT_FILES = /\.(?:md|markdown|txt|text|csv|tsv|json|jsonc|jsonl|ya?ml|toml|ini|conf|cfg|log|xml|html?|css|scss|less|[cm]?[jt]sx?|py|go|rs|java|kt|swift|c|h|cpp|hpp|cs|sh|bash|zsh|sql|vue|svelte|rb|php|r|tex|bib|svg)$/i;
 export const INTERNAL_SESSION = /^always-on-(discovery|workspace|report)[:\-]/;
 export const normalize = value => String(value || '').toLowerCase();

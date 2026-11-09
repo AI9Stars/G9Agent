@@ -3,8 +3,8 @@
  * contract that `ui/src/components/skills/view/SkillsPanel.tsx` was
  * built against into the gateway's `skill_*` RPCs. The gateway is the
  * authoritative skill manager (see `src/extension/skills/SkillManager.ts`)
- * backed by release-bundled skills, `~/.pilotdeck/skills/`, and
- * `<project>/.pilotdeck/skills/`,
+ * backed by release-bundled skills, `~/.g9agent/skills/`, and
+ * `<project>/.g9agent/skills/`,
  * so the UI and the agent always read from the same place.
  *
  * Supporting documents use gateway-resolved directories with confined local
@@ -19,7 +19,7 @@
  *
  *   - `/clawhub/*` — shells out to the `clawhub` CLI which writes its
  *     output to disk by itself. We just retarget the install root to
- *     `~/.pilotdeck/skills/` so installs end up where the agent looks.
+ *     `~/.g9agent/skills/` so installs end up where the agent looks.
  *
  * Anything else (list/read/write/create/delete/import/validate/scan) is
  * a one-line forward to the gateway. Errors raised by `SkillManagerError`
@@ -34,7 +34,7 @@ import os from 'os';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import multer from 'multer';
-import { getPilotDeckGateway } from '../pilotdeck-bridge.js';
+import { getG9AgentGateway } from '../g9agent-bridge.js';
 import { resolvePilotHome } from '../utils/pilotPaths.js';
 import { moveDirectoryAcrossDevicesSafe } from '../utils/fileMoves.js';
 import { prepareClawHubExecution } from '../utils/clawHubCli.js';
@@ -61,15 +61,15 @@ const upload = multer({
 // ---------------------------------------------------------------------------
 
 const SLUG_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}$/;
-const PILOT_HOME = resolvePilotHome(process.env);
-const PROJECT_DIR = '.pilotdeck';
+const G9AGENT_HOME = resolvePilotHome(process.env);
+const PROJECT_DIR = '.g9agent';
 const SKILLS_SUBDIR = 'skills';
 
 function safeSlug(slug) {
   return typeof slug === 'string' && SLUG_RE.test(slug) && !slug.includes('..');
 }
 
-const GENERAL_CWD_PATHS = [path.resolve(PILOT_HOME)];
+const GENERAL_CWD_PATHS = [path.resolve(G9AGENT_HOME)];
 
 function isGeneralCwd(projectPath) {
   if (!projectPath) return false;
@@ -109,7 +109,7 @@ function resolveRequestedScope(scope, projectPath, { defaultToProjectWhenAvailab
 }
 
 function userSkillsRoot() {
-  return path.join(PILOT_HOME, SKILLS_SUBDIR);
+  return path.join(G9AGENT_HOME, SKILLS_SUBDIR);
 }
 
 function projectSkillsRoot(projectPath) {
@@ -233,7 +233,7 @@ function sendGatewayError(res, err) {
  * timeout) surface as plain `Error` and route to the 500 fallback.
  */
 async function callGateway(method, params) {
-  const gw = await getPilotDeckGateway();
+  const gw = await getG9AgentGateway();
   return gw[method](params);
 }
 
@@ -443,8 +443,8 @@ router.post('/scan', async (req, res) => {
 // ---------------------------------------------------------------------------
 // /import-upload — multipart picker upload. Multipart bodies don't fit the
 // WS RPC, so we stage on disk and then ask the gateway to validate. The
-// final move lands in `~/.pilotdeck/skills/<slug>` or
-// `<project>/.pilotdeck/skills/<slug>` so the agent picks it up on next
+// final move lands in `~/.g9agent/skills/<slug>` or
+// `<project>/.g9agent/skills/<slug>` so the agent picks it up on next
 // session refresh.
 // ---------------------------------------------------------------------------
 
@@ -580,7 +580,7 @@ router.post('/import-upload', upload.array('files', 500), async (req, res) => {
 // ---------------------------------------------------------------------------
 // ClawHub passthrough — kept here because the binary writes to disk and
 // reading it back into the gateway would just add a layer.  We retarget
-// the install root to `~/.pilotdeck/skills/` (or `<project>/.pilotdeck/
+// the install root to `~/.g9agent/skills/` (or `<project>/.g9agent/
 // skills/`) so installed skills end up where the agent looks.
 // ---------------------------------------------------------------------------
 
@@ -661,7 +661,7 @@ router.post('/clawhub/inspect', async (req, res) => {
   }
 });
 
-// Import author-qualified packages into PilotDeck's flat skill namespace.
+// Import author-qualified packages into G9Agent's flat skill namespace.
 async function installPublishedSkill(req, res) {
   const { slug, owner, version, force, scope, projectPath } = req.body;
   if (!safeSlug(slug) || !safeSlug(owner))
@@ -672,7 +672,7 @@ async function installPublishedSkill(req, res) {
     defaultToProjectWhenAvailable: true,
   });
   if (!resolved.ok) return res.status(400).json({ error: resolved.error });
-  const staging = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-clawhub-'));
+  const staging = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-clawhub-'));
   try {
     const args = [
       '--no-input',
@@ -747,7 +747,7 @@ router.post('/clawhub/install', async (req, res) => {
       workdir = resolved.projectPath;
       dir = path.join(PROJECT_DIR, SKILLS_SUBDIR);
     } else {
-      workdir = PILOT_HOME;
+      workdir = G9AGENT_HOME;
       dir = SKILLS_SUBDIR;
     }
     const installPath = path.join(workdir, dir, slug);

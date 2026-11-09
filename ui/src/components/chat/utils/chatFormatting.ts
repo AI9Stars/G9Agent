@@ -1,3 +1,5 @@
+import { LEGACY_PRODUCT_NAME } from '../../../../shared/legacyNamespace';
+
 export function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -5,7 +7,7 @@ export function escapeRegExp(value: string) {
 export function formatUsageLimitText(text: string) {
   try {
     if (typeof text !== 'string') return text;
-    return text.replace(/PilotDeck usage limit reached\|(\d{10,13})/g, (match, ts) => {
+    return text.replace(new RegExp(`(?:G9Agent|九格智能体(?:平台)?|${LEGACY_PRODUCT_NAME}) usage limit reached\\|(\\d{10,13})`, 'g'), (match, ts) => {
       let timestampMs = parseInt(ts, 10);
       if (!Number.isFinite(timestampMs)) return match;
       if (timestampMs < 1e12) timestampMs *= 1000;

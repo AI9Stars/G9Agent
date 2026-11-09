@@ -1,13 +1,13 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  usePilotDeckConfig,
+  useG9AgentConfig,
   type ConfigSaveOptions,
   type ConfigSaveResult,
-} from "../../../../hooks/usePilotDeckConfig";
+} from "../../../../hooks/useG9AgentConfig";
 import { FieldSaveModeProvider } from "../../shared/components/Inputs";
 import { ConfigSaveError } from "../../shared/view";
-import type { PilotDeckConfig } from "./types";
+import type { G9AgentConfig } from "./types";
 import { configToYamlString, safeParseYaml } from "./utils/configYaml";
 import ModelsSection from "./components/ModelsSection";
 
@@ -23,11 +23,11 @@ export default function ModelPoolSections({ title: _title }: ModelPoolSectionsPr
     acceptServerConfig,
     loading,
     error,
-  } = usePilotDeckConfig();
+  } = useG9AgentConfig();
   const parsedConfig = useMemo(() => safeParseYaml(raw), [raw]);
 
   const onFormChange = async (
-    next: PilotDeckConfig,
+    next: G9AgentConfig,
     options?: ConfigSaveOptions,
   ): Promise<ConfigSaveResult> => {
     try {
@@ -52,7 +52,7 @@ export default function ModelPoolSections({ title: _title }: ModelPoolSectionsPr
   if (loading) {
     return (
       <div className="model-pool-page-content">
-        <div className="provider-empty">{t("pilotDeckConfig.loading")}</div>
+        <div className="provider-empty">{t("g9agentConfig.loading")}</div>
       </div>
     );
   }

@@ -25,8 +25,8 @@ let packageVersion: string | undefined;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export type RequestHeadersMode = "full" | "basic" | "off";
 export function requestHeadersMode(providerMode?: RequestHeadersMode): RequestHeadersMode {
-  if (process.env.PILOTDECK_REQUEST_HEADERS === "off") return "off";
-  const mode = providerMode ?? process.env.PILOTDECK_REQUEST_HEADERS;
+  if (process.env.G9AGENT_REQUEST_HEADERS === "off") return "off";
+  const mode = providerMode ?? process.env.G9AGENT_REQUEST_HEADERS;
   return mode === "off" || mode === "basic" ? mode : "full";
 }
 
@@ -79,7 +79,7 @@ export function installationId(pilotHome?: string): string {
 }
 
 export function requestAppVersion(env: NodeJS.ProcessEnv = process.env): string {
-  const configured = /^[a-zA-Z0-9][a-zA-Z0-9.+_-]{0,79}$/.test(env.PILOTDECK_VERSION ?? "") ? env.PILOTDECK_VERSION : undefined;
+  const configured = /^[a-zA-Z0-9][a-zA-Z0-9.+_-]{0,79}$/.test(env.G9AGENT_VERSION ?? "") ? env.G9AGENT_VERSION : undefined;
   if (configured) return configured;
   if (packageVersion) return packageVersion;
   // Works from both src/network and dist/src/network, without using the user's cwd.
@@ -87,7 +87,7 @@ export function requestAppVersion(env: NodeJS.ProcessEnv = process.env): string 
   for (let depth = 0; depth < 5; depth++, directory = dirname(directory)) {
     try {
       const pkg = JSON.parse(readFileSync(join(directory, "package.json"), "utf8"));
-      if (pkg.name === "pilotdeck" && safeHeaderValue(pkg.version)) return packageVersion = pkg.version;
+      if (pkg.name === "g9agent" && safeHeaderValue(pkg.version)) return packageVersion = pkg.version;
     } catch { /* continue towards the application root */ }
   }
   return packageVersion = "0.0.0";
@@ -107,31 +107,31 @@ export function requestContextHeaders(context: RequestContext = {}, options: {
   if (mode === "off") return {};
   const version = requestAppVersion();
   const headers: Record<string, string> = {
-    "x-pilotdeck-client": "pilotdeck",
-    "x-pilotdeck-version": version,
-    "x-pilotdeck-platform": process.platform,
-    "x-pilotdeck-arch": process.arch,
-    "x-pilotdeck-schema-version": "1",
-    "x-pilotdeck-request-id": safeHeaderValue(options.requestId) ?? randomUUID(),
+    "x-g9agent-client": "g9agent",
+    "x-g9agent-version": version,
+    "x-g9agent-platform": process.platform,
+    "x-g9agent-arch": process.arch,
+    "x-g9agent-schema-version": "1",
+    "x-g9agent-request-id": safeHeaderValue(options.requestId) ?? randomUUID(),
   };
-  if (options.userAgent !== false) headers["user-agent"] = `PilotDeck/${version} (${process.platform}; ${process.arch})`;
-  const build = safeHeaderValue(process.env.PILOTDECK_GIT_SHA);
-  if (build) headers["x-pilotdeck-build"] = build;
+  if (options.userAgent !== false) headers["user-agent"] = `G9Agent/${version} (${process.platform}; ${process.arch})`;
+  const build = safeHeaderValue(process.env.G9AGENT_GIT_SHA);
+  if (build) headers["x-g9agent-build"] = build;
   if (mode === "basic") return headers;
   const ctx = { ...currentRequestContext(), ...context };
-  headers["x-pilotdeck-installation-id"] = installationId();
-  headers["x-pilotdeck-instance-id"] = instanceId;
-  headers["x-pilotdeck-device-id"] = ctx.deviceId && UUID.test(ctx.deviceId) ? ctx.deviceId : installationId();
-  headers["x-pilotdeck-user-id"] = /^[0-9a-f]{32}$/.test(ctx.userId ?? "") ? ctx.userId! : anonymousRequestId("user", "local-profile");
+  headers["x-g9agent-installation-id"] = installationId();
+  headers["x-g9agent-instance-id"] = instanceId;
+  headers["x-g9agent-device-id"] = ctx.deviceId && UUID.test(ctx.deviceId) ? ctx.deviceId : installationId();
+  headers["x-g9agent-user-id"] = /^[0-9a-f]{32}$/.test(ctx.userId ?? "") ? ctx.userId! : anonymousRequestId("user", "local-profile");
   const project = typeof ctx.projectPath === "string" && ctx.projectPath.length > 0 && ctx.projectPath.length <= 4096 ? resolve(ctx.projectPath) : undefined;
   const values = {
-    "x-pilotdeck-project-id": project ? anonymousRequestId("project", process.platform === "win32" ? project.toLowerCase() : project) : undefined,
-    "x-pilotdeck-session-id": opaqueId("session", ctx.sessionId),
-    "x-pilotdeck-turn-id": opaqueId("turn", ctx.turnId),
-    "x-pilotdeck-operation-id": safeHeaderValue(ctx.operationId),
-    "x-pilotdeck-parent-request-id": safeHeaderValue(ctx.parentRequestId),
-    "x-pilotdeck-client-version": safeHeaderValue(ctx.clientVersion),
-    "x-pilotdeck-purpose": safeHeaderValue(ctx.purpose),
+    "x-g9agent-project-id": project ? anonymousRequestId("project", process.platform === "win32" ? project.toLowerCase() : project) : undefined,
+    "x-g9agent-session-id": opaqueId("session", ctx.sessionId),
+    "x-g9agent-turn-id": opaqueId("turn", ctx.turnId),
+    "x-g9agent-operation-id": safeHeaderValue(ctx.operationId),
+    "x-g9agent-parent-request-id": safeHeaderValue(ctx.parentRequestId),
+    "x-g9agent-client-version": safeHeaderValue(ctx.clientVersion),
+    "x-g9agent-purpose": safeHeaderValue(ctx.purpose),
   };
   for (const [name, value] of Object.entries(values)) if (value) headers[name] = value;
   return headers;

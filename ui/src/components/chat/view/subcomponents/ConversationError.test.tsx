@@ -30,8 +30,8 @@ it.each(['current', 'legacy'])('keeps raw diagnostic details collapsed in the %s
   const i18n = await createTestI18n();
   const message = { type: 'error', content: 'HTTP 429: provider response\nrequest_id=diagnostic-123\n{"error":"rate_limit"}', timestamp: 0 };
   render(<I18nextProvider i18n={i18n}>{renderer === 'current'
-    ? <MessageRow message={message} prevMessage={null} provider="pilotdeck" selectedProject={null} createDiff={() => []} />
-    : <MessageComponent message={message} prevMessage={null} provider="pilotdeck" createDiff={() => []} />}</I18nextProvider>);
+    ? <MessageRow message={message} prevMessage={null} provider="g9agent" selectedProject={null} createDiff={() => []} />
+    : <MessageComponent message={message} prevMessage={null} provider="g9agent" createDiff={() => []} />}</I18nextProvider>);
   expect(screen.getByRole('alert').textContent).toContain('The model service is limiting requests');
   const disclosure = document.querySelector('details')!;
   expect(disclosure.open).toBe(false);

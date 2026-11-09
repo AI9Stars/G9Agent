@@ -1,17 +1,17 @@
-import type { PilotDeckHooksSettings } from "../../hooks/protocol/settings.js";
+import type { G9AgentHooksSettings } from "../../hooks/protocol/settings.js";
 import type { PromptContribution } from "../../contributions/PromptContribution.js";
 import type { RouterContribution } from "../../contributions/RouterContribution.js";
 import type { LoadedPluginCommand } from "../loading/PluginCommandLoader.js";
-import type { PilotDeckPluginManifest } from "./manifest.js";
+import type { G9AgentPluginManifest } from "./manifest.js";
 
-export type PilotDeckPluginSourceKind = "builtin" | "global" | "project";
+export type G9AgentPluginSourceKind = "builtin" | "global" | "project";
 
-export type PilotDeckLoadedPlugin = {
+export type G9AgentLoadedPlugin = {
   name: string;
   path: string;
-  source: PilotDeckPluginSourceKind;
-  manifest: PilotDeckPluginManifest;
-  hooksConfig?: PilotDeckHooksSettings;
+  source: G9AgentPluginSourceKind;
+  manifest: G9AgentPluginManifest;
+  hooksConfig?: G9AgentHooksSettings;
   commands?: LoadedPluginCommand[];
   skills?: LoadedPluginCommand[];
   outputStyles?: LoadedPluginCommand[];

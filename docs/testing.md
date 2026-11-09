@@ -14,45 +14,33 @@ Run from the repository root unless noted.
 | Checkpoint execution and restore | `pnpm test:checkpoints` (build Core first) |
 | Changed/related imports | `pnpm --dir ui test:changed` or `pnpm --dir ui test:related src/path/to/file.ts` |
 | Model protocol/streaming | `node --import tsx --test "tests/model/**/*.spec.ts"` |
-| Desktop helpers | `pnpm --filter pilotdeck-desktop test` |
+| Desktop helpers | `pnpm --filter g9agent-desktop test` |
 | Complete built backend suite | `pnpm test` |
 | UI type check / build | `pnpm --dir ui typecheck` / `pnpm --dir ui build` |
-| Desktop TypeScript | `pnpm --filter pilotdeck-desktop compile` |
+| Desktop TypeScript | `pnpm --filter g9agent-desktop compile` |
 
 Changed/related selection follows import edges, not every dynamically read template, workflow, icon or plugin. Broaden checks for shared protocols, native resources, dependency locks and build inputs. Real browser acceptance belongs under ui/e2e/ and is separate from Vitest discovery.
 
-Run chat browser regressions with `pnpm --dir ui exec playwright test -c e2e/streaming-scroll.config.mjs`. With desktop Electron installed, set `PILOTDECK_SCROLL_ELECTRON=1` and select `streaming-scroll.spec.mjs chat-media-scroll.spec.mjs chat-navigation.spec.mjs` to repeat scroll gestures, keyboard navigation, live generation/disclosure interactions and media reflow in isolated native renderer profiles. These fixtures start no application services or model providers.
+Run chat browser regressions with `pnpm --dir ui exec playwright test -c e2e/streaming-scroll.config.mjs`. With desktop Electron installed, set `G9AGENT_SCROLL_ELECTRON=1` and select `streaming-scroll.spec.mjs chat-media-scroll.spec.mjs chat-navigation.spec.mjs` to repeat scroll gestures, keyboard navigation, live generation/disclosure interactions and media reflow in isolated native renderer profiles. These fixtures start no application services or model providers.
 
-For VM renderer tests, `PILOTDECK_SCROLL_ELECTRON_PATH` selects a guest-native Electron executable and `PILOTDECK_SCROLL_BASE_URL` selects an already-running synthetic fixture server instead of starting Vite in the guest. Serve it on a host-only interface. Linux requires a display or `xvfb-run`; media cases also require a Playwright Chromium installation. The scroll suite includes delayed native input under a busy renderer, so timer-based gesture expiry cannot silently restore an obsolete reading position.
+For VM renderer tests, `G9AGENT_SCROLL_ELECTRON_PATH` selects a guest-native Electron executable and `G9AGENT_SCROLL_BASE_URL` selects an already-running synthetic fixture server instead of starting Vite in the guest. Serve it on a host-only interface. Linux requires a display or `xvfb-run`; media cases also require a Playwright Chromium installation. The scroll suite includes delayed native input under a busy renderer, so timer-based gesture expiry cannot silently restore an obsolete reading position.
 
 ## Pull request CI selection
 
-Web Regression and Desktop use `apps/desktop/scripts/classify-ci-changes.mjs` to
-select complete suites from the PR merge-base diff, including deleted files and
-both sides of renames. The lightweight selection jobs always validate routing;
-job-level conditions retain existing check names for unrelated changes.
+This fork keeps four Windows workflows. Desktop PR checks run checkpoints,
+MCP and product-identity regressions, Web typechecking/builds, desktop helper
+checks, branding/localization checks and updater regressions. Native Windows
+x64 and ARM64 jobs package and validate their own installers without publishing.
+The manual Windows Release workflow is the only publisher; a separate retry
+workflow may repeat the first failed build once. OBS, Docker and non-Windows
+Actions are disabled. Shared cross-platform tests and sources remain available
+for local validation, with explicit platform prerequisites.
 
-| Changed boundary | PR validation |
-| --- | --- |
-| Chat/UI components and styles | Full Web/client suite and browser acceptance; no unrelated checkpoint matrix, desktop helpers or Docker rebuild |
-| Backend, workspace or checkpoint paths | Web regression and the existing three-platform checkpoint suite; Docker for runtime/image inputs |
-| Desktop, installer or release inputs | Desktop helper checks and the complete relevant native packaging matrix |
-| Dependency locks, shared package inputs or routing policy | All affected execution boundaries |
-| Maintained documentation | Routing checks; runtime skills/resources Markdown still selects builds |
-| OBS scripts/workflows | Credential-free OBS tests; no live OBS access from PRs |
-
-The Web browser job pins Ubuntu 24.04 for the locked Playwright version. New PR
-pushes cancel superseded Web runs. Web Regression owns the single Docker build,
-with GHA layer caching and isolated runtime-import verification. Main pushes
-still run full Web/browser and Docker checks; manual Desktop runs and formal
-releases retain all native targets. Production signing and publication gates
-are independent of PR selection and remain mandatory.
-
-Web Regression also exercises tool input/registry/scheduling contracts, prompt
-capability and cache stability, live plugin preferences, and scoped runtime reload.
-These use synthetic tools/providers and isolated profiles; no real provider calls
-are required. UI tests cover lossless event delivery, render isolation and shared
-chat behavior, with browser acceptance validating streaming and history flows.
+Upstream synchronization must also verify new runtime/tool contracts, scoped
+reload and deferred editor behavior. Use synthetic providers and isolated
+profiles; real provider calls require explicit opt-in. Local Windows runners
+may need a configured Git Bash path and Python on PATH. Preserve assertions
+and report platform limits instead of removing unsupported cases.
 
 After `pnpm --dir ui build`, run `node scripts/check-ui-build-graph.mjs` to
 verify that the startup and text-editor import graphs exclude deferred features.
@@ -63,7 +51,7 @@ production build with synthetic APIs and checks editor/PDF requests and tab stat
 
 - Every retained case must identify a meaningful regression it would catch. Assert user outcomes, wire payloads, persisted contents, exit results and resource release.
 - Mock external providers and uncontrolled systems while exercising the target implementation. Do not preserve obsolete implementation-text assertions after a feature is removed, or delete unique safety cases because they are slow.
-- Use isolated PILOT_HOME, profiles, databases and workspaces. Some server modules open a database at import time, so establish isolation before importing them. Declare real Git, Python, shell, symlink and platform prerequisites.
+- Use isolated G9AGENT_HOME, profiles, databases and workspaces. Some server modules open a database at import time, so establish isolation before importing them. Declare real Git, Python, shell, symlink and platform prerequisites.
 - Use readiness signals, controlled clocks and observable state instead of fixed sleeps. Keep distinct timing, authorization, path-escape, rollback and account-isolation cases; avoid multiplying every language/theme/platform combination without a distinct behavior.
 - Small fixtures may be shared; do not create one giant test file or an end-to-end flow for unrelated behavior. Real provider calls require explicit opt-in and synthetic credentials must not be mistaken for production secrets.
 - Follow [CONTRIBUTING](../CONTRIBUTING.md) for placement, English documentation and artifact rules. New module tests remain visible to Git; only root test/ and test.ts drafts are ignored.
@@ -87,7 +75,7 @@ First build the relevant Core/Desktop/Web outputs when a command consumes compil
 | Real desktop fault injection | `node scripts/benchmark-startup.mjs --desktop --fault slow-start --artifacts artifacts/startup --hold-ms 180000`; also abort, oom, module-missing, web-module-missing and config-invalid; a stop file ends the isolated instance |
 | Windows installer/shortcut | `node apps/desktop/scripts/verify-installer.cjs` and `node apps/desktop/scripts/verify-installer-shortcut.cjs`; require Windows and desktop build dependencies |
 | Windows uninstall boundary | `node apps/desktop/scripts/verify-uninstaller.cjs`; verifies default data retention, localization and update guards |
-| Windows native notifications | `pnpm --filter pilotdeck-desktop exec electron scripts/verify-windows-notifications.cjs`; compiled Desktop and an isolated notification identity |
+| Windows native notifications | `pnpm --filter g9agent-desktop exec electron scripts/verify-windows-notifications.cjs`; compiled Desktop and an isolated notification identity |
 | TUI permissions | `node --import tsx --test tests/adapters/tui-permissions.spec.tsx`; automatic temporary profile, mocked Gateway, no model calls |
 | UI import/export analysis | `node scripts/audit-ui-reachability.mjs --exports`; read-only candidates, not automatic deletion authority |
 

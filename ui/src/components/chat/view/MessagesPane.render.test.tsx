@@ -161,7 +161,7 @@ function createPaneElement({
   showThinking?: boolean;
   inlineThinking?: boolean;
   autoExpandTools?: boolean;
-  workingStatus?: import('../types/types').PilotDeckWorkStatus;
+  workingStatus?: import('../types/types').G9AgentWorkStatus;
   onRegenerate?: (message: ChatMessage, editedText: string) => Promise<void>;
 }) {
   const scrollContainerRef = React.createRef<HTMLDivElement>();
@@ -183,7 +183,7 @@ function createPaneElement({
         loadAllMessages={() => {}}
         allMessagesLoaded
         isLoadingAllMessages={false}
-        provider="pilotdeck"
+        provider="g9agent"
         selectedProject={null}
         selectedSession={null}
         createDiff={() => []}
@@ -217,7 +217,7 @@ function renderPane(options: {
   showThinking?: boolean;
   inlineThinking?: boolean;
   autoExpandTools?: boolean;
-  workingStatus?: import('../types/types').PilotDeckWorkStatus;
+  workingStatus?: import('../types/types').G9AgentWorkStatus;
   onRegenerate?: (message: ChatMessage, editedText: string) => Promise<void>;
 }) {
   return render(createPaneElement(options));
@@ -300,7 +300,7 @@ function SessionPaneHarness({
         loadAllMessages={() => {}}
         allMessagesLoaded
         isLoadingAllMessages={false}
-        provider="pilotdeck"
+        provider="g9agent"
         selectedProject={{ name: 'project', displayName: 'Project', fullPath: '/project' }}
         selectedSession={{ id: sessionId }}
         createDiff={() => []}
@@ -1932,7 +1932,7 @@ it('uploaded image stays visible when sent with a document region reference', ()
     image: { name: 'region.png', mimeType: 'image/png' as const, width: 100, height: 100, dataUrl: regionData },
   };
   const messages = normalizedToChatMessages([{
-    id: 'local-mixed', sessionId: 'web:test', provider: 'pilotdeck', kind: 'text', role: 'user',
+    id: 'local-mixed', sessionId: 'web:test', provider: 'g9agent', kind: 'text', role: 'user',
     content: 'compare the uploaded image with this document region', timestamp: '2026-09-11T00:00:00Z',
     images: [regionData],
     attachments: [ { name: 'uploaded.png', uploadId: 'u', attachmentId: 'a', previewData: uploadedPreview },
@@ -2064,7 +2064,7 @@ it('reveals one file card at the turn tail after trailing tools, outside all pro
 });
 
 it('keeps partial files accessible when a stopped turn has no prose reply', () => {
-  const messages = normalizedToChatMessages([{ id: 'partial-files', sessionId: 'partial', provider: 'pilotdeck',
+  const messages = normalizedToChatMessages([{ id: 'partial-files', sessionId: 'partial', provider: 'g9agent',
     kind: 'file_artifacts', runId: 'partial-turn', timestamp: '2026-11-01T00:00:00Z', artifacts: [{
       id: 'partial-report', name: 'partial.txt', path: 'partial.txt', operation: 'created', source: 'workspace_diff',
       status: 'incomplete', size: 42, sha256: 'a'.repeat(64), createdAt: '2026-11-01T00:00:00Z',

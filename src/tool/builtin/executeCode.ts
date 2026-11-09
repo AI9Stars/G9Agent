@@ -7,9 +7,9 @@ import path from "node:path";
 import { spawn, type ChildProcessByStdio } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import type { Readable } from "node:stream";
-import type { PilotDeckToolDefinition, PilotDeckToolRuntimeContext } from "../protocol/types.js";
-import { contentToText, type PilotDeckToolResult } from "../protocol/result.js";
-import type { PilotDeckToolValidationIssue } from "../protocol/schema.js";
+import type { G9AgentToolDefinition, G9AgentToolRuntimeContext } from "../protocol/types.js";
+import { contentToText, type G9AgentToolResult } from "../protocol/result.js";
+import type { G9AgentToolValidationIssue } from "../protocol/schema.js";
 import { isReadOnlyShellCommand } from "./bash/permissions.js";
 import { collectPythonSyntaxDiagnostics } from "./filesystem/syntaxDiagnostics.js";
 
@@ -72,7 +72,7 @@ export async function handleExecuteCodeRpcLineForTests(
   line: string,
   options: {
     expectedToken?: string;
-    executeTool?: NonNullable<PilotDeckToolRuntimeContext["executeTool"]>;
+    executeTool?: NonNullable<G9AgentToolRuntimeContext["executeTool"]>;
     webSearch?: boolean;
   } = {},
 ): Promise<RpcResponse> {
@@ -129,7 +129,7 @@ function resolveExecuteCodeAllowedTools(
 
 export function createExecuteCodeTool(
   options: CreateExecuteCodeToolOptions = {},
-): PilotDeckToolDefinition<ExecuteCodeInput, ExecuteCodeOutput> {
+): G9AgentToolDefinition<ExecuteCodeInput, ExecuteCodeOutput> {
   const webSearchEnabled = options.webSearch !== false;
   const allowedTools = resolveExecuteCodeAllowedTools(options);
   const availableHelpers = [
@@ -139,12 +139,12 @@ export function createExecuteCodeTool(
   return {
     name: "execute_code",
     description:
-      "Run a local Python 3 script that can call a small allow-list of PilotDeck tools via `import pilotdeck_tools`. " +
+      "Run a local Python 3 script that can call a small allow-list of G9Agent tools via `import g9agent_tools`. " +
       "The script runs from the workspace cwd and inherits the same runtime environment as normal tools such as bash, including configured API, proxy, PATH, virtualenv, and conda variables; do not print secrets or dump the full environment. " +
       "Only the script's final stdout/stderr summary is returned to the model; intermediate tool results stay inside the script. " +
       `Available helper functions: ${availableHelpers.join(", ")}. ` +
       "Use normal Python control flow to orchestrate tools: loops for batch work, conditionals for branching, data structures for aggregation, and try/except around individual helper calls when one failure should not abort the whole script. Helper failures raise RuntimeError. You can chain helper results, e.g. grep -> read_file -> edit_file. Print only the concise final result needed by the agent. " +
-      "Before modifying an existing file, call read_file first so PilotDeck can verify freshness. Prefer edit_file for targeted changes and write_file for new files or complete rewrites. " +
+      "Before modifying an existing file, call read_file first so G9Agent can verify freshness. Prefer edit_file for targeted changes and write_file for new files or complete rewrites. " +
       "Notebook edits, agent, task tools, MCP tools, and execute_code itself are not available.",
     kind: "custom",
     inputSchema: {
@@ -154,7 +154,7 @@ export function createExecuteCodeTool(
       properties: {
         code: {
           type: "string",
-          description: "Python 3 source code to execute. Use `from pilotdeck_tools import ...` to call allowed PilotDeck tools.",
+          description: "Python 3 source code to execute. Use `from g9agent_tools import ...` to call allowed G9Agent tools.",
         },
         description: {
           type: "string",
@@ -166,7 +166,7 @@ export function createExecuteCodeTool(
         },
         max_tool_calls: {
           type: "integer",
-          description: "Maximum number of PilotDeck tool calls the script may make. Defaults to 50; maximum 50.",
+          description: "Maximum number of G9Agent tool calls the script may make. Defaults to 50; maximum 50.",
         },
       },
     },
@@ -206,7 +206,7 @@ export function createExecuteCodeTool(
 }
 
 async function validateExecuteCodeInput(input: ExecuteCodeInput) {
-  const issues: PilotDeckToolValidationIssue[] = [];
+  const issues: G9AgentToolValidationIssue[] = [];
   if (!input.code.trim()) {
     issues.push({ path: "$.code", code: "invalid_schema", message: "$.code must not be empty." });
   }
@@ -342,14 +342,14 @@ function createRpcTransport(): RpcTransport {
     kind: "uds",
     socketPath: path.join(
       process.platform === "darwin" ? "/tmp" : tmpdir(),
-      `pilotdeck_rpc_${process.pid}_${Date.now()}_${Math.random().toString(16).slice(2)}.sock`,
+      `g9agent_rpc_${process.pid}_${Date.now()}_${Math.random().toString(16).slice(2)}.sock`,
     ),
   };
 }
 
 async function runExecuteCode(
   input: ExecuteCodeInput,
-  context: PilotDeckToolRuntimeContext,
+  context: G9AgentToolRuntimeContext,
   startedAt: number,
   options: {
     allowedTools: ReadonlySet<string>;
@@ -378,7 +378,7 @@ async function runExecuteCode(
     return buildOutput("unsupported", "", "execute_code requires python3 on PATH.", startedAt, toolCallsMade, toolCallLog);
   }
 
-  const tempRoot = await mkdtemp(path.join(tmpdir(), "pilotdeck_execute_code_"));
+  const tempRoot = await mkdtemp(path.join(tmpdir(), "g9agent_execute_code_"));
   let transport = createRpcTransport();
   let server: Server | undefined;
   let child: ChildProcessByStdio<null, Readable, Readable> | undefined;
@@ -396,8 +396,8 @@ async function runExecuteCode(
 
   try {
     await writeFile(
-      path.join(tempRoot, "pilotdeck_tools.py"),
-      generatePilotDeckToolsModule(transport.kind, options.webSearchEnabled),
+      path.join(tempRoot, "g9agent_tools.py"),
+      generateG9AgentToolsModule(transport.kind, options.webSearchEnabled),
       "utf8",
     );
     await writeFile(path.join(tempRoot, "script.py"), input.code, "utf8");
@@ -472,8 +472,8 @@ async function runExecuteCode(
 }
 
 function createRpcServer(options: {
-  context: PilotDeckToolRuntimeContext;
-  executeTool: NonNullable<PilotDeckToolRuntimeContext["executeTool"]>;
+  context: G9AgentToolRuntimeContext;
+  executeTool: NonNullable<G9AgentToolRuntimeContext["executeTool"]>;
   maxToolCalls: number;
   toolCallLog: ExecuteCodeToolCallLogEntry[];
   nextToolCall: () => number;
@@ -505,8 +505,8 @@ async function processBufferedRequests(
   socket: Socket,
   takeLines: () => string[],
   options: {
-    context: PilotDeckToolRuntimeContext;
-    executeTool: NonNullable<PilotDeckToolRuntimeContext["executeTool"]>;
+    context: G9AgentToolRuntimeContext;
+    executeTool: NonNullable<G9AgentToolRuntimeContext["executeTool"]>;
     maxToolCalls: number;
     toolCallLog: ExecuteCodeToolCallLogEntry[];
     nextToolCall: () => number;
@@ -526,8 +526,8 @@ async function processBufferedRequests(
 async function handleRpcLine(
   line: string,
   options: {
-    context: PilotDeckToolRuntimeContext;
-    executeTool: NonNullable<PilotDeckToolRuntimeContext["executeTool"]>;
+    context: G9AgentToolRuntimeContext;
+    executeTool: NonNullable<G9AgentToolRuntimeContext["executeTool"]>;
     maxToolCalls: number;
     toolCallLog: ExecuteCodeToolCallLogEntry[];
     nextToolCall: () => number;
@@ -570,7 +570,7 @@ async function handleRpcLine(
   return toolResultToRpcResponse(result);
 }
 
-function toolResultToRpcResponse(result: PilotDeckToolResult): RpcResponse {
+function toolResultToRpcResponse(result: G9AgentToolResult): RpcResponse {
   const content = result.content.map(contentToText).join("\n");
   if (result.type === "error") {
     const details = formatToolErrorDetails(result);
@@ -588,7 +588,7 @@ function toolResultToRpcResponse(result: PilotDeckToolResult): RpcResponse {
   };
 }
 
-function formatToolErrorDetails(result: Extract<PilotDeckToolResult, { type: "error" }>): string | undefined {
+function formatToolErrorDetails(result: Extract<G9AgentToolResult, { type: "error" }>): string | undefined {
   const issues = result.error.details?.issues;
   if (!Array.isArray(issues)) return undefined;
   const messages = issues
@@ -597,7 +597,7 @@ function formatToolErrorDetails(result: Extract<PilotDeckToolResult, { type: "er
   return messages.length > 0 ? messages.join("\n") : undefined;
 }
 
-function generatePilotDeckToolsModule(
+function generateG9AgentToolsModule(
   kind: RpcTransport["kind"],
   webSearchEnabled: boolean,
 ): string {
@@ -670,7 +670,7 @@ def bash(command, timeout_ms=None, workdir=None):
 `;
 }
 
-const UDS_PYTHON_TRANSPORT_HEADER = `"""Auto-generated PilotDeck execute_code RPC helpers."""
+const UDS_PYTHON_TRANSPORT_HEADER = `"""Auto-generated G9Agent execute_code RPC helpers."""
 import json
 import os
 import shlex
@@ -683,7 +683,7 @@ def _connect():
     global _sock
     if _sock is None:
         _sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        _sock.connect(os.environ["PILOTDECK_RPC_SOCKET"])
+        _sock.connect(os.environ["G9AGENT_RPC_SOCKET"])
         _sock.settimeout(300)
     return _sock
 
@@ -695,7 +695,7 @@ def _call(tool_name, args):
     while True:
         chunk = conn.recv(65536)
         if not chunk:
-            raise RuntimeError("PilotDeck RPC server disconnected")
+            raise RuntimeError("G9Agent RPC server disconnected")
         chunks.append(chunk)
         if chunk.endswith(b"\\n"):
             break
@@ -705,21 +705,21 @@ def _call(tool_name, args):
     return response
 `;
 
-const TCP_PYTHON_TRANSPORT_HEADER = `"""Auto-generated PilotDeck execute_code RPC helpers."""
+const TCP_PYTHON_TRANSPORT_HEADER = `"""Auto-generated G9Agent execute_code RPC helpers."""
 import json
 import os
 import shlex
 import socket
 
 _sock = None
-_token = os.environ["PILOTDECK_RPC_TOKEN"]
+_token = os.environ["G9AGENT_RPC_TOKEN"]
 
 
 def _connect():
     global _sock
     if _sock is None:
-        host = os.environ.get("PILOTDECK_RPC_HOST", "127.0.0.1")
-        port = int(os.environ["PILOTDECK_RPC_PORT"])
+        host = os.environ.get("G9AGENT_RPC_HOST", "127.0.0.1")
+        port = int(os.environ["G9AGENT_RPC_PORT"])
         _sock = socket.create_connection((host, port), timeout=300)
         _sock.settimeout(300)
     return _sock
@@ -732,7 +732,7 @@ def _call(tool_name, args):
     while True:
         chunk = conn.recv(65536)
         if not chunk:
-            raise RuntimeError("PilotDeck RPC server disconnected")
+            raise RuntimeError("G9Agent RPC server disconnected")
         chunks.append(chunk)
         if chunk.endswith(b"\\n"):
             break
@@ -763,14 +763,14 @@ function buildChildEnv(
 ): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...source };
   env.PYTHONPATH = source.PYTHONPATH ? `${tempRoot}${path.delimiter}${source.PYTHONPATH}` : tempRoot;
-  env.PILOTDECK_WORKSPACE_CWD = workspaceCwd;
-  env.PILOTDECK_EXECUTE_CODE_TEMP_ROOT = tempRoot;
+  env.G9AGENT_WORKSPACE_CWD = workspaceCwd;
+  env.G9AGENT_EXECUTE_CODE_TEMP_ROOT = tempRoot;
   if (transport.kind === "uds") {
-    env.PILOTDECK_RPC_SOCKET = transport.socketPath;
+    env.G9AGENT_RPC_SOCKET = transport.socketPath;
   } else {
-    env.PILOTDECK_RPC_HOST = transport.host;
-    env.PILOTDECK_RPC_PORT = String(transport.port);
-    env.PILOTDECK_RPC_TOKEN = transport.token;
+    env.G9AGENT_RPC_HOST = transport.host;
+    env.G9AGENT_RPC_PORT = String(transport.port);
+    env.G9AGENT_RPC_TOKEN = transport.token;
   }
   env.PYTHONDONTWRITEBYTECODE = "1";
   return env;

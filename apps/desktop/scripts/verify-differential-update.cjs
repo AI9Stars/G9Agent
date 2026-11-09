@@ -28,7 +28,7 @@ let root, server, records = [], open = 0, scenario, newBytes, oldBytes, newMap, 
 const timeout = setTimeout(() => { console.error('Differential qualification timed out'); app.exit(1); }, 180000);
 
 (async () => {
-  root = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-differential-'));
+  root = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-differential-'));
   app.setPath('userData', path.join(root, 'electron'));
   await app.whenReady();
   // Deterministic high-entropy content, with a large unchanged prefix/suffix.
@@ -121,7 +121,7 @@ const timeout = setTimeout(() => { console.error('Differential qualification tim
     if (name !== 'missing-cache') await fs.writeFile(oldFile, name === 'corrupt-cache' ? Buffer.alloc(oldBytes.length) : oldBytes);
     if (name === 'cached-map') await fs.writeFile(path.join(cache, 'current.blockmap'), oldMap);
     if (name === 'corrupt-cached-map') await fs.writeFile(path.join(cache, 'current.blockmap'), 'corrupt');
-    const filename = `PilotDeck-2026.1106.1-${platform === 'darwin' ? 'mac' : 'win'}-${process.arch}${platform === 'darwin' ? '.zip' : '-setup.exe'}`;
+    const filename = `G9Agent-2026.1106.1-${platform === 'darwin' ? 'mac' : 'win'}-${process.arch}${platform === 'darwin' ? '.zip' : '-setup.exe'}`;
     const asset = (name, bytes) => ({ name, size: bytes.length, sha512: digest(bytes, 'sha512', 'base64'), sha256: digest(bytes, 'sha256', 'hex'), platform, arch: process.arch });
     const release = { version: '2026.1106.1', tagName: 'v2026.11.06-r2', differentialUpdates: true,
       assets: [asset(filename, newBytes), asset(`${filename}.blockmap`, newMap)], ...settings.release };
@@ -137,7 +137,7 @@ const timeout = setTimeout(() => { console.error('Differential qualification tim
       await fs.writeFile(config, 'updaterCacheDirName: fixture\npublisherName: [Fixture]\n');
       updater.verifyUpdateCodeSignature = async () => 'Wrong publisher';
     }
-    const controller = createUpdateController({ updater, repository: 'fixture/PilotDeck', platform, arch: process.arch,
+    const controller = createUpdateController({ updater, repository: 'fixture/G9Agent', platform, arch: process.arch,
       version: adapter.version, packaged: true, latestRelease: async () => release,
       downloadAvailable: async () => true, downloadBases: async () => name === 'route-fallback'
         ? [`${base}/bad/v2026.11.06-r2/`, `${base}/v2026.11.06-r2/`] : [`${base}/v2026.11.06-r2/`],
@@ -216,11 +216,11 @@ const timeout = setTimeout(() => { console.error('Differential qualification tim
   await run('legacy-manifest', 'win32', { release: { differentialUpdates: undefined }, full: true });
   await run('release-disabled', 'win32', { release: { differentialUpdates: false }, full: true });
   await run('local-disabled', 'win32', { controller: { disableDifferentialUpdates: true }, full: true });
-  const previousDisable = process.env.PILOTDECK_DISABLE_DIFFERENTIAL_UPDATES;
-  try { process.env.PILOTDECK_DISABLE_DIFFERENTIAL_UPDATES = '1'; await run('environment-disabled', 'win32', { full: true }); }
+  const previousDisable = process.env.G9AGENT_DISABLE_DIFFERENTIAL_UPDATES;
+  try { process.env.G9AGENT_DISABLE_DIFFERENTIAL_UPDATES = '1'; await run('environment-disabled', 'win32', { full: true }); }
   finally {
-    if (previousDisable === undefined) delete process.env.PILOTDECK_DISABLE_DIFFERENTIAL_UPDATES;
-    else process.env.PILOTDECK_DISABLE_DIFFERENTIAL_UPDATES = previousDisable;
+    if (previousDisable === undefined) delete process.env.G9AGENT_DISABLE_DIFFERENTIAL_UPDATES;
+    else process.env.G9AGENT_DISABLE_DIFFERENTIAL_UPDATES = previousDisable;
   }
   await run('differential', 'darwin');
   await run('missing-cache', 'darwin');

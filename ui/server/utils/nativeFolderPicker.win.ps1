@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 
-public static class PilotDeckExplorerFolderDialog
+public static class G9AgentExplorerFolderDialog
 {
     private const int ASFW_ANY = -1;
     private const uint GA_ROOT = 2;
@@ -220,12 +220,12 @@ public static class PilotDeckExplorerFolderDialog
 }
 "@
 
-if (-not ('PilotDeckExplorerFolderDialog' -as [type])) {
+if (-not ('G9AgentExplorerFolderDialog' -as [type])) {
     Add-Type -TypeDefinition $code -Language CSharp -ReferencedAssemblies System.Windows.Forms,System.Drawing
 }
 
 try {
-    $picked = [PilotDeckExplorerFolderDialog]::PickFolder()
+    $picked = [G9AgentExplorerFolderDialog]::PickFolder()
     if ($picked) {
         [Console]::Out.Write($picked)
     }

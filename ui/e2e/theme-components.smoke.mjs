@@ -6,8 +6,8 @@ import { parse as parseYaml } from 'yaml';
 
 const artifacts = path.resolve('artifacts/theme-components');
 await fs.mkdir(artifacts, { recursive: true });
-const browser = await chromium.launch({ channel: process.env.PILOTDECK_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
-const base = process.env.PILOTDECK_TEST_URL || 'http://127.0.0.1:5187';
+const browser = await chromium.launch({ channel: process.env.G9AGENT_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
+const base = process.env.G9AGENT_TEST_URL || 'http://127.0.0.1:5187';
 const results = [];
 
 // Composite actual ancestor surfaces, including transparent menu rows. Raster
@@ -39,7 +39,7 @@ try {
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     await context.addInitScript(({ mode, preset }) => {
       localStorage.setItem('userLanguage', 'en'); localStorage.setItem('themeMode', mode);
-      localStorage.setItem('pilotdeck-light-appearance-v1', JSON.stringify({ preset }));
+      localStorage.setItem('g9agent-light-appearance-v1', JSON.stringify({ preset }));
       if ('serviceWorker' in navigator) navigator.serviceWorker.register = () => Promise.reject(new Error('fixture'));
     }, { mode, preset });
     const page = await context.newPage();

@@ -10,9 +10,9 @@ function runRuntimeCheck(nodeVersion: string) {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      PILOTDECK_RUNTIME_CHECK_TEST_MODE: "1",
-      PILOTDECK_TEST_NODE_VERSION: nodeVersion,
-      PILOTDECK_TEST_SKIP_SQLITE: "1",
+      G9AGENT_RUNTIME_CHECK_TEST_MODE: "1",
+      G9AGENT_TEST_NODE_VERSION: nodeVersion,
+      G9AGENT_TEST_SKIP_SQLITE: "1",
     },
     encoding: "utf8",
   });

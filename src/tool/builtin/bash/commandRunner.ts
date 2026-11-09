@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { TextDecoder } from "node:util";
 import { resolveDefaultCommandShell } from "../../../runtime/commandShell.js";
 
-export type PilotDeckCommandOptions = {
+export type G9AgentCommandOptions = {
   cwd: string;
   env?: NodeJS.ProcessEnv;
   timeoutMs: number;
@@ -13,7 +13,7 @@ export type PilotDeckCommandOptions = {
   onStderr?: (chunk: string) => void;
 };
 
-export type PilotDeckCommandResult = {
+export type G9AgentCommandResult = {
   exitCode: number | null;
   stdout: string;
   stderr: string;
@@ -21,16 +21,16 @@ export type PilotDeckCommandResult = {
   durationMs: number;
 };
 
-export type PilotDeckCommandRunner = {
-  run(command: string, options: PilotDeckCommandOptions): Promise<PilotDeckCommandResult>;
+export type G9AgentCommandRunner = {
+  run(command: string, options: G9AgentCommandOptions): Promise<G9AgentCommandResult>;
 };
 
 type SpawnShell = typeof spawn;
 
-export class NodeShellCommandRunner implements PilotDeckCommandRunner {
+export class NodeShellCommandRunner implements G9AgentCommandRunner {
   constructor(private readonly spawnShell: SpawnShell = spawn) {}
 
-  run(command: string, options: PilotDeckCommandOptions): Promise<PilotDeckCommandResult> {
+  run(command: string, options: G9AgentCommandOptions): Promise<G9AgentCommandResult> {
     const startedAt = Date.now();
     return new Promise((resolve, reject) => {
       const isWindows = process.platform === "win32";
@@ -84,7 +84,7 @@ export class NodeShellCommandRunner implements PilotDeckCommandRunner {
           resolve({
             exitCode: null,
             stdout,
-            stderr: stderr + "\n[PilotDeck] Process did not exit within 15s after termination; force-resolved.",
+            stderr: stderr + "\n[G9Agent] Process did not exit within 15s after termination; force-resolved.",
             timedOut: true,
             durationMs: Date.now() - startedAt,
           });

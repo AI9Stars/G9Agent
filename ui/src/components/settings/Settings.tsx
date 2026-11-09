@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { PilotDeckConfigProvider } from "../../hooks/usePilotDeckConfig";
+import { G9AgentConfigProvider } from "../../hooks/useG9AgentConfig";
 import { desktopUpdates } from "../../utils/desktopUpdates";
 import { authenticatedFetch } from "../../utils/api";
 import type { SettingsProps } from "./shared/types";
@@ -26,7 +26,7 @@ function SettingsInner({
   const navigate = useNavigate();
   const { search } = useLocation();
   const isDesktopApp =
-    typeof window !== "undefined" && !!(window as any).pilotdeckDesktop;
+    typeof window !== "undefined" && !!(window as any).g9agentDesktop;
   const selectedKey = mapSettingsSectionToMenuKey(section);
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(
     selectedKey === "general",
@@ -45,7 +45,7 @@ function SettingsInner({
   useEffect(() => {
     let active = true;
     if (isDesktopApp) {
-      void window.pilotdeckDesktop?.getAboutInfo?.().then(info => {
+      void window.g9agentDesktop?.getAboutInfo?.().then(info => {
         if (active) setVersionInfo(previous => ({
           ...previous, currentVersion: info.version, buildTime: info.buildTime,
         }));
@@ -98,8 +98,8 @@ function SettingsInner({
 
   useEffect(() => {
     const checkFromMenu = () => { void checkVersion(); };
-    window.addEventListener('pilotdeck:check-updates', checkFromMenu);
-    return () => window.removeEventListener('pilotdeck:check-updates', checkFromMenu);
+    window.addEventListener('g9agent:check-updates', checkFromMenu);
+    return () => window.removeEventListener('g9agent:check-updates', checkFromMenu);
   }, [checkVersion]);
 
   useEffect(() => {
@@ -115,7 +115,7 @@ function SettingsInner({
   );
 
   return (
-    <div className="pilotdeck-settings-app">
+    <div className="g9agent-settings-app">
       <SettingsSidebar
         selectedKey={selectedKey}
         onSelect={selectMenuItem}
@@ -140,9 +140,9 @@ function SettingsInner({
 export default function Settings(props: SettingsProps) {
   return (
     <SettingsSuccessToastProvider>
-      <PilotDeckConfigProvider>
+      <G9AgentConfigProvider>
         <SettingsInner {...props} />
-      </PilotDeckConfigProvider>
+      </G9AgentConfigProvider>
     </SettingsSuccessToastProvider>
   );
 }

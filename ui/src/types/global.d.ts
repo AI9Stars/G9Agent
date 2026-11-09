@@ -8,9 +8,9 @@ export {};
 
 declare global {
   interface Window {
-    __pilotdeckStartupState?: { phase: string; progress?: number; startedAt?: number; phaseStartedAt?: number; completed?: boolean };
-    __pilotdeckStartupUpdate?: (state: NonNullable<Window['__pilotdeckStartupState']> & { language?: string; leaving?: boolean; error?: string; logPath?: string }) => void;
-    __pilotdeckStartupCleanup?: () => void;
+    __g9agentStartupState?: { phase: string; progress?: number; startedAt?: number; phaseStartedAt?: number; completed?: boolean };
+    __g9agentStartupUpdate?: (state: NonNullable<Window['__g9agentStartupState']> & { language?: string; leaving?: boolean; error?: string; logPath?: string }) => void;
+    __g9agentStartupCleanup?: () => void;
     __ROUTER_BASENAME__?: string;
     refreshProjects?: () => void | Promise<void>;
     openSettings?: (tab?: string) => void;
@@ -18,7 +18,7 @@ declare global {
     // app navigated to it; false otherwise so callers (e.g. chat slash
     // command handler) can surface a friendly "not found" message.
     switchProject?: (projectName: string) => boolean;
-    pilotdeckDesktop?: {
+    g9agentDesktop?: {
       platform?: string;
       getUninstallStatus?: () => Promise<{ supported: boolean }>;
       uninstall?: () => Promise<{ canceled: boolean }>;

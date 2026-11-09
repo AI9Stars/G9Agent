@@ -1,35 +1,35 @@
 services:
-  pilotdeck:
+  g9agent:
     build: .
-    image: pilotdeck:latest
+    image: g9agent:latest
     ports:
       - "3001:3001"
     volumes:
-      # Persist all PilotDeck state: generated config, auth DB, permissions,
+      # Persist all G9Agent state: generated config, auth DB, permissions,
       # sessions/projects, memory, skills/plugins, and router stats.
-      - pilotdeck-home:/root/.pilotdeck
+      - g9agent-home:/root/.g9agent
       # Optional: mount an existing config file instead of generating one from env vars.
       # Create the host file first, then uncomment this line.
-      # - ${PILOTDECK_CONFIG:-${HOME}/.pilotdeck/pilotdeck.yaml}:/root/.pilotdeck/pilotdeck.yaml:ro
+      # - ${G9AGENT_CONFIG:-${HOME}/.g9agent/g9agent.yaml}:/root/.g9agent/g9agent.yaml:ro
       # Optional: expose a host workspace to agents running inside the container.
-      # - ${PILOTDECK_WORKSPACE:-${PWD}}:/workspace
+      # - ${G9AGENT_WORKSPACE:-${PWD}}:/workspace
     environment:
       - NODE_ENV=production
-      - PILOT_HOME=/root/.pilotdeck
+      - G9AGENT_HOME=/root/.g9agent
       - SERVER_PORT=3001
-      - PILOTDECK_GATEWAY_PORT=18789
+      - G9AGENT_GATEWAY_PORT=18789
       # Require login for REST and WebSocket access, including the terminal.
-      - PILOTDECK_DISABLE_LOCAL_AUTH=0
+      - G9AGENT_DISABLE_LOCAL_AUTH=0
       #
       # ── Proxy (uncomment if behind corporate proxy) ──
       # - https_proxy=http://host.docker.internal:7890
-      # - PILOTDECK_PROXY=http://host.docker.internal:7890
+      # - G9AGENT_PROXY=http://host.docker.internal:7890
       #
       # ── Or configure via env vars instead of mounting yaml ──
-      # - PILOTDECK_MODEL=openai/gpt-4.1
-      # - PILOTDECK_API_KEY=sk-xxx
-      # - PILOTDECK_API_URL=https://api.openai.com/v1
+      # - G9AGENT_MODEL=openai/gpt-4.1
+      # - G9AGENT_API_KEY=sk-xxx
+      # - G9AGENT_API_URL=https://api.openai.com/v1
     restart: unless-stopped
 
 volumes:
-  pilotdeck-home:
+  g9agent-home:

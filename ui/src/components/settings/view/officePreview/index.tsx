@@ -1,23 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FileText, RefreshCw, Settings2 } from 'lucide-react';
-import { usePilotDeckConfig, type ConfigSaveResult } from '../../../../hooks/usePilotDeckConfig';
+import { useG9AgentConfig, type ConfigSaveResult } from '../../../../hooks/useG9AgentConfig';
 import { cn } from '../../../../lib/utils';
 import { normalizeOfficePreviewService, officeBinaryPathExample, readOfficePreviewStatus,
   type OfficePreviewService, type OfficePreviewStatus } from '../../../../utils/officePreviewStatus';
 import { ConfigSaveError } from '../../shared/view';
 import { GeneralCardHeader, GeneralSettingsIcon } from '../../shared/view/GeneralSettingsPrimitives';
-import type { PilotDeckConfig } from '../modelPool/types';
+import type { G9AgentConfig } from '../modelPool/types';
 import { configToYamlString, safeParseYaml } from '../modelPool/utils/configYaml';
 import { patch } from '../modelPool/utils/patch';
 
 function OfficePreviewSection({ config, onChange, saving }: {
-  config: PilotDeckConfig;
-  onChange: (next: PilotDeckConfig) => Promise<ConfigSaveResult>;
+  config: G9AgentConfig;
+  onChange: (next: G9AgentConfig) => Promise<ConfigSaveResult>;
   saving: boolean;
 }) {
   const { t } = useTranslation('settings');
-  const key = 'pilotDeckConfig.panels.officePreview';
+  const key = 'g9agentConfig.panels.officePreview';
   const [status, setStatus] = useState<OfficePreviewStatus | null>(null);
   const [statusError, setStatusError] = useState('');
   const [statusLoading, setStatusLoading] = useState(true);
@@ -154,10 +154,10 @@ function OfficePreviewSection({ config, onChange, saving }: {
 
 export default function OfficePreviewSections({ title: _title }: { title: string }) {
   const { t } = useTranslation('settings');
-  const { confirmedRaw, commitRaw, loading, saving, error } = usePilotDeckConfig();
+  const { confirmedRaw, commitRaw, loading, saving, error } = useG9AgentConfig();
   const [serializationError, setSerializationError] = useState('');
   const parsedConfig = useMemo(() => safeParseYaml(confirmedRaw), [confirmedRaw]);
-  const onFormChange = async (next: PilotDeckConfig): Promise<ConfigSaveResult> => {
+  const onFormChange = async (next: G9AgentConfig): Promise<ConfigSaveResult> => {
     setSerializationError('');
     try { return await commitRaw(configToYamlString(next)); }
     catch (caught) {
@@ -166,7 +166,7 @@ export default function OfficePreviewSections({ title: _title }: { title: string
       return { ok: false, error: message };
     }
   };
-  if (loading) return <div role="status" className="py-6 text-xs text-muted-foreground">{t('pilotDeckConfig.loading')}</div>;
+  if (loading) return <div role="status" className="py-6 text-xs text-muted-foreground">{t('g9agentConfig.loading')}</div>;
   if (!parsedConfig) return <ConfigSaveError error={t('settingsPage.invalidYaml.officePreview')} />;
   return <div className="general-page-content office-page-content">
     <ConfigSaveError error={serializationError || error} />

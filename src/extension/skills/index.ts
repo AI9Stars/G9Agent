@@ -10,9 +10,9 @@ export type {
   LegacyBundledSkillMigrationReport,
   MigrateLegacyBundledSkillsOptions,
 } from "./migrateLegacyBundledSkills.js";
-export { migrateSkillsToPilotDeck } from "./migrateSkills.js";
+export { migrateSkillsToG9Agent } from "./migrateSkills.js";
 export type {
-  MigrateSkillsToPilotDeckOptions,
+  MigrateSkillsToG9AgentOptions,
   SkillMigrationConflictMode,
   SkillMigrationItem,
   SkillMigrationItemStatus,

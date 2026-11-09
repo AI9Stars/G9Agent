@@ -14,24 +14,24 @@ import { prepareBackgroundSpawnOptions } from '../utils/processSpawn.js';
 import { parse as parseYaml } from 'yaml';
 import {
   configRevision,
-  getPilotDeckConfigPath,
+  getG9AgentConfigPath,
   hasUnresolvedMaskedSecrets,
   maskSecrets,
   parseConfigYaml,
   preserveMaskedSecrets,
   rawYamlToMaskedString,
-  readPilotDeckConfigFile,
+  readG9AgentConfigFile,
   resolveConfiguredProviderApiKey,
-  serializePilotDeckConfigResponse,
-  updatePilotDeckConfig,
-  withPilotDeckConfigWrite,
-  validatePilotDeckConfig,
-  writePilotDeckConfig,
-  writeRawPilotDeckYaml,
-} from '../services/pilotdeckConfig.js';
-import { reloadPilotDeckConfig } from '../services/pilotdeckConfigReloader.js';
-import { suppressNextWatchEvent } from '../services/pilotdeckConfigWatcher.js';
-import { getPilotDeckGateway } from '../pilotdeck-bridge.js';
+  serializeG9AgentConfigResponse,
+  updateG9AgentConfig,
+  withG9AgentConfigWrite,
+  validateG9AgentConfig,
+  writeG9AgentConfig,
+  writeRawG9AgentYaml,
+} from '../services/g9agentConfig.js';
+import { reloadG9AgentConfig } from '../services/g9agentConfigReloader.js';
+import { suppressNextWatchEvent } from '../services/g9agentConfigWatcher.js';
+import { getG9AgentGateway } from '../g9agent-bridge.js';
 import {
   buildProviderModelsEndpointCandidates,
   isExpectedProviderModelsResponseShape,
@@ -65,7 +65,7 @@ import {
 
 async function notifyGatewayConfigReload() {
   try {
-    const gw = await getPilotDeckGateway();
+    const gw = await getG9AgentGateway();
     if (gw?.reloadConfig) await gw.reloadConfig();
   } catch { /* gateway unreachable — self-watch will pick up the change */ }
 }
@@ -74,7 +74,7 @@ const router = express.Router();
 
 router.get('/python-runtime', async (_req, res) => {
   try {
-    const gateway = await getPilotDeckGateway();
+    const gateway = await getG9AgentGateway();
     if (!gateway?.getPythonRuntimeStatus) return res.status(503).json({ error: 'Python runtime status is unavailable' });
     res.json(await gateway.getPythonRuntimeStatus({ initialize: false }));
   } catch { res.status(503).json({ error: 'Python runtime status is unavailable' }); }
@@ -82,7 +82,7 @@ router.get('/python-runtime', async (_req, res) => {
 
 router.post('/python-runtime/check', async (_req, res) => {
   try {
-    const gateway = await getPilotDeckGateway();
+    const gateway = await getG9AgentGateway();
     if (!gateway?.getPythonRuntimeStatus) return res.status(503).json({ error: 'Python runtime status is unavailable' });
     res.json(await gateway.getPythonRuntimeStatus());
   } catch { res.status(503).json({ error: 'Python runtime status is unavailable' }); }
@@ -90,7 +90,7 @@ router.post('/python-runtime/check', async (_req, res) => {
 
 router.get('/git-runtime', async (_req, res) => {
   try {
-    const gateway = await getPilotDeckGateway();
+    const gateway = await getG9AgentGateway();
     if (!gateway?.getGitRuntimeStatus) return res.status(503).json({ error: 'Git runtime status is unavailable' });
     res.json(await gateway.getGitRuntimeStatus());
   } catch { res.status(503).json({ error: 'Git runtime status is unavailable' }); }
@@ -148,7 +148,7 @@ function resolveProviderRequestApiKey({
   let savedProvider = null;
   if (normalizedProviderId) {
     try {
-      const record = readPilotDeckConfigFile();
+      const record = readG9AgentConfigFile();
       savedProvider = record.config?.model?.providers?.[normalizedProviderId] ?? null;
     } catch { /* Fall through to the catalog environment fallback. */ }
   }
@@ -594,7 +594,7 @@ const connectionTasks = createConnectionTestTasks({
   getRecord: getConnectionTestRecord,
   applyImage: applyImageCapabilities,
   isCurrent: (userId, task) => {
-    const provider = readPilotDeckConfigFile().config?.model?.providers?.[task.providerId];
+    const provider = readG9AgentConfigFile().config?.model?.providers?.[task.providerId];
     const tested = task.result?.models || [];
     if (task.modelId) {
       const { record } = getConnectionTestRecord(userId, task.result?.testId);
@@ -612,16 +612,16 @@ const connectionTasks = createConnectionTestTasks({
       ['model', 'providers', record.provider.providerId, 'models', modelId, 'connectionTest'],
       ['model', 'providers', record.provider.providerId, 'models', modelId, 'multimodal'],
     ]);
-    const saved = await updatePilotDeckConfig((config) => {
+    const saved = await updateG9AgentConfig((config) => {
       const binding = bindModelConnectionTests(config, [{ testId }], userId);
       if (binding.error) throw Object.assign(new Error(binding.error.message), binding.error);
     }, {
       paths: changedPaths,
       onWriteCommitted: suppressNextWatchEvent,
     });
-    const reload = await reloadPilotDeckConfig(saved.config);
+    const reload = await reloadG9AgentConfig(saved.config);
     void notifyGatewayConfigReload();
-    broadcastConfigEvent({ source: 'ui-save', ...serializePilotDeckConfigResponse(readPilotDeckConfigFile(), reload), timestamp: new Date().toISOString() });
+    broadcastConfigEvent({ source: 'ui-save', ...serializeG9AgentConfigResponse(readG9AgentConfigFile(), reload), timestamp: new Date().toISOString() });
   },
 });
 
@@ -636,7 +636,7 @@ const taskAction = (action) => (req, res) => {
 };
 router.post('/connection-test-tasks', modelTestRateLimiter, taskAction((req) => {
   const providerId = typeof req.body?.providerId === 'string' ? req.body.providerId.trim() : '';
-  const disk = readPilotDeckConfigFile();
+  const disk = readG9AgentConfigFile();
   const provider = disk.config?.model?.providers?.[providerId];
   if (disk.parseError || !provider) throw Object.assign(new Error('Configured provider was not found.'), { status: 400, code: 'INVALID_REQUEST' });
   const modelId = req.body?.modelId;
@@ -655,7 +655,7 @@ router.post('/connection-test-tasks/:id/acknowledge', taskAction(req => connecti
 router.post('/connection-test-tasks/:id/cancel', taskAction(req => connectionTasks.cancel(req.user.id, req.params.id)));
 
 function broadcastConfigEvent(payload) {
-  process.emit('pilotdeck:config-broadcast', payload);
+  process.emit('g9agent:config-broadcast', payload);
 }
 
 function normalizeModelListItem(item) {
@@ -739,8 +739,8 @@ function isExpectedModelsJsonBody(protocol, responseText) {
 
 router.get('/', (_req, res) => {
   try {
-    const record = readPilotDeckConfigFile();
-    res.json(serializePilotDeckConfigResponse(record));
+    const record = readG9AgentConfigFile();
+    res.json(serializeG9AgentConfigResponse(record));
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
   }
@@ -750,7 +750,7 @@ router.post('/validate', (req, res) => {
   try {
     const raw = typeof req.body?.raw === 'string' ? req.body.raw : '';
     const config = raw ? parseConfigYaml(raw) : req.body?.config;
-    const validation = validatePilotDeckConfig(config);
+    const validation = validateG9AgentConfig(config);
     res.status(validation.valid ? 200 : 400).json(validation);
   } catch (error) {
     res.status(400).json({ valid: false, errors: [error instanceof Error ? error.message : String(error)], warnings: [] });
@@ -766,9 +766,9 @@ router.get('/model-references', (req, res) => {
     return res.status(400).json({ code: 'INVALID_REQUEST', message: 'providerId and modelId must be valid model identifiers.' });
   }
   try {
-    const record = readPilotDeckConfigFile();
+    const record = readG9AgentConfigFile();
     if (record.parseError) {
-      return res.status(400).json({ code: 'INVALID_REQUEST', message: 'pilotdeck.yaml is invalid.' });
+      return res.status(400).json({ code: 'INVALID_REQUEST', message: 'g9agent.yaml is invalid.' });
     }
     return res.json({ providerId, ...(modelId ? { modelId } : {}), references: findModelReferences(record.config, { providerId, modelId }) });
   } catch (error) {
@@ -807,11 +807,11 @@ router.post('/model-removal', async (req, res) => {
   const replacement = (body.replacement ?? '').trim();
   const baseRevision = (body.baseRevision ?? '').trim();
 
-  await withPilotDeckConfigWrite(async () => {
+  await withG9AgentConfigWrite(async () => {
     try {
-      const diskRecord = readPilotDeckConfigFile();
+      const diskRecord = readG9AgentConfigFile();
       if (diskRecord.parseError) {
-        return res.status(400).json({ code: 'INVALID_CONFIG_YAML', message: 'pilotdeck.yaml is invalid. Repair it in the raw YAML editor first.' });
+        return res.status(400).json({ code: 'INVALID_CONFIG_YAML', message: 'g9agent.yaml is invalid. Repair it in the raw YAML editor first.' });
       }
       const revision = configRevision(diskRecord.raw);
       if (baseRevision && baseRevision !== revision) {
@@ -841,15 +841,15 @@ router.post('/model-removal', async (req, res) => {
         return res.status(500).json({ code: 'MODEL_IN_USE', message: 'Removal plan left references behind.', references: dangling.references });
       }
 
-      const saved = await writeRawPilotDeckYaml(plan.config, {
+      const saved = await writeRawG9AgentYaml(plan.config, {
         previousConfig: diskRecord.config,
         expectedRevision: revision,
         onWriteCommitted: suppressNextWatchEvent,
       });
-      const reloadResult = await reloadPilotDeckConfig(saved.config);
+      const reloadResult = await reloadG9AgentConfig(saved.config);
       void notifyGatewayConfigReload();
-      const freshRecord = readPilotDeckConfigFile();
-      const response = serializePilotDeckConfigResponse(freshRecord, reloadResult);
+      const freshRecord = readG9AgentConfigFile();
+      const response = serializeG9AgentConfigResponse(freshRecord, reloadResult);
       broadcastConfigEvent({ source: 'ui-save', ...response, timestamp: new Date().toISOString() });
       return res.json({ ...response, removal: publicRemovalPlan(plan, revision) });
     } catch (error) {
@@ -899,31 +899,31 @@ router.get('/office-preview/status', async (req, res) => {
 });
 
 router.put('/', async (req, res) => {
-  await withPilotDeckConfigWrite(async () => {
+  await withG9AgentConfigWrite(async () => {
     try {
     // Two submission shapes coexist:
     //
     //   • `{ raw: "..." }` from the Raw YAML editor → write the
     //     parsed YAML object to disk verbatim via
-    //     writeRawPilotDeckYaml. This is the only path that preserves
+    //     writeRawG9AgentYaml. This is the only path that preserves
     //     router/gateway/adapters/extension/cron/alwaysOn edits,
     //     because the ui-internal schema doesn't model them.
     //
     //   • `{ config: {...} }` from structured editors (provider
     //     picker, memory editor, onboarding LLM step) → run through
-    //     writePilotDeckConfig, which round-trips through
+    //     writeG9AgentConfig, which round-trips through
     //     ui-internal but read-modify-writes the rest from disk so
     //     non-ui segments aren't dropped.
     //
     // Removing the `config` branch is what got 5ad9f29 reverted;
     // never collapse the two paths into one — they have different
     // semantics and different callers.
-    const diskRecord = readPilotDeckConfigFile();
+    const diskRecord = readG9AgentConfigFile();
     const baseRevision = typeof req.body?.baseRevision === 'string'
       ? req.body.baseRevision.trim()
       : '';
     if (baseRevision) {
-      const currentRevision = serializePilotDeckConfigResponse(diskRecord).revision;
+      const currentRevision = serializeG9AgentConfigResponse(diskRecord).revision;
       if (baseRevision !== currentRevision) {
         return res.status(409).json({
           error: 'Config changed since this settings draft was loaded. Refresh and apply the change again.',
@@ -997,7 +997,7 @@ router.put('/', async (req, res) => {
           references: deletedReference.references,
         });
       }
-      saved = await writeRawPilotDeckYaml(renamed.config, {
+      saved = await writeRawG9AgentYaml(renamed.config, {
         previousConfig: diskRecord.config,
         expectedRevision: configRevision(diskRecord.raw),
         onWriteCommitted: suppressNextWatchEvent,
@@ -1060,7 +1060,7 @@ router.put('/', async (req, res) => {
           references: deletedReference.references,
         });
       }
-      saved = await writePilotDeckConfig(renamed.config, {
+      saved = await writeG9AgentConfig(renamed.config, {
         previousConfig: diskRecord.config,
         expectedRevision: configRevision(diskRecord.raw),
         onWriteCommitted: suppressNextWatchEvent,
@@ -1069,13 +1069,13 @@ router.put('/', async (req, res) => {
       return res.status(400).json({ error: 'raw YAML or config object is required' });
     }
 
-    const reloadResult = await reloadPilotDeckConfig(saved.config);
+    const reloadResult = await reloadG9AgentConfig(saved.config);
     void notifyGatewayConfigReload();
     // Re-read disk so the response's `raw` field comes from the actual
     // (lossless) file rather than the lossy round-trip output, and so
-    // `serializePilotDeckConfigResponse` has a `rawYaml` to render the full view.
-    const freshRecord = readPilotDeckConfigFile();
-    const response = serializePilotDeckConfigResponse(freshRecord, reloadResult);
+    // `serializeG9AgentConfigResponse` has a `rawYaml` to render the full view.
+    const freshRecord = readG9AgentConfigFile();
+    const response = serializeG9AgentConfigResponse(freshRecord, reloadResult);
     broadcastConfigEvent({ source: 'ui-save', ...response, timestamp: new Date().toISOString() });
     res.json(response);
     } catch (error) {
@@ -1099,7 +1099,7 @@ router.put('/', async (req, res) => {
 
 router.post('/reload', async (_req, res) => {
   try {
-    const record = readPilotDeckConfigFile();
+    const record = readG9AgentConfigFile();
     if (record.parseError) {
       return res.status(400).json({
         error: 'Invalid config YAML',
@@ -1112,13 +1112,13 @@ router.post('/reload', async (_req, res) => {
         },
       });
     }
-    const validation = validatePilotDeckConfig(record.config);
+    const validation = validateG9AgentConfig(record.config);
     if (!validation.valid) {
       return res.status(400).json({ error: 'Invalid config', validation });
     }
-    const reloadResult = await reloadPilotDeckConfig(record.config);
+    const reloadResult = await reloadG9AgentConfig(record.config);
     void notifyGatewayConfigReload();
-    const response = serializePilotDeckConfigResponse(record, reloadResult);
+    const response = serializeG9AgentConfigResponse(record, reloadResult);
     broadcastConfigEvent({ source: 'ui-reload', ...response, timestamp: new Date().toISOString() });
     res.json(response);
   } catch (error) {
@@ -1131,7 +1131,7 @@ router.get('/provider', (_req, res) => {
     const environmentCredentialProviderIds = Object.keys(PROVIDER_CATALOG).filter(
       (providerId) => Boolean(resolveConfiguredProviderApiKey(providerId, null)),
     );
-    const record = readPilotDeckConfigFile();
+    const record = readG9AgentConfigFile();
     const providers = record.config?.model?.providers;
     if (!providers || typeof providers !== 'object') {
       return res.json({ exists: false, provider: null, environmentCredentialProviderIds });
@@ -1397,7 +1397,7 @@ router.post('/test-web-search', async (req, res) => {
   let trimmedKey = requestedKey === MASKED_SECRET ? '' : requestedKey;
   if (requestedKey === MASKED_SECRET || maskedTemplate) {
     try {
-      const record = readPilotDeckConfigFile();
+      const record = readG9AgentConfigFile();
       const savedWebSearch = {
         ...getWebSearchProviderConfig(record.config?.tools?.webSearch ?? {}, selectedProvider),
         provider: selectedProvider,
@@ -1585,7 +1585,7 @@ router.post('/test-web-search', async (req, res) => {
 });
 
 router.post('/open', async (_req, res) => {
-  const configPath = getPilotDeckConfigPath();
+  const configPath = getG9AgentConfigPath();
   try {
     try {
       await fsPromises.access(configPath);

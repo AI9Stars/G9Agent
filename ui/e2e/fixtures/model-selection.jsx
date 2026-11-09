@@ -57,7 +57,7 @@ function App() {
       <FileTypeIcon filename="example.ts" className="h-6 w-6" />
       <FileTypeIcon filename="example.png" className="h-6 w-6" />
     </div>
-    {frame ? <div data-testid="response-fixture"><MessageRow message={{ id: 'fixture-answer', type: 'assistant', content: 'Response fixture', timestamp: '2026-09-05T12:58:00Z', model: frame.options.modelSelection.mode === 'auto' ? 'configured' : frame.options.modelSelection.model }} prevMessage={null} provider="pilotdeck" selectedProject={null} createDiff={() => []} /></div> : null}
+    {frame ? <div data-testid="response-fixture"><MessageRow message={{ id: 'fixture-answer', type: 'assistant', content: 'Response fixture', timestamp: '2026-09-05T12:58:00Z', model: frame.options.modelSelection.mode === 'auto' ? 'configured' : frame.options.modelSelection.model }} prevMessage={null} provider="g9agent" selectedProject={null} createDiff={() => []} /></div> : null}
     <Composer {...props} {...model} input={input} isLoading={loading} canAbortSession
       projectKey={projectKey} textareaRef={textareaRef} inputHighlightRef={highlightRef}
       onInputChange={(e) => setInput(e.target.value)} onSubmit={send}
@@ -80,7 +80,7 @@ function CommandApp() {
     canAbortSession: false, tokenBudget: null, sendMessage: () => { setSent((n) => n + 1); return true; },
     onShowSettings: () => setSettingsOpened((n) => n + 1), pendingViewSessionRef, scrollToBottom: noop,
     addMessage: (message) => setMessages((previous) => [...previous, message]), clearMessages: noop, rewindMessages: noop,
-    setIsLoading: noop, setCanAbortSession: noop, setIsAborting: noop, setClaudeStatus: noop, setPilotDeckStatus: noop,
+    setIsLoading: noop, setCanAbortSession: noop, setIsAborting: noop, setClaudeStatus: noop, setG9AgentStatus: noop,
     setIsUserScrolledUp: noop, pendingPermissionRequests: [], setPendingPermissionRequests: noop,
   });
   return <div style={{ maxWidth: 960, margin: '100px auto' }}>

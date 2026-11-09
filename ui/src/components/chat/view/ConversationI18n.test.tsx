@@ -28,7 +28,7 @@ it('switches conversation controls, durations, fallback labels and image descrip
     <ProcessTrace label="Earlier steps" steps={[{ id: 'unnamed-step' }]} defaultExpanded />
     <MessageRow message={{ id: 'images', type: 'user', timestamp: '2026-01-01', content: '', images: [
       { data: image, name: '' }, { data: image, name: 'fixture.png' },
-    ] }} prevMessage={null} selectedProject={null} provider="pilotdeck" createDiff={() => []} />
+    ] }} prevMessage={null} selectedProject={null} provider="g9agent" createDiff={() => []} />
   </I18nextProvider>);
   fireEvent.click(screen.getByRole('button', { name: 'Ran Build app' }));
   const shell = view.container.querySelector('[data-tool-id]');

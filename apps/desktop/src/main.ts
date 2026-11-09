@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import { registerWindowsNotifications, TOAST_ACTIVATOR_CLSID } from './windowsNotifications';
 import { installRendererRecovery } from "./rendererRecovery";
 import { commandEnabled, emptyMenuState, normalizeMenuState, type DesktopCommand } from "./desktopCommands";
@@ -11,7 +12,7 @@ import { RuntimeProcessDiagnostics, runtimeReportArguments } from './runtimeDiag
 import { desktopInstallationRoot, withRuntimeCommandPath } from './runtimeEnvironment';
 import { findFreePort } from './startupNetwork';
 import { waitForPortOrProcessExit } from './runtimeReadiness';
-import { createRuntimeLogWriter, normalizeLogRetentionDays, redactDiagnostic, registerDiagnosticSecrets, setRuntimeLogRetention, type RuntimeLogWriter } from '@pilotdeck/config';
+import { createRuntimeLogWriter, normalizeLogRetentionDays, redactDiagnostic, registerDiagnosticSecrets, setRuntimeLogRetention, migrateLegacyNamespace, type RuntimeLogWriter } from '@g9agent/config';
 import { startupProgress } from './startupPresentation';
 import { exportRuntimeLogs } from './runtimeLogExport';
 import { createDesktopUninstaller } from './desktopUninstall';
@@ -81,11 +82,18 @@ let rendererLog: RuntimeLogWriter | undefined;
 let updateOrigin: string | null = null;
 let desktopTray: ReturnType<typeof createDesktopTray> | null = null;
 
-const APP_ID = "cn.pilotdeck.desktop";
+const APP_ID = "cn.g9agent.desktop";
 const EXTERNAL_NAVIGATION_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
 const PLAYWRIGHT_BROWSER_DIR = "playwright-browsers";
-const DEFAULT_UPDATE_REPOSITORY = "OpenBMB/PilotDeck";
+const DEFAULT_UPDATE_REPOSITORY = "AI9Stars/G9Agent";
 const PROCESS_LAUNCH_CWD = process.cwd();
+migrateLegacyNamespace(process.env);
+// Product labels are localized; filesystem locations always use the ASCII ID.
+if (app.getPath('userData') === path.join(app.getPath('appData'), app.getName())) {
+  migrateLegacyNamespace(process.env, { appData: app.getPath('appData') });
+  app.setPath('userData', path.join(app.getPath('appData'), 'g9agent-desktop'));
+}
+app.setPath('sessionData', app.getPath('userData'));
 // Electron requires this before ready; saving the preference takes effect on
 // the next launch, never by changing a live window's renderer settings.
 const startupHardwareAcceleration = readAppearance().interfacePreferences?.hardwareAcceleration !== false;
@@ -164,8 +172,8 @@ class RuntimeManager {
     // uses the default here; the normal model validation still owns its errors.
     let days = 7;
     try {
-      const home = process.env.PILOT_HOME || path.join(os.homedir(), '.pilotdeck');
-      const file = process.env.PILOTDECK_CONFIG_PATH || path.join(home, 'pilotdeck.yaml');
+      const home = process.env.G9AGENT_HOME || path.join(os.homedir(), '.g9agent');
+      const file = process.env.G9AGENT_CONFIG_PATH || path.join(home, 'g9agent.yaml');
       if (fs.statSync(file).size <= 1024 * 1024) {
         const yaml = require(require.resolve('yaml', { paths: [path.join(this.runtimeRoot, 'ui')] }));
         const config = yaml.parse(fs.readFileSync(file, 'utf8'));
@@ -178,10 +186,10 @@ class RuntimeManager {
     rendererLog ??= createRuntimeLogWriter(path.join(path.dirname(this.logPath), 'renderer.log'), { retentionDays: days });
     publishRuntimeStatus({
       phase: "starting",
-      message: "Preparing PilotDeck runtime...",
+      message: "Preparing G9Agent runtime...",
       logPath: this.logPath,
     });
-    this.log(`PilotDeck Desktop runtime starting from ${this.runtimeRoot}`);
+    this.log(`G9Agent Desktop runtime starting from ${this.runtimeRoot}`);
     publishRuntimeStatus({
       phase: "config",
       message: "Checking local configuration...",
@@ -217,44 +225,44 @@ class RuntimeManager {
     this.log(`Runtime context: ${JSON.stringify({ version: app.getVersion(), commit: buildMetadata.commitSha, platform: process.platform, arch: process.arch, nodeBinary: this.nodeBinary, inheritedNodeOptions: Boolean(process.env.NODE_OPTIONS) })}`);
     this.log(`Playwright browsers path: ${playwrightBrowsersPath}`);
     const inheritedEnv = { ...process.env };
-    const configuredConfigPath = inheritedEnv.PILOTDECK_CONFIG_PATH?.trim();
+    const configuredConfigPath = inheritedEnv.G9AGENT_CONFIG_PATH?.trim();
     if (configuredConfigPath) {
-      inheritedEnv.PILOTDECK_CONFIG_PATH = path.resolve(PROCESS_LAUNCH_CWD, configuredConfigPath);
+      inheritedEnv.G9AGENT_CONFIG_PATH = path.resolve(PROCESS_LAUNCH_CWD, configuredConfigPath);
     } else {
-      delete inheritedEnv.PILOTDECK_CONFIG_PATH;
+      delete inheritedEnv.G9AGENT_CONFIG_PATH;
     }
     const commonEnv = withRuntimeCommandPath({
       ...inheritedEnv,
       HOME: process.env.HOME || os.homedir(),
       HOST: "127.0.0.1",
-      PILOTDECK_RUNTIME_ROOT: this.runtimeRoot,
-      PILOTDECK_PYTHON_ROOT: app.isPackaged
+      G9AGENT_RUNTIME_ROOT: this.runtimeRoot,
+      G9AGENT_PYTHON_ROOT: app.isPackaged
         ? path.join(process.resourcesPath, 'python-runtime')
         : path.join(__dirname, '..', 'resources', 'python-runtime'),
-      PILOTDECK_DESKTOP_RUNTIME_ROOT: this.runtimeRoot,
-      PILOTDECK_DESKTOP_INSTALL_ROOT: app.isPackaged ? desktopInstallationRoot(process.resourcesPath) : this.runtimeRoot,
-      PILOT_HOME: config.pilotHome,
-      PILOTDECK_CONFIG_DIR: config.pilotHome,
+      G9AGENT_DESKTOP_RUNTIME_ROOT: this.runtimeRoot,
+      G9AGENT_DESKTOP_INSTALL_ROOT: app.isPackaged ? desktopInstallationRoot(process.resourcesPath) : this.runtimeRoot,
+      G9AGENT_HOME: config.pilotHome,
+      G9AGENT_CONFIG_DIR: config.pilotHome,
       SERVER_PORT: String(serverPort),
-      PILOTDECK_GATEWAY_PORT: String(gatewayPort),
-      PILOTDECK_GATEWAY_URL: `ws://127.0.0.1:${gatewayPort}/ws`,
-      PILOTDECK_DESKTOP: "1",
-      ...(process.platform === 'win32' ? { PILOTDECK_DOCUMENTS_DIRECTORY: app.getPath('documents') } : {}),
-      PILOTDECK_COMPUTER_USE_DIRECTORY: computerUseDirectory,
-      PILOTDECK_COMPUTER_USE_MCP_CONFIG: path.join(computerUseDirectory, 'mcp.json'),
-      PILOTDECK_DESKTOP_VERSION: app.getVersion(),
-      PILOTDECK_VERSION: app.getVersion(),
-      PILOTDECK_DESKTOP_BUILD_TIME: buildMetadata.buildTime,
-      PILOTDECK_COMMIT_SHA: buildMetadata.commitSha,
-      PILOTDECK_GIT_SHA: buildMetadata.commitSha,
-      PILOTDECK_UPDATE_REPOSITORY:
-        process.env.PILOTDECK_UPDATE_REPOSITORY || buildMetadata.repository || DEFAULT_UPDATE_REPOSITORY,
-      PILOTDECK_DISABLE_LOCAL_AUTH: process.env.PILOTDECK_DISABLE_LOCAL_AUTH || "1",
-      PILOTDECK_SKIP_BROWSER_OPEN: "1",
-      PILOTDECK_SKIP_DEFAULT_PROJECT: "1",
-      PILOTDECK_RUNTIME_SUPERVISED: "1",
-      PILOTDECK_LOG_PATH: this.logPath,
-      PILOTDECK_LOG_CAPTURED: "1",
+      G9AGENT_GATEWAY_PORT: String(gatewayPort),
+      G9AGENT_GATEWAY_URL: `ws://127.0.0.1:${gatewayPort}/ws`,
+      G9AGENT_DESKTOP: "1",
+      ...(process.platform === 'win32' ? { G9AGENT_DOCUMENTS_DIRECTORY: app.getPath('documents') } : {}),
+      G9AGENT_COMPUTER_USE_DIRECTORY: computerUseDirectory,
+      G9AGENT_COMPUTER_USE_MCP_CONFIG: path.join(computerUseDirectory, 'mcp.json'),
+      G9AGENT_DESKTOP_VERSION: app.getVersion(),
+      G9AGENT_VERSION: app.getVersion(),
+      G9AGENT_DESKTOP_BUILD_TIME: buildMetadata.buildTime,
+      G9AGENT_COMMIT_SHA: buildMetadata.commitSha,
+      G9AGENT_GIT_SHA: buildMetadata.commitSha,
+      G9AGENT_UPDATE_REPOSITORY:
+        process.env.G9AGENT_UPDATE_REPOSITORY || buildMetadata.repository || DEFAULT_UPDATE_REPOSITORY,
+      G9AGENT_DISABLE_LOCAL_AUTH: process.env.G9AGENT_DISABLE_LOCAL_AUTH || "1",
+      G9AGENT_SKIP_BROWSER_OPEN: "1",
+      G9AGENT_SKIP_DEFAULT_PROJECT: "1",
+      G9AGENT_RUNTIME_SUPERVISED: "1",
+      G9AGENT_LOG_PATH: this.logPath,
+      G9AGENT_LOG_CAPTURED: "1",
       PLAYWRIGHT_BROWSERS_PATH: playwrightBrowsersPath,
     }, this.runtimeRoot, this.nodeBinary, bundledGit, { packaged: app.isPackaged });
     this.commonEnv = commonEnv;
@@ -297,11 +305,11 @@ class RuntimeManager {
       runtimeRoot: this.runtimeRoot,
       logPath: this.logPath,
     };
-    this.log(`PilotDeck Web UI ready: http://127.0.0.1:${serverPort}`);
+    this.log(`G9Agent Web UI ready: http://127.0.0.1:${serverPort}`);
     if (!this.configurationState || this.configurationState.state !== "ready") {
       publishRuntimeStatus({
         phase: "awaiting_configuration",
-        message: "PilotDeck is ready for model setup.",
+        message: "G9Agent is ready for model setup.",
         logPath: this.logPath,
       });
     }
@@ -339,7 +347,7 @@ class RuntimeManager {
     this.serverProcess = null;
     this.gatewayProcess = null;
     this.gatewayStartPromise = null;
-    this.log("PilotDeck Desktop runtime stopped");
+    this.log("G9Agent Desktop runtime stopped");
     this.logStream?.close();
     this.logStream = null;
     this.info = null;
@@ -351,26 +359,26 @@ class RuntimeManager {
     this.gatewayState = { state: "stopped" };
     publishRuntimeStatus({
       phase: "stopped",
-      message: "PilotDeck runtime stopped.",
+      message: "G9Agent runtime stopped.",
       logPath: this.logPath,
     });
   }
 
   private gatewayCommand(): string[] {
-    const builtEntry = path.join(this.runtimeRoot, "dist", "src", "cli", "pilotdeck.js");
+    const builtEntry = path.join(this.runtimeRoot, "dist", "src", "cli", "g9agent.js");
     if (fs.existsSync(builtEntry)) {
       return [this.nodeBinary, ...runtimeReportArguments(), builtEntry, "server"];
     }
-    if (app.isPackaged || process.env.PILOTDECK_DESKTOP_RUNTIME_ROOT) {
-      throw new Error(`Compiled PilotDeck gateway entry not found: ${builtEntry}`);
+    if (app.isPackaged || process.env.G9AGENT_DESKTOP_RUNTIME_ROOT) {
+      throw new Error(`Compiled G9Agent gateway entry not found: ${builtEntry}`);
     }
-    return [this.nodeBinary, ...runtimeReportArguments(), "--import", "tsx", path.join(this.runtimeRoot, "src", "cli", "pilotdeck.ts"), "server"];
+    return [this.nodeBinary, ...runtimeReportArguments(), "--import", "tsx", path.join(this.runtimeRoot, "src", "cli", "g9agent.ts"), "server"];
   }
 
   private serverCommand(): string[] {
     const entry = fs.existsSync(path.join(this.runtimeRoot, 'ui/server/supervisedBootstrap.js'))
       ? 'server/supervisedBootstrap.js' : 'server/index.js';
-    if (app.isPackaged || process.env.PILOTDECK_DESKTOP_RUNTIME_ROOT) {
+    if (app.isPackaged || process.env.G9AGENT_DESKTOP_RUNTIME_ROOT) {
       return [this.nodeBinary, entry];
     }
     return [this.nodeBinary, "--import", "tsx", entry];
@@ -447,13 +455,13 @@ class RuntimeManager {
       value?: unknown;
       days?: unknown;
     };
-    if (runtimeMessage.type === 'pilotdeck:log-retention') {
+    if (runtimeMessage.type === 'g9agent:log-retention') {
       setRuntimeLogRetention(runtimeMessage.days);
       return;
     }
-    if (runtimeMessage.type === 'pilotdeck:computer-use-request' && typeof runtimeMessage.id === 'string') {
+    if (runtimeMessage.type === 'g9agent:computer-use-request' && typeof runtimeMessage.id === 'string') {
       const reply = (status?: unknown, error?: string) => {
-        if (this.serverProcess?.connected) this.serverProcess.send({ type: 'pilotdeck:computer-use-response', id: runtimeMessage.id, status, error }, () => {});
+        if (this.serverProcess?.connected) this.serverProcess.send({ type: 'g9agent:computer-use-response', id: runtimeMessage.id, status, error }, () => {});
       };
       void (async () => {
         if (this.stopping || !this.computerUse) throw new Error('Computer use host is not ready');
@@ -468,7 +476,7 @@ class RuntimeManager {
       })().then(status => reply(status), error => reply(undefined, String(error.message || error)));
       return;
     }
-    if (runtimeMessage.type === "pilotdeck:configuration-state" && runtimeMessage.configuration) {
+    if (runtimeMessage.type === "g9agent:configuration-state" && runtimeMessage.configuration) {
       this.configurationState = runtimeMessage.configuration;
       if (runtimeMessage.configuration.state === "ready") {
         void this.startGateway().catch(error => this.reportGatewayError(error));
@@ -478,13 +486,13 @@ class RuntimeManager {
           phase: "awaiting_configuration",
           message: runtimeMessage.configuration.state === "invalid"
             ? "Model configuration needs attention."
-            : "PilotDeck is ready for model setup.",
+            : "G9Agent is ready for model setup.",
           logPath: this.logPath,
         });
       }
       return;
     }
-    if (runtimeMessage.type === "pilotdeck:retry-gateway" && this.configurationState?.state === "ready") {
+    if (runtimeMessage.type === "g9agent:retry-gateway" && this.configurationState?.state === "ready") {
       void this.stopGateway().then(() => this.startGateway()).catch(error => this.reportGatewayError(error));
     }
   }
@@ -549,7 +557,7 @@ class RuntimeManager {
       this.setGatewayState({ state: "ready" });
       publishRuntimeStatus({
         phase: "ready",
-        message: "PilotDeck is ready.",
+        message: "G9Agent is ready.",
         logPath: this.logPath,
       });
     } catch (error) {
@@ -613,7 +621,7 @@ class RuntimeManager {
     const server = this.serverProcess;
     if (!server || !server.connected) return;
     server.send({
-      type: "pilotdeck:gateway-state",
+      type: "g9agent:gateway-state",
       ...state,
     }, (error) => {
       if (error) this.log(`Failed to publish Gateway state: ${error.message}`);
@@ -695,7 +703,7 @@ async function createOrShowWindow(): Promise<void> {
     height: 900,
     minWidth: 960,
     minHeight: 640,
-    title: "PilotDeck",
+    title: productName(readAppearance().language),
     ...(icon ? { icon } : {}),
     // Windows and Linux show their application menus in the title-bar overlay.
     autoHideMenuBar: process.platform === "win32" || process.platform === "linux",
@@ -783,7 +791,7 @@ async function createOrShowWindow(): Promise<void> {
 
   // Hashed assets and revalidated HTML already handle software updates.
   // Clearing the entire HTTP cache here made every window start a cold load.
-  startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance()))}`;
+  startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance(), false, readBrandLogo()))}`;
   await mainWindow.loadURL(startupPageUrl);
   if (lastRuntimeStatus) {
     sendRuntimeStatus(lastRuntimeStatus);
@@ -812,7 +820,7 @@ function publishRuntimeStatus(status: RuntimeStatus): void {
 
 function sendRuntimeStatus(status: RuntimeStatus): void {
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  mainWindow.webContents.send("pilotdeck:runtime-status", status);
+  mainWindow.webContents.send("g9agent:runtime-status", status);
 }
 
 function shouldOpenInSystemBrowser(rawUrl: string): boolean {
@@ -860,7 +868,7 @@ async function startRuntimeAndLoad(): Promise<void> {
       : new RuntimeProcessDiagnostics("desktop", runtime?.getLogPath() || path.join(app.getPath("logs"), "runtime.log")).failure(error instanceof Error ? error.stack ?? error.message : String(error));
     publishRuntimeStatus({
       phase: "error",
-      message: "PilotDeck failed to start.",
+      message: "G9Agent failed to start.",
       logPath: runtime?.getLogPath(),
       error: detail,
     });
@@ -879,11 +887,11 @@ async function retryRuntime(): Promise<void> {
   const currentRuntime = runtime;
   await stopRuntime();
   if (isQuitting) return;
-  publishRuntimeStatus({ phase: 'starting', message: 'Preparing PilotDeck runtime...', logPath: currentRuntime?.getLogPath() });
+  publishRuntimeStatus({ phase: 'starting', message: 'Preparing G9Agent runtime...', logPath: currentRuntime?.getLogPath() });
   if (!mainWindow || mainWindow.isDestroyed()) {
     await createOrShowWindow();
   } else {
-    startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance()))}`;
+    startupPageUrl = `data:text/html;charset=utf-8,${encodeURIComponent(renderLoadingHtml(readAppearance(), false, readBrandLogo()))}`;
     await mainWindow.loadURL(startupPageUrl);
   }
   await startRuntimeAndLoad();
@@ -891,8 +899,8 @@ async function retryRuntime(): Promise<void> {
 
 
 function resolveRuntimeRoot(): string {
-  if (process.env.PILOTDECK_DESKTOP_RUNTIME_ROOT) {
-    return path.resolve(process.env.PILOTDECK_DESKTOP_RUNTIME_ROOT);
+  if (process.env.G9AGENT_DESKTOP_RUNTIME_ROOT) {
+    return path.resolve(process.env.G9AGENT_DESKTOP_RUNTIME_ROOT);
   }
   if (app.isPackaged) {
     return path.join(process.resourcesPath, "runtime");
@@ -901,8 +909,8 @@ function resolveRuntimeRoot(): string {
 }
 
 function resolveNodeBinary(): string {
-  if (process.env.PILOTDECK_DESKTOP_NODE) {
-    return process.env.PILOTDECK_DESKTOP_NODE;
+  if (process.env.G9AGENT_DESKTOP_NODE) {
+    return process.env.G9AGENT_DESKTOP_NODE;
   }
   if (!app.isPackaged) {
     return process.platform === "win32" ? "node.exe" : "node";
@@ -922,8 +930,8 @@ function resolveBundledGitPaths(): BundledGitPaths | undefined {
     return undefined;
   }
 
-  const configuredRoot = process.env.PILOTDECK_DESKTOP_GIT_ROOT
-    ? path.resolve(process.env.PILOTDECK_DESKTOP_GIT_ROOT)
+  const configuredRoot = process.env.G9AGENT_DESKTOP_GIT_ROOT
+    ? path.resolve(process.env.G9AGENT_DESKTOP_GIT_ROOT)
     : undefined;
   const root = configuredRoot
     ?? (app.isPackaged
@@ -995,11 +1003,11 @@ function readBuildMetadata(): BuildMetadata {
 }
 
 function ensurePilotHome(log: (message: string) => void): { pilotHome: string } {
-  const pilotHome = process.env.PILOT_HOME
-    ? path.resolve(process.env.PILOT_HOME)
-    : path.join(os.homedir(), ".pilotdeck");
+  const pilotHome = process.env.G9AGENT_HOME
+    ? path.resolve(process.env.G9AGENT_HOME)
+    : path.join(os.homedir(), ".g9agent");
   fs.mkdirSync(pilotHome, { recursive: true });
-  log(`PilotDeck home ready at ${pilotHome}`);
+  log(`G9Agent home ready at ${pilotHome}`);
   return { pilotHome };
 }
 
@@ -1014,7 +1022,7 @@ function getUpdateController() {
   // Node bundled with Electron supports require(ESM). Reuse the same release
   // discovery module as Web, from the packaged runtime outside app.asar.
   const releases = require(path.join(resolveRuntimeRoot(), "ui/server/services/releaseService.js"));
-  const repository = releases.normalizeRepository(process.env.PILOTDECK_UPDATE_REPOSITORY || readBuildMetadata().repository || DEFAULT_UPDATE_REPOSITORY);
+  const repository = releases.normalizeRepository(process.env.G9AGENT_UPDATE_REPOSITORY || readBuildMetadata().repository || DEFAULT_UPDATE_REPOSITORY);
   const linuxPackageType = process.platform === "linux" && app.isPackaged
     ? fs.readFileSync(path.join(process.resourcesPath, "package-type"), "utf8").trim() : "deb";
   const updater = process.platform === "darwin" ? new MacUpdater()
@@ -1024,24 +1032,15 @@ function getUpdateController() {
   // executable's actual installed directory so custom paths survive upgrades.
   if (updater instanceof NsisUpdater && app.isPackaged) updater.installDirectory = path.dirname(app.getPath("exe"));
   const network = createUpdateNetwork(updater.netSession, () => {
-    const configService = require(path.join(resolveRuntimeRoot(), "ui/server/services/pilotdeckConfig.js"));
-    const record = configService.readPilotDeckConfigFile();
-    if (record.parseError) throw new Error("Invalid PilotDeck proxy configuration");
+    const configService = require(path.join(resolveRuntimeRoot(), "ui/server/services/g9agentConfig.js"));
+    const record = configService.readG9AgentConfigFile();
+    if (record.parseError) throw new Error("Invalid G9Agent proxy configuration");
     return record.config.proxy;
   });
   updater.on("login", network.login);
   const downloadControl = installUpdateDownloadControl(updater);
   const { createDesktopReleaseService } = require(path.join(resolveRuntimeRoot(), "ui/server/services/desktopReleaseService.js"));
-  const routeCache = path.join(app.getPath("userData"), "update-route.json");
-  const releaseService = createDesktopReleaseService({ repository, currentVersion: app.getVersion(), fetchImpl: network.fetch, probe: network.probe, checkDownload: network.checkDownload,
-    routeStore: {
-      read: () => JSON.parse(fs.readFileSync(routeCache, "utf8")),
-      write: (record: unknown) => {
-        fs.writeFileSync(`${routeCache}.tmp`, JSON.stringify(record), "utf8");
-        fs.renameSync(`${routeCache}.tmp`, routeCache);
-      },
-    },
-  });
+  const releaseService = createDesktopReleaseService({ repository, fetchImpl: network.fetch, checkDownload: network.checkDownload });
   updateController = createUpdateController({
     updater, downloadControl, repository, platform: process.platform, arch: process.arch,
     version: app.getVersion(), packaged: app.isPackaged, linuxPackageType,
@@ -1049,8 +1048,6 @@ function getUpdateController() {
     latestRelease: releaseService.latestRelease,
     downloadBases: releaseService.downloadBases,
     downloadAvailable: releaseService.downloadAvailable,
-    downloadSucceeded: releaseService.downloadSucceeded,
-    downloadFailed: releaseService.downloadFailed,
     compareVersions: releases.compareVersions,
     prepareToInstall: async () => {
       isQuitting = true;
@@ -1084,16 +1081,16 @@ const notifications = createDesktopNotifications({
   setOverlay: (bitmap, label) => mainWindow?.setOverlayIcon(bitmap ? nativeImage.createFromBitmap(bitmap, { width: 32, height: 32 }) : null, label),
   navigate: async data => {
     await restoreMainWindow();
-    mainWindow?.webContents.send('pilotdeck:notification-navigate', data);
+    mainWindow?.webContents.send('g9agent:notification-navigate', data);
   },
   report: error => console.warn('Desktop notification:', error),
 });
-ipcMain.handle('pilotdeck:notification-status', event => { requireUpdateSender(event); return notifications.status(); });
-ipcMain.handle('pilotdeck:notification-preferences', (event, value) => { requireUpdateSender(event); return notifications.preferences(value); });
-ipcMain.handle('pilotdeck:notification-show', (event, value) => { requireUpdateSender(event); return notifications.show(value); });
-ipcMain.handle('pilotdeck:notification-reminder', (event, value) => { requireUpdateSender(event); return notifications.record(value); });
-ipcMain.handle('pilotdeck:notification-scope', (event, value) => { requireUpdateSender(event); notifications.setScope(value); });
-ipcMain.handle('pilotdeck:notification-settings', async event => {
+ipcMain.handle('g9agent:notification-status', event => { requireUpdateSender(event); return notifications.status(); });
+ipcMain.handle('g9agent:notification-preferences', (event, value) => { requireUpdateSender(event); return notifications.preferences(value); });
+ipcMain.handle('g9agent:notification-show', (event, value) => { requireUpdateSender(event); return notifications.show(value); });
+ipcMain.handle('g9agent:notification-reminder', (event, value) => { requireUpdateSender(event); return notifications.record(value); });
+ipcMain.handle('g9agent:notification-scope', (event, value) => { requireUpdateSender(event); notifications.setScope(value); });
+ipcMain.handle('g9agent:notification-settings', async event => {
   requireUpdateSender(event);
   if (process.platform === 'darwin') {
     try { await shell.openExternal(`x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=${APP_ID}`); }
@@ -1112,15 +1109,22 @@ ipcMain.handle('pilotdeck:notification-settings', async event => {
   return false;
 });
 for (const [channel, action] of Object.entries({
-  "pilotdeck:about-info": () => desktopAboutInfo(desktopAboutContext()),
-  "pilotdeck:update-check": () => getUpdateController().check(),
-  "pilotdeck:update-status": () => getUpdateController().status(),
-  "pilotdeck:update-start": () => getUpdateController().start(),
-  "pilotdeck:update-cancel": () => getUpdateController().cancel(),
-  "pilotdeck:update-pause": () => getUpdateController().pause(),
-  "pilotdeck:update-resume": () => getUpdateController().resume(),
+  "g9agent:about-info": () => desktopAboutInfo(desktopAboutContext()),
+  "g9agent:update-check": () => getUpdateController().check(),
+  "g9agent:update-status": () => getUpdateController().status(),
+  "g9agent:update-start": () => getUpdateController().start(),
+  "g9agent:update-cancel": () => getUpdateController().cancel(),
+  "g9agent:update-pause": () => getUpdateController().pause(),
+  "g9agent:update-resume": () => getUpdateController().resume(),
 })) {
   ipcMain.handle(channel, (event) => { requireUpdateSender(event); return action(); });
+}
+
+function readBrandLogo(): string {
+  const logoPath = app.isPackaged
+    ? path.join(process.resourcesPath, "icons", "icon.png")
+    : path.join(__dirname, "..", "resources", "icons", "icon.png");
+  return fs.readFileSync(logoPath).toString("base64");
 }
 
 function readAppearance(): DesktopAppearance {
@@ -1130,7 +1134,7 @@ function readAppearance(): DesktopAppearance {
   } catch { return normalizeAppearance(null, locale); }
 }
 
-ipcMain.on("pilotdeck:get-appearance", (event) => {
+ipcMain.on("g9agent:get-appearance", (event) => {
   try {
     requireUpdateSender(event);
     event.returnValue = readAppearance();
@@ -1147,7 +1151,7 @@ function dispatchDesktopCommand(command: DesktopCommand): void {
   }
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.focus();
-  mainWindow.webContents.send("pilotdeck:command", command);
+  mainWindow.webContents.send("g9agent:command", command);
 }
 
 function desktopAboutContext() {
@@ -1173,8 +1177,8 @@ function desktopMenuTemplate() {
           if (mainWindow && !mainWindow.isDestroyed()) void showDesktopAbout(mainWindow).catch(error => console.error("Desktop about dialog failed", error));
         } else {
           const operation = action === "docs"
-            ? shell.openExternal("https://pilotdeck.openbmb.cn/pilotdeck.github.io/docs/introduction")
-            : action === "issues" ? shell.openExternal("https://github.com/OpenBMB/PilotDeck/issues")
+            ? shell.openExternal("https://github.com/AI9Stars/G9Agent")
+            : action === "issues" ? shell.openExternal("https://github.com/AI9Stars/G9Agent/issues")
               : shell.openPath(runtime?.getLogPath() || app.getPath("logs"));
           void operation.catch(error => console.error("Desktop help action failed", error));
         }
@@ -1186,7 +1190,7 @@ function updateApplicationMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate(desktopMenuTemplate()));
   if ((process.platform === "win32" || process.platform === "linux") && mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.setMenuBarVisibility(false);
-    if (process.platform === "linux") mainWindow.webContents.send("pilotdeck:application-menu-updated");
+    if (process.platform === "linux") mainWindow.webContents.send("g9agent:application-menu-updated");
   }
 }
 
@@ -1200,7 +1204,7 @@ function publishWindowState(): void {
   if ((process.platform === "win32" || process.platform === "linux") && !fullscreen) mainWindow.setTitleBarOverlay({
     color: palette.caption, symbolColor: palette.symbol, height: WINDOWS_CAPTION_HEIGHT,
   });
-  mainWindow.webContents.send("pilotdeck:window-state", { dark, fullscreen, palette });
+  mainWindow.webContents.send("g9agent:window-state", { dark, fullscreen, palette });
 }
 
 // Caption controls are also available in our startup data document, before the
@@ -1213,14 +1217,14 @@ function requireCaptionSender(event: Electron.IpcMainEvent | Electron.IpcMainInv
   if (url.protocol !== "data:" && (!updateOrigin || url.origin !== updateOrigin)) throw new Error("Invalid caption origin");
 }
 
-ipcMain.on("pilotdeck:get-window-state", event => {
+ipcMain.on("g9agent:get-window-state", event => {
   try {
     requireCaptionSender(event);
     const dark = nativeTheme.shouldUseDarkColors;
     event.returnValue = { dark, fullscreen: mainWindow!.isFullScreen(), palette: windowPalette(dark, process.platform, readAppearance().lightAppearance) };
   } catch { event.returnValue = { dark: false, fullscreen: false }; }
 });
-ipcMain.handle("pilotdeck:menu-state", (event, state: unknown) => {
+ipcMain.handle("g9agent:menu-state", (event, state: unknown) => {
   requireUpdateSender(event);
   const next = normalizeMenuState(state);
   if (JSON.stringify(next) === JSON.stringify(desktopMenuState)) return;
@@ -1228,7 +1232,7 @@ ipcMain.handle("pilotdeck:menu-state", (event, state: unknown) => {
   updateApplicationMenu();
 });
 const captionMenus = new WeakMap<BrowserWindow, WindowsCaptionMenu>();
-ipcMain.handle("pilotdeck:show-menu", (event, request?: CaptionMenuRequest) => {
+ipcMain.handle("g9agent:show-menu", (event, request?: CaptionMenuRequest) => {
   requireCaptionSender(event);
   if (process.platform !== "win32" && process.platform !== "linux") return;
   const owner = mainWindow!;
@@ -1241,7 +1245,7 @@ ipcMain.handle("pilotdeck:show-menu", (event, request?: CaptionMenuRequest) => {
 });
 nativeTheme.on("updated", publishWindowState);
 
-ipcMain.handle("pilotdeck:set-appearance", (event, value: unknown) => {
+ipcMain.handle("g9agent:set-appearance", (event, value: unknown) => {
   requireUpdateSender(event);
   const current = readAppearance();
   const appearance = saveAppearancePatch(app.getPath('userData'), current, value, app.getLocale());
@@ -1249,32 +1253,33 @@ ipcMain.handle("pilotdeck:set-appearance", (event, value: unknown) => {
   const paletteChanged = JSON.stringify(windowPalette(nativeTheme.shouldUseDarkColors, process.platform, current.lightAppearance)) !== JSON.stringify(windowPalette(nativeTheme.shouldUseDarkColors, process.platform, appearance.lightAppearance));
   if (paletteChanged || current.themeMode !== appearance.themeMode) publishWindowState();
   if (current.language !== appearance.language) {
+    mainWindow?.setTitle(productName(appearance.language));
     updateApplicationMenu();
     desktopTray?.refreshMenu();
   }
 });
-ipcMain.handle('pilotdeck:appearance-capabilities', event => {
+ipcMain.handle('g9agent:appearance-capabilities', event => {
   requireUpdateSender(event);
   return { hardwareAcceleration: startupHardwareAcceleration };
 });
-ipcMain.handle('pilotdeck:save-appearance-image', (event, bytes: unknown) => {
+ipcMain.handle('g9agent:save-appearance-image', (event, bytes: unknown) => {
   requireUpdateSender(event);
   return writeAppearanceImage(app.getPath('userData'), bytes, buffer => nativeImage.createFromBuffer(buffer).getSize());
 });
-ipcMain.handle('pilotdeck:read-appearance-image', async (event, id: unknown) => {
+ipcMain.handle('g9agent:read-appearance-image', async (event, id: unknown) => {
   requireUpdateSender(event);
   const file = appearanceImagePath(app.getPath('userData'), id);
   if ((await fs.promises.stat(file)).size > 10 * 1024 * 1024) throw new Error('Invalid background image');
   return new Uint8Array(await fs.promises.readFile(file));
 });
-ipcMain.handle('pilotdeck:delete-appearance-image', (event, id: unknown) => {
+ipcMain.handle('g9agent:delete-appearance-image', (event, id: unknown) => {
   requireUpdateSender(event);
   // Never remove an image referenced by the last successfully saved configuration.
   if (readAppearance().lightAppearance?.background.imageId === id) return;
   fs.rmSync(appearanceImagePath(app.getPath('userData'), id), { force: true });
 });
 
-ipcMain.handle("pilotdeck:get-runtime-info", () => runtime?.getInfo());
+ipcMain.handle("g9agent:get-runtime-info", () => runtime?.getInfo());
 const uninstallDataHelper = require(app.isPackaged ? path.join(process.resourcesPath, 'uninstall-data.cjs') : path.join(__dirname, '../resources/uninstall-data.cjs'));
 const desktopUninstaller = createDesktopUninstaller({
   platform: process.platform, packaged: app.isPackaged, chinese: () => readAppearance().language === 'zh-CN', exists: fs.existsSync,
@@ -1283,40 +1288,40 @@ const desktopUninstaller = createDesktopUninstaller({
   stop: async () => { isQuitting = true; await stopRuntime(); },
   restore: async () => { isQuitting = false; await startRuntimeAndLoad(); },
   cleanup: () => {
-    return uninstallDataHelper.cleanupPersonalData({ profile: os.homedir(), appData: app.getPath('appData'), localAppData: process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache'), pilotHome: process.env.PILOT_HOME });
+    return uninstallDataHelper.cleanupPersonalData({ profile: os.homedir(), appData: app.getPath('appData'), localAppData: process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache'), pilotHome: process.env.G9AGENT_HOME });
   },
-  notify: async message => { await dialog.showMessageBox({ type: 'info', title: 'PilotDeck', message }); },
+  notify: async message => { await dialog.showMessageBox({ type: 'info', title: productName(readAppearance().language), message }); },
   quit: () => { isQuitting = true; app.exit(0); },
 });
-ipcMain.handle('pilotdeck:uninstall-status', event => { requireUpdateSender(event); return { supported: desktopUninstaller.supported() }; });
-ipcMain.handle('pilotdeck:uninstall', event => { requireUpdateSender(event); return desktopUninstaller.start(); });
-ipcMain.on('pilotdeck:get-runtime-status', (event) => { event.returnValue = lastRuntimeStatus; });
-ipcMain.handle('pilotdeck:save-runtime-logs', async event => {
+ipcMain.handle('g9agent:uninstall-status', event => { requireUpdateSender(event); return { supported: desktopUninstaller.supported() }; });
+ipcMain.handle('g9agent:uninstall', event => { requireUpdateSender(event); return desktopUninstaller.start(); });
+ipcMain.on('g9agent:get-runtime-status', (event) => { event.returnValue = lastRuntimeStatus; });
+ipcMain.handle('g9agent:save-runtime-logs', async event => {
   if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== event.sender.mainFrame) throw new Error('Invalid log export sender');
   if (event.senderFrame.url !== startupPageUrl) requireUpdateSender(event);
   const logPath = runtime?.getLogPath() ?? lastRuntimeStatus?.logPath;
   if (!logPath) throw new Error('No runtime logs available');
   const result = await dialog.showSaveDialog(mainWindow, {
     title: readAppearance().language === 'zh-CN' ? '下载运行日志' : 'Download runtime logs',
-    defaultPath: path.join(app.getPath('downloads'), `PilotDeck-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.log`),
+    defaultPath: path.join(app.getPath('downloads'), `G9Agent-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.log`),
     filters: [{ name: readAppearance().language === 'zh-CN' ? '运行日志' : 'Runtime logs', extensions: ['log'] }],
   });
   if (result.canceled || !result.filePath) return { canceled: true };
   await exportRuntimeLogs(logPath, result.filePath);
   return { canceled: false };
 });
-ipcMain.handle("pilotdeck:retry-runtime", () => retryRuntime());
-ipcMain.handle("pilotdeck:open-runtime-log", async () => {
+ipcMain.handle("g9agent:retry-runtime", () => retryRuntime());
+ipcMain.handle("g9agent:open-runtime-log", async () => {
   const logPath = runtime?.getLogPath() ?? lastRuntimeStatus?.logPath;
   if (logPath) {
     await shell.openPath(logPath);
   }
 });
-ipcMain.handle('pilotdeck:open-directory', (event, directory: unknown) => {
+ipcMain.handle('g9agent:open-directory', (event, directory: unknown) => {
   requireUpdateSender(event);
   return openDesktopDirectory(directory, folder => shell.openPath(folder));
 });
-ipcMain.handle("pilotdeck:pick-folder", async () => {
+ipcMain.handle("g9agent:pick-folder", async () => {
   const owner = BrowserWindow.getFocusedWindow() ?? mainWindow ?? undefined;
   const result = owner
     ? await dialog.showOpenDialog(owner, { properties: ["openDirectory", "createDirectory"] })
@@ -1329,7 +1334,7 @@ const pickFiles = createFilePicker({
   chinese: () => readAppearance().language === 'zh-CN',
   showDialog: (owner, options) => dialog.showOpenDialog(owner, options),
 });
-ipcMain.handle('pilotdeck:pick-files', (event, request: unknown) => {
+ipcMain.handle('g9agent:pick-files', (event, request: unknown) => {
   requireUpdateSender(event);
   return pickFiles(mainWindow!, request);
 });
@@ -1357,8 +1362,8 @@ const lifecycle = createDesktopLifecycle({
   showDialog: (owner, options) => dialog.showMessageBox(owner, options),
   stopRuntime,
   quit: () => app.quit(),
-  reportError: error => console.error("PilotDeck lifecycle operation failed", error),
-  reportStopError: error => dialog.showErrorBox(startupText("PilotDeck could not stop", readAppearance().language), String(error)),
+  reportError: error => console.error("G9Agent lifecycle operation failed", error),
+  reportStopError: error => dialog.showErrorBox(startupText("G9Agent could not stop", readAppearance().language), String(error)),
 });
 
 const ownsInstance = process.platform === "darwin" || app.requestSingleInstanceLock();
@@ -1366,7 +1371,7 @@ if (!ownsInstance) {
   app.quit();
 } else {
   app.on("second-instance", (_event, argv) => {
-    void restoreMainWindow().then(() => argv.includes('--uninstall') ? desktopUninstaller.start() : undefined).catch(error => console.error("Could not restore PilotDeck", error));
+    void restoreMainWindow().then(() => argv.includes('--uninstall') ? desktopUninstaller.start() : undefined).catch(error => console.error("Could not restore G9Agent", error));
   });
   app.whenReady()
     .then(async () => {
@@ -1382,15 +1387,15 @@ if (!ownsInstance) {
                 ? path.join(process.resourcesPath, "icons", "trayTemplate.png")
                 : path.resolve(__dirname, "..", "resources", "icons", "trayTemplate.png");
               const image = nativeImage.createFromPath(iconPath);
-              if (image.isEmpty()) throw new Error("PilotDeck menu bar icon is missing");
+              if (image.isEmpty()) throw new Error("G9Agent menu bar icon is missing");
               image.setTemplateImage(true);
               return new Tray(image);
             }
             const iconPath = resolveAppIcon();
-            if (!iconPath) throw new Error("PilotDeck tray icon is missing");
+            if (!iconPath) throw new Error("G9Agent tray icon is missing");
             if (process.platform === "linux") {
               const image = nativeImage.createFromPath(iconPath).resize({ width: 24, height: 24 });
-              if (image.isEmpty()) throw new Error("PilotDeck tray icon is invalid");
+              if (image.isEmpty()) throw new Error("G9Agent tray icon is invalid");
               return new Tray(image);
             }
             return new Tray(iconPath);
@@ -1413,7 +1418,7 @@ if (!ownsInstance) {
           isChinese: () => readAppearance().language === "zh-CN",
           open: lifecycle.open,
           requestQuit: lifecycle.requestQuit,
-          reportError: error => console.error("PilotDeck tray operation failed", error),
+          reportError: error => console.error("G9Agent tray operation failed", error),
         });
       }
       if (process.platform === "darwin") {
@@ -1428,7 +1433,7 @@ if (!ownsInstance) {
     .then(async () => {
       if (process.platform === 'linux' && process.argv.includes('--uninstall')) {
         try { await desktopUninstaller.start(); }
-        catch (error) { dialog.showErrorBox('PilotDeck', String(error)); }
+        catch (error) { dialog.showErrorBox('G9Agent', String(error)); }
         if (!isQuitting) app.exit(0);
       } else await startRuntimeAndLoad();
     })
@@ -1437,7 +1442,7 @@ if (!ownsInstance) {
       await runtime?.stop().catch(() => undefined);
       publishRuntimeStatus({
         phase: "error",
-        message: "PilotDeck failed to start.",
+        message: "G9Agent failed to start.",
         logPath: runtime?.getLogPath(),
         error: detail,
       });

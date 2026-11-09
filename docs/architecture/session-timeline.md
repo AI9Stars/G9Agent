@@ -248,7 +248,7 @@ permanent empty tail after short or interrupted replies.
   installing Playwright Chromium; the suite also checks reading-position retention.
 - `ui/e2e/chat-media-scroll.spec.mjs`: delayed image/video decoding and repeated
   wheel direction changes through virtualized media history. The same tests run
-  in an isolated Electron renderer with `PILOTDECK_SCROLL_ELECTRON=1` and
+  in an isolated Electron renderer with `G9AGENT_SCROLL_ELECTRON=1` and
   `pnpm --dir ui exec playwright test -c e2e/streaming-scroll.config.mjs chat-media-scroll.spec.mjs`
   after installing desktop dependencies. This renderer fixture does not start
   application services or use a real account/profile.

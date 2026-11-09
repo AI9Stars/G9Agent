@@ -1,6 +1,6 @@
-import type { PilotDeckHookEvent } from "./events.js";
+import type { G9AgentHookEvent } from "./events.js";
 
-export type PilotDeckHookCommand =
+export type G9AgentHookCommand =
   | {
       type: "command";
       command: string;
@@ -47,12 +47,12 @@ export type PilotDeckHookCommand =
       statusMessage?: string;
     };
 
-export type PilotDeckHookMatcher = {
+export type G9AgentHookMatcher = {
   matcher?: string;
-  hooks: PilotDeckHookCommand[];
+  hooks: G9AgentHookCommand[];
   pluginName?: string;
   pluginId?: string;
   pluginRoot?: string;
 };
 
-export type PilotDeckHooksSettings = Partial<Record<PilotDeckHookEvent, PilotDeckHookMatcher[]>>;
+export type G9AgentHooksSettings = Partial<Record<G9AgentHookEvent, G9AgentHookMatcher[]>>;

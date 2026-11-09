@@ -1,7 +1,7 @@
 import type { PermissionDecision, PermissionDecisionReason, PermissionMode } from "../../permission/index.js";
-import type { PilotDeckToolErrorCode } from "../protocol/errors.js";
+import type { G9AgentToolErrorCode } from "../protocol/errors.js";
 
-export type PilotDeckPermissionAuditRecord = {
+export type G9AgentPermissionAuditRecord = {
   type: "permission";
   sessionId: string;
   turnId: string;
@@ -13,20 +13,20 @@ export type PilotDeckPermissionAuditRecord = {
   createdAt: string;
 };
 
-export type PilotDeckToolAuditRecord = {
+export type G9AgentToolAuditRecord = {
   type: "tool";
   sessionId: string;
   turnId: string;
   toolCallId: string;
   toolName: string;
   status: "success" | "error";
-  errorCode?: PilotDeckToolErrorCode;
+  errorCode?: G9AgentToolErrorCode;
   startedAt: string;
   completedAt: string;
   durationMs: number;
 };
 
-export type PilotDeckToolAuditRecorder = {
-  recordPermission(record: PilotDeckPermissionAuditRecord): void | Promise<void>;
-  recordTool(record: PilotDeckToolAuditRecord): void | Promise<void>;
+export type G9AgentToolAuditRecorder = {
+  recordPermission(record: G9AgentPermissionAuditRecord): void | Promise<void>;
+  recordTool(record: G9AgentToolAuditRecord): void | Promise<void>;
 };

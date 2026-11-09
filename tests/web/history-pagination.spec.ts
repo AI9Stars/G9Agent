@@ -7,8 +7,8 @@ import { createAgentProjectSessionStorage } from '../../src/session/storage/Proj
 import { readWebSessionMessages } from '../../src/web/server/readSessionMessages.js';
 
 test('backward history pages retain complete turns, stable order and repeated prompts during appends', async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), 'pilotdeck-page-project-'));
-  const pilotHome = await mkdtemp(join(tmpdir(), 'pilotdeck-page-home-'));
+  const projectRoot = await mkdtemp(join(tmpdir(), 'g9agent-page-project-'));
+  const pilotHome = await mkdtemp(join(tmpdir(), 'g9agent-page-home-'));
   try {
     const sessionKey = 'web:pagination';
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });
@@ -68,8 +68,8 @@ test('backward history pages retain complete turns, stable order and repeated pr
 });
 
 test('backward pages keep mid-turn guidance with the initial request and authoritative timing', async () => {
-  const projectRoot = await mkdtemp(join(tmpdir(), 'pilotdeck-steer-page-project-'));
-  const pilotHome = await mkdtemp(join(tmpdir(), 'pilotdeck-steer-page-home-'));
+  const projectRoot = await mkdtemp(join(tmpdir(), 'g9agent-steer-page-project-'));
+  const pilotHome = await mkdtemp(join(tmpdir(), 'g9agent-steer-page-home-'));
   try {
     const sessionKey = 'web:steer-pagination';
     const storage = createAgentProjectSessionStorage({ projectRoot, pilotHome, sessionId: sessionKey });

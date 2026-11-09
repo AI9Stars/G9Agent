@@ -8,8 +8,8 @@ import { createCollisionResistantProjectId, createProjectId } from "../../src/pi
 import { describeWebProject, listWebProjects } from "../../src/web/server/listProjects.js";
 
 test("project summaries expose registration creation time for list and describe", async () => {
-  const root = await mkdtemp(join(tmpdir(), "pilotdeck-created-at-"));
-  const pilotHome = join(root, ".pilotdeck");
+  const root = await mkdtemp(join(tmpdir(), "g9agent-created-at-"));
+  const pilotHome = join(root, ".g9agent");
   const projectRoot = join(root, "workspace");
   const projectId = createProjectId(projectRoot);
   const storageDir = join(pilotHome, "projects", projectId);
@@ -26,8 +26,8 @@ test("project summaries expose registration creation time for list and describe"
 });
 
 test("describe resolves the marked project when legacy ids collide", async () => {
-  const root = await mkdtemp(join(tmpdir(), "pilotdeck-created-at-collision-"));
-  const pilotHome = join(root, ".pilotdeck");
+  const root = await mkdtemp(join(tmpdir(), "g9agent-created-at-collision-"));
+  const pilotHome = join(root, ".g9agent");
   const firstProjectRoot = join(root, "a-b");
   const secondProjectRoot = join(root, "a b");
   const legacyId = createProjectId(firstProjectRoot);

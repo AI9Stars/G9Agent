@@ -6,9 +6,9 @@ import test from 'node:test';
 import { normalizeLinuxX64Artifact } from './normalize-linux-x64-artifact.mjs';
 
 test('Linux x64 package and updater feed publish the same x64 filename', () => {
-  const directory = mkdtempSync(join(tmpdir(), 'pilotdeck-linux-'));
-  const oldName = 'PilotDeck-2026.929.0-linux-amd64.deb';
-  const newName = 'PilotDeck-2026.929.0-linux-x64.deb';
+  const directory = mkdtempSync(join(tmpdir(), 'g9agent-linux-'));
+  const oldName = 'G9Agent-2026.929.0-linux-amd64.deb';
+  const newName = 'G9Agent-2026.929.0-linux-x64.deb';
   try {
     writeFileSync(join(directory, oldName), 'package');
     writeFileSync(join(directory, 'latest-linux.yml'), `path: ${oldName}\nfiles:\n  - url: ${oldName}\n`);

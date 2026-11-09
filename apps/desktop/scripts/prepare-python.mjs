@@ -31,7 +31,7 @@ function removeOwned(root, target) {
 export function pythonBuildIdentity(target, lock) {
   return createHash('sha256').update(JSON.stringify({ layout: 1, python: pythonPin.pythonVersion, uv: pythonPin.uvVersion, target, packages })).update(lock).digest('hex');
 }
-export async function preparePython({ platform = process.platform, arch = process.env.PILOTDECK_DESKTOP_NODE_ARCH || process.arch,
+export async function preparePython({ platform = process.platform, arch = process.env.G9AGENT_DESKTOP_NODE_ARCH || process.arch,
   destination = join(desktop, 'resources/python-runtime'), env = process.env, bootstrapOnly = false } = {}) {
   const target = selectPythonTarget(platform, arch);
   if (platform !== process.platform || arch !== process.arch) throw new Error('Build bundled Python on a matching native host');
@@ -54,10 +54,10 @@ export async function preparePython({ platform = process.platform, arch = proces
     const stage = join(temp, 'stage'); mkdirSync(stage);
     for (const kind of ['python', 'uv']) {
       const asset = target[kind];
-      const local = env[`PILOTDECK_${kind.toUpperCase()}_ARCHIVE`];
+      const local = env[`G9AGENT_${kind.toUpperCase()}_ARCHIVE`];
       const archive = local ? resolve(local) : join(temp, asset.name);
       if (!local) {
-        const base = env[`PILOTDECK_${kind.toUpperCase()}_BASE_URL`] || (kind === 'python'
+        const base = env[`G9AGENT_${kind.toUpperCase()}_BASE_URL`] || (kind === 'python'
           ? `https://github.com/astral-sh/python-build-standalone/releases/download/${pythonPin.pythonRelease}`
           : `https://github.com/astral-sh/uv/releases/download/${pythonPin.uvVersion}`);
         await downloadArchive(`${base.replace(/\/$/, '')}/${encodeURIComponent(asset.name)}`, archive);
@@ -99,5 +99,5 @@ export async function preparePython({ platform = process.platform, arch = proces
   } finally { removeOwned(parent, temp); }
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  await preparePython({ bootstrapOnly: process.argv.includes('--bootstrap'), ...(process.env.PILOTDECK_PYTHON_DESTINATION ? { destination: resolve(process.env.PILOTDECK_PYTHON_DESTINATION) } : {}) });
+  await preparePython({ bootstrapOnly: process.argv.includes('--bootstrap'), ...(process.env.G9AGENT_PYTHON_DESTINATION ? { destination: resolve(process.env.G9AGENT_PYTHON_DESTINATION) } : {}) });
 }

@@ -1,8 +1,8 @@
-import type { PilotDeckToolDefinition } from "../../tool/index.js";
+import type { G9AgentToolDefinition } from "../../tool/index.js";
 import type { CronDeleteInput, CronDeleteResult } from "../protocol/types.js";
 import type { CronToolRuntime } from "./CronToolRuntime.js";
 
-export function createCronDeleteTool(runtime: CronToolRuntime): PilotDeckToolDefinition<CronDeleteInput, CronDeleteResult> {
+export function createCronDeleteTool(runtime: CronToolRuntime): G9AgentToolDefinition<CronDeleteInput, CronDeleteResult> {
   return {
     name: "cron_delete",
     title: "Delete Cron Task",

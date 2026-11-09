@@ -26,23 +26,24 @@ const url = `http://127.0.0.1:${server.address().port}`;
 let browser;
 try {
   browser = await chromium.launch({ channel: 'chrome', headless: true });
-  for (const [name, desktop, dark, reduced] of [
+  for (const [name, desktop, dark, reduced, language = 'en'] of [
     ['desktop-light', true, false, false], ['desktop-dark', true, true, false],
     ['web-light', false, false, false], ['web-dark', false, true, false],
     ['desktop-reduced-motion', true, false, true],
+    ['desktop-zh-CN', true, false, false, 'zh-CN'], ['web-zh-CN', false, false, false, 'zh-CN'],
   ]) {
     const context = await browser.newContext({ colorScheme: dark ? 'dark' : 'light', reducedMotion: reduced ? 'reduce' : 'no-preference', serviceWorkers: 'block' });
     try {
       const page = await context.newPage();
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
-      await page.addInitScript(({ desktop, dark }) => {
+      await page.addInitScript(({ desktop, dark, language }) => {
         localStorage.setItem('themeMode', dark ? 'dark' : 'light');
-        localStorage.setItem('userLanguage', 'en');
+        localStorage.setItem('userLanguage', language);
         const runtimeStartedAt = Date.now() - 6000;
         const phaseStartedAt = Date.now() - 1000;
-        if (desktop) window.pilotdeckDesktop = {
-          getAppearance: () => ({ language: 'en', themeMode: dark ? 'dark' : 'light' }),
+        if (desktop) window.g9agentDesktop = {
+          getAppearance: () => ({ language, themeMode: dark ? 'dark' : 'light' }),
           getRuntimeStatus: () => ({ phase: 'ready', progress: 96, startedAt: runtimeStartedAt, phaseStartedAt }),
           onRuntimeStatus: () => () => {},
         };
@@ -65,11 +66,12 @@ try {
           requestAnimationFrame(sample);
         };
         requestAnimationFrame(sample);
-      }, { desktop, dark });
+      }, { desktop, dark, language });
       await page.route('**/api/**', async route => {
         const pathname = new URL(route.request().url()).pathname;
         let body = {};
         if (pathname === '/api/auth/status') body = { authDisabled: true };
+        else if (pathname === '/api/settings/permissions') body = { success: true, permissions: { skipPermissions: false, allowedTools: [], askTools: [], disallowedTools: [] } };
         else if (pathname.includes('onboarding-status')) {
           await new Promise(resolve => setTimeout(resolve, 300));
           body = { configuration: { state: 'ready', modelRef: 'fixture/model', revision: '' }, gateway: { state: 'ready' } };
@@ -88,6 +90,15 @@ try {
       try {
         await page.goto(url, { waitUntil: 'domcontentloaded' });
         await expect(page.locator('#startup')).toBeVisible();
+        const brand = page.locator('.pd-startup-brand');
+        await expect(brand).toHaveText(language === 'zh-CN' ? '九格智能体' : 'G9Agent');
+        await expect(brand).toHaveCSS('display', 'flex');
+        await expect(brand).toHaveCSS('justify-content', 'center');
+        await expect(brand).toHaveCSS('white-space', 'nowrap');
+        await expect(brand.locator('img')).toHaveJSProperty('naturalWidth', 256);
+        const mark = await brand.locator('img').boundingBox(), wordmark = await brand.locator('span').boundingBox();
+        expect(Math.abs(mark.y + mark.height / 2 - wordmark.y - wordmark.height / 2)).toBeLessThanOrEqual(1);
+        expect(Math.abs((mark.x + wordmark.x + wordmark.width) / 2 - (await page.viewportSize()).width / 2)).toBeLessThanOrEqual(1);
         const expected = dark ? 'rgb(35, 37, 43)' : 'rgb(255, 255, 255)';
         await expect(page.locator('#startup')).toHaveCSS('background-color', expected);
         if (desktop) expect(await page.locator('#bar').evaluate(bar => bar.getBoundingClientRect().width / bar.parentElement.getBoundingClientRect().width * 100)).toBeGreaterThanOrEqual(96);
@@ -107,8 +118,9 @@ try {
           expect(Math.abs(after.y - before.y), 'caption appearance must preserve the progress bar Y position').toBeLessThanOrEqual(.25);
         }
       } finally { releaseApp(); }
-      await expect(page.getByRole('button', { name: 'Settings', exact: true })).toBeVisible({ timeout: 30000 });
+      await expect(page.getByRole('button', { name: language === 'zh-CN' ? '设置' : 'Settings', exact: true })).toBeVisible({ timeout: 30000 });
       await expect(page.locator('.pd-startup-screen')).toHaveCount(0);
+      await expect(page.locator('.brand-wordmark')).toHaveText(language === 'zh-CN' ? '九格智能体' : 'G9Agent');
       const samples = await page.evaluate(() => window.startupSamples);
       expect(samples.length).toBeGreaterThan(1);
       for (let i = 0; i < samples.length; i++) {

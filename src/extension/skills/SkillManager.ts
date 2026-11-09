@@ -56,14 +56,14 @@ const RISKY_EXTS = new Set([
 ]);
 
 export type SkillManagerOptions = {
-  /** Resolved `~/.pilotdeck` root. Required. */
+  /** Resolved `~/.g9agent` root. Required. */
   pilotHome: string;
   env?: Record<string, string | undefined>;
-  /** Read-only skills shipped with the active PilotDeck build. */
+  /** Read-only skills shipped with the active G9Agent build. */
   builtinSkillsRoot?: string;
   /**
    * "General chat" cwds we treat as not-a-real-project. Defaults to
-   * `pilotHome` (~/.pilotdeck). When the caller passes a `projectKey`
+   * `pilotHome` (~/.g9agent). When the caller passes a `projectKey`
    * matching one of these, the manager behaves as if no project was set —
    * built-in and user-scope skills are visible, but project skills are not.
    */
@@ -73,10 +73,10 @@ export type SkillManagerOptions = {
 /**
  * Authoritative skill-CRUD layer used by every host (gateway clients,
  * UI server, future SDK callers). Reads the release's bundled skill root and
- * owns the editable layouts under `~/.pilotdeck/skills/` (user scope) and
- * `<projectRoot>/.pilotdeck/skills/` (project scope). Legacy third-party skill
+ * owns the editable layouts under `~/.g9agent/skills/` (user scope) and
+ * `<projectRoot>/.g9agent/skills/` (project scope). Legacy third-party skill
  * directories are intentionally not consulted — conflating them with
- * PilotDeck's layout caused the UI/agent skill drift the migration fixes.
+ * G9Agent's layout caused the UI/agent skill drift the migration fixes.
  */
 export class SkillManager {
   private readonly pilotHome: string;

@@ -2,7 +2,7 @@ import { getWorkspaceFileIdentity } from '../../utils/workspaceFileMention';
 
 // Presentation only: keep the original checkpoint and restore plan intact.
 export function isInternalReviewPath(path: string, workspaceRoot = ''): boolean {
-  return getWorkspaceFileIdentity(path, workspaceRoot).split('/').includes('.pilotdeck');
+  return getWorkspaceFileIdentity(path, workspaceRoot).split('/').includes('.g9agent');
 }
 
 export function visibleReviewFiles<T extends { path: string }>(files: readonly T[], workspaceRoot = ''): T[] {

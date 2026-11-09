@@ -9,7 +9,7 @@ import {
 
 const options = {
   sessionId: 'session-1',
-  provider: 'pilotdeck',
+  provider: 'g9agent',
   expectedActiveRunId: 'run-1',
   includeActiveTurnMessages: true,
 };

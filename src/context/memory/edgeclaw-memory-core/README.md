@@ -1,6 +1,6 @@
 # Memory service
 
-Private local-file dependency providing structured memory, retrieval and the memory dashboard used by PilotDeck.
+Private local-file dependency providing structured memory, retrieval and the memory dashboard used by G9Agent.
 
 Entry points: [src/index.ts](src/index.ts), [src/service.ts](src/service.ts), [ui-source](ui-source). Build with `pnpm --dir src/context/memory/edgeclaw-memory-core build` from the repository root; the root prebuild also performs this step.
 

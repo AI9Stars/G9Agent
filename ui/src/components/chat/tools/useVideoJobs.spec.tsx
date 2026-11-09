@@ -10,7 +10,7 @@ vi.mock('../../../utils/api', () => ({ authenticatedFetch: mocks.fetch, appendAu
 afterEach(() => { cleanup(); vi.useRealTimers(); mocks.fetch.mockReset(); });
 const pending = { id: 'call', sessionId: 'web:session', timestamp: '', type: 'assistant', isToolUse: true, toolName: 'generate_video', toolId: 'call', toolInput: { purpose: 'deliverable' }, toolResult: { isError: true, content: 'cancelled wait' } } as ChatMessage;
 it('retains session identity through normalization and fetches an interrupted result while the process is folded', async () => {
-  const messages = normalizedToChatMessages([{ id: 'c', sessionId: 'web:session', timestamp: '', provider: 'pilotdeck', kind: 'tool_use', toolId: 'call', toolName: 'generate_video', toolInput: { purpose: 'deliverable' } }]);
+  const messages = normalizedToChatMessages([{ id: 'c', sessionId: 'web:session', timestamp: '', provider: 'g9agent', kind: 'tool_use', toolId: 'call', toolName: 'generate_video', toolInput: { purpose: 'deliverable' } }]);
   expect(messages[0].sessionId).toBe('web:session');
   mocks.fetch.mockResolvedValue({ ok: true, json: async () => ({ id: 'job', sessionId: 'web:session', toolCallId: 'call', purpose: 'deliverable', state: 'completed', video: { videoId: 'video', sessionId: 'web:session', purpose: 'deliverable' } }) });
   const { result } = renderHook(() => useVideoJobs([pending]));
@@ -31,7 +31,7 @@ it('retries a local host disconnection, then stops polling completed results', a
 it('updates a live child card through reconnect, pause, resume and completion without reloading history', async () => {
   vi.useFakeTimers();
   const [child] = normalizedToChatMessages([{ id: 'child-call', sessionId: 'web:parent', subagentId: 'child-id',
-    turnId: 'parent-turn', timestamp: '', provider: 'pilotdeck', kind: 'tool_use', toolId: 'call', toolName: 'generate_video', toolInput: { purpose: 'deliverable' } }]);
+    turnId: 'parent-turn', timestamp: '', provider: 'g9agent', kind: 'tool_use', toolId: 'call', toolName: 'generate_video', toolInput: { purpose: 'deliverable' } }]);
   const view = { id: 'job', sessionId: 'workspace::sub::child-id', toolCallId: 'call', purpose: 'deliverable' };
   let state = 'reconnecting';
   mocks.fetch.mockImplementation(async (_url, init) => {

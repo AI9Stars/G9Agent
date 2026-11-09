@@ -1,14 +1,14 @@
-import type { ToolRegistry, PilotDeckToolDefinition } from "../../tool/index.js";
+import type { ToolRegistry, G9AgentToolDefinition } from "../../tool/index.js";
 import type { McpRuntime } from "./McpRuntime.js";
 import { createMcpToolDefinitionsFromRuntime, getMcpToolOwner } from "./PluginToToolBridge.js";
 
 /** Publishes complete MCP contracts only at the owning session's request boundary. */
 export class McpToolRegistryBinding {
-  private owned: Map<string, PilotDeckToolDefinition>;
+  private owned: Map<string, G9AgentToolDefinition>;
   private disposed = false;
 
   constructor(private readonly registry: ToolRegistry, private readonly runtimes: readonly McpRuntime[],
-    private readonly include: (tool: PilotDeckToolDefinition) => boolean = () => true,
+    private readonly include: (tool: G9AgentToolDefinition) => boolean = () => true,
     private readonly isActive: () => boolean = () => true) {
     this.owned = new Map(registry.list().filter(tool => runtimes.includes(getMcpToolOwner(tool)!)).map(tool => [tool.name, tool]));
   }
@@ -30,11 +30,11 @@ export class McpToolRegistryBinding {
 }
 
 /** One session lease can supply independently scoped parent and child registries. */
-export function createMcpToolCatalogRefresher(runtimes: readonly McpRuntime[], include: (tool: PilotDeckToolDefinition) => boolean = () => true) {
+export function createMcpToolCatalogRefresher(runtimes: readonly McpRuntime[], include: (tool: G9AgentToolDefinition) => boolean = () => true) {
   const bindings = new WeakMap<ToolRegistry, McpToolRegistryBinding>();
   let active = true;
   return {
-    async refresh(registry: ToolRegistry, signal?: AbortSignal, scope: (tool: PilotDeckToolDefinition) => boolean = () => true) {
+    async refresh(registry: ToolRegistry, signal?: AbortSignal, scope: (tool: G9AgentToolDefinition) => boolean = () => true) {
       if (!active) return;
       let binding = bindings.get(registry);
       if (!binding) {

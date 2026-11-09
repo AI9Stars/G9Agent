@@ -101,9 +101,9 @@ import { createRegisteredWebProjectResolver, describeWebProject, listRegisteredW
 import { BackgroundTaskRuntime, type BackgroundTaskCompletionEvent } from "../task/runtime/BackgroundTaskRuntime.js";
 import { createBuiltinRegistry, createPlanFileManager, filterAvailableTools } from "../tool/index.js";
 import type {
-  PilotDeckElicitationChannel,
-  PilotDeckToolDefinition,
-  PilotDeckUnavailableToolDiagnostic,
+  G9AgentElicitationChannel,
+  G9AgentToolDefinition,
+  G9AgentUnavailableToolDiagnostic,
   ToolRegistry,
 } from "../tool/index.js";
 import { createRouterRuntime, type RouterRuntime } from "../router/index.js";
@@ -112,7 +112,7 @@ import type { RouterEventBus, RouterEvent } from "../router/protocol/events.js";
 import type { EdgeClawMemoryProvider } from "../context/index.js";
 import { loadBuiltinPlugins } from "../extension/plugins/builtin/loadBuiltinPlugins.js";
 import { SkillManager, migrateLegacyBundledSkillCopies } from "../extension/skills/index.js";
-import { getPilotDeckInstallCommand, patchProjectScopedMcpSpec } from "../mcp/runtime/projectMcpSpec.js";
+import { getG9AgentInstallCommand, patchProjectScopedMcpSpec } from "../mcp/runtime/projectMcpSpec.js";
 import { createMcpToolCatalogRefresher } from "../mcp/runtime/McpToolRegistryBinding.js";
 import { ExtensionWatchManager, type ExtensionWatchEvent } from "./ExtensionWatchManager.js";
 import { createTelemetryCollector, type TelemetryClient } from "../telemetry/index.js";
@@ -126,12 +126,12 @@ import { listCommands } from "../gateway/dialog/commands.js";
 export type CreateLocalGatewayOptions = {
   projectRoot?: string;
   pilotHome?: string;
-  /** Read-only skills shipped with this PilotDeck build. Auto-discovered when omitted. */
+  /** Read-only skills shipped with this G9Agent build. Auto-discovered when omitted. */
   builtinSkillsRoot?: string;
   env?: Record<string, string | undefined>;
   permissionMode?: AgentRuntimeConfig["permissionMode"];
   /** Tools merged into every per-project ToolRegistry. */
-  extraTools?: PilotDeckToolDefinition[];
+  extraTools?: G9AgentToolDefinition[];
   /** Per-sessionKey config overrides (cwd / permissionMode). */
   sessionOverrides?: SessionConfigOverrides;
   /** Optional Cron runtime controller exposed through Gateway management methods. */
@@ -166,7 +166,7 @@ export type CreateLocalGatewayOptions = {
 };
 
 export type SubsystemUpdate = {
-  extraTools: PilotDeckToolDefinition[];
+  extraTools: G9AgentToolDefinition[];
   sessionOverrides?: SessionConfigOverrides;
   cron?: GatewayCronController;
   alwaysOnApply?: InProcessGatewayOptions["alwaysOnApply"];
@@ -220,7 +220,7 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
   if (replacementRecovery.committed > 0 || replacementRecovery.rolledBack > 0) {
     // eslint-disable-next-line no-console
     console.log(
-      `[pilotdeck] Recovered last-turn replacements: committed=${replacementRecovery.committed} ` +
+      `[g9agent] Recovered last-turn replacements: committed=${replacementRecovery.committed} ` +
       `rolledBack=${replacementRecovery.rolledBack}.`,
     );
   }
@@ -228,23 +228,23 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
     // Keep the backup/journal in place so a later startup can retry safely.
     // eslint-disable-next-line no-console
     console.warn(
-      `[pilotdeck] Could not recover replacement transaction for ${failure.transcriptPath}: ${failure.message}`,
+      `[g9agent] Could not recover replacement transaction for ${failure.transcriptPath}: ${failure.message}`,
     );
   }
-  const env = options.pilotHome ? { ...baseEnv, PILOT_HOME: pilotHome } : baseEnv;
+  const env = options.pilotHome ? { ...baseEnv, G9AGENT_HOME: pilotHome } : baseEnv;
   const builtinSkillsRoot = resolveBuiltinSkillsRoot(options.builtinSkillsRoot, env);
   const legacySkillMigration = migrateLegacyBundledSkillCopies({ pilotHome, builtinSkillsRoot });
   if (legacySkillMigration.migrated.length > 0) {
     // eslint-disable-next-line no-console
     console.log(
-      `[pilotdeck] Activated bundled skills directly; moved ${legacySkillMigration.migrated.length} ` +
+      `[g9agent] Activated bundled skills directly; moved ${legacySkillMigration.migrated.length} ` +
       `unchanged legacy ${legacySkillMigration.migrated.length === 1 ? "copy" : "copies"} to ` +
       `${joinPath(pilotHome, "skill-backups", "legacy-bundled-v1")}.`,
     );
   }
   for (const failure of legacySkillMigration.failures) {
     // eslint-disable-next-line no-console
-    console.warn(`[pilotdeck] Could not migrate legacy skill '${failure.slug}': ${failure.message}`);
+    console.warn(`[g9agent] Could not migrate legacy skill '${failure.slug}': ${failure.message}`);
   }
   const now = () => new Date();
   const telemetry = options.telemetry ?? createTelemetryCollector({ env, pilotHome });
@@ -260,7 +260,7 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
     onError: (scope, error) => {
       // eslint-disable-next-line no-console
       console.warn(
-        `[pilotdeck] Extension watcher failed for ${describeExtensionScope(scope)}:`,
+        `[g9agent] Extension watcher failed for ${describeExtensionScope(scope)}:`,
         error.message,
       );
     },
@@ -292,7 +292,7 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
   const stopExtensionWatching = extensionWatchManager.start();
 
   let boundServer: { broadcastNotification(name: string, payload?: unknown): void } | undefined;
-  const managedMcpPath = process.env.PILOTDECK_COMPUTER_USE_MCP_CONFIG;
+  const managedMcpPath = process.env.G9AGENT_COMPUTER_USE_MCP_CONFIG;
   const readManagedRevision = () => {
     if (!managedMcpPath) return '';
     try { return createHash('sha256').update(readFileSync(managedMcpPath)).digest('hex'); } catch { return ''; }
@@ -316,11 +316,11 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
     }
     if (changeClasses.every((c) => c === "restart-required")) {
       // eslint-disable-next-line no-console
-      console.warn("[pilotdeck] Config change requires process restart:", changedPaths.join(", "));
+      console.warn("[g9agent] Config change requires process restart:", changedPaths.join(", "));
       return;
     }
     // eslint-disable-next-line no-console
-    console.log("[pilotdeck] Config reloaded, invalidating runtimes:", changedPaths.join(", "));
+    console.log("[g9agent] Config reloaded, invalidating runtimes:", changedPaths.join(", "));
     registry.invalidate();
     if (memoryDiagnosticsEnabled) {
       logGatewayMemoryDiagnostic({
@@ -402,11 +402,11 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
   };
   const gateway = new InProcessGateway(router, {
     activeBackgroundTaskCount: () => registry.activeBackgroundTaskCount(),
-    funasrInstallCommand: getPilotDeckInstallCommand(),
+    funasrInstallCommand: getG9AgentInstallCommand(),
     now,
     serverInfo: { mode: "in_process", projectKey: projectRoot },
     telemetry,
-    toolResultsDir: resolve(tmpdir(), "pilotdeck-tool-output", process.pid.toString()),
+    toolResultsDir: resolve(tmpdir(), "g9agent-tool-output", process.pid.toString()),
     cron: options.cron,
     skillManager,
     async manageCheckpoints(input) {
@@ -653,14 +653,14 @@ export function createLocalGateway(options: CreateLocalGatewayOptions = {}): Cre
       if (input?.projectKey) {
         // eslint-disable-next-line no-console
         console.log(
-          `[pilotdeck] Extensions reload requested for project ${input.projectKey}:`,
+          `[g9agent] Extensions reload requested for project ${input.projectKey}:`,
           changedPaths.join(", ") || "(manual)",
         );
         registry.invalidate(input.projectKey);
         router?.markProjectDirty(input.projectKey, "extension_changed");
       } else {
         // eslint-disable-next-line no-console
-        console.log("[pilotdeck] Extensions reload requested for all runtimes:", changedPaths.join(", ") || "(manual)");
+        console.log("[g9agent] Extensions reload requested for all runtimes:", changedPaths.join(", ") || "(manual)");
         registry.invalidate();
         router?.markAllDirty("extension_changed");
       }
@@ -735,7 +735,7 @@ function resolveBuiltinSkillsRoot(
   configuredRoot: string | undefined,
   env: Record<string, string | undefined>,
 ): string {
-  const explicit = configuredRoot ?? env.PILOTDECK_BUNDLED_SKILLS_DIR;
+  const explicit = configuredRoot ?? env.G9AGENT_BUNDLED_SKILLS_DIR;
   if (explicit) return resolve(explicit);
 
   const moduleDir = dirname(fileURLToPath(import.meta.url));
@@ -754,7 +754,7 @@ type ProjectRuntimeRegistryOptions = {
   env: Record<string, string | undefined>;
   permissionMode: AgentRuntimeConfig["permissionMode"];
   now: () => Date;
-  extraTools?: PilotDeckToolDefinition[];
+  extraTools?: G9AgentToolDefinition[];
   sessionOverrides?: SessionConfigOverrides;
   additionalWorkingDirectories?: string[];
   /** @internal Test hook from `CreateLocalGatewayOptions.__testModelFactory`. */
@@ -774,7 +774,7 @@ type ProjectRuntime = {
   router: RouterRuntime;
   pluginRuntime: PluginRuntime;
   tools: ToolRegistry;
-  unavailableTools?: PilotDeckUnavailableToolDiagnostic[];
+  unavailableTools?: G9AgentUnavailableToolDiagnostic[];
   projectStorage: GatewayProjectStorageOptions;
   /** Per-project background task runtime (shared across sessions). C5. */
   backgroundTasks: BackgroundTaskRuntime;
@@ -799,7 +799,7 @@ type ProjectRuntime = {
    * these specs so that e.g. browser-use gets an isolated process per
    * session.  Populated during `ensureMcpReady()`.
    */
-  perSessionServerSpecs?: import("../mcp/protocol/types.js").PilotDeckMcpServerSpec[];
+  perSessionServerSpecs?: import("../mcp/protocol/types.js").G9AgentMcpServerSpec[];
 };
 
 const DEFAULT_BROWSER_ACTION_TIMEOUT_MS = 30_000;
@@ -822,7 +822,7 @@ class ProjectRuntimeRegistry {
    *     push session-scoped allow rules on `remember=true` and have the
    *     very next `decide()` call inside this turn see them.
    * Without this fallback, remote-gateway clients (Web UI talking to
-   * `pilotdeck server`) wouldn't be able to round-trip permission
+   * `g9agent server`) wouldn't be able to round-trip permission
    * prompts because they can't reach into the server's `sessionOverrides`
    * map from outside the process.
    */
@@ -839,7 +839,7 @@ class ProjectRuntimeRegistry {
    */
   private readonly sessionMcpRuntimes = new Map<string, McpRuntime>();
 
-  private _extraTools: PilotDeckToolDefinition[];
+  private _extraTools: G9AgentToolDefinition[];
   private _sessionOverrides: SessionConfigOverrides | undefined;
   private readonly sharedSessionStore = new SessionRouterStore({
     now: () => this.options.now().getTime(),
@@ -847,7 +847,7 @@ class ProjectRuntimeRegistry {
 
   constructor(private readonly options: ProjectRuntimeRegistryOptions) {
     this.python = new PythonRuntimeManager({ pilotHome: options.pilotHome, env: options.env,
-      onError: error => console.warn('[pilotdeck] Bundled Python initialization failed:', error instanceof Error ? error.message : String(error)),
+      onError: error => console.warn('[g9agent] Bundled Python initialization failed:', error instanceof Error ? error.message : String(error)),
     });
     this._extraTools = options.extraTools ? [...options.extraTools] : [];
     this._sessionOverrides = options.sessionOverrides;
@@ -952,7 +952,7 @@ class ProjectRuntimeRegistry {
         try {
           appendFileSync(eventsPath, JSON.stringify(event) + "\n");
         } catch { /* best-effort, never crash the agent loop */ }
-        if (event.type === "pilotdeck_router_retry_progress") {
+        if (event.type === "g9agent_router_retry_progress") {
           try {
             self.gateway?.broadcastRetryProgress(event);
           } catch { /* best-effort */ }
@@ -1026,7 +1026,7 @@ class ProjectRuntimeRegistry {
    * map. Also invalidates cached runtimes.
    */
   updateSubsystems(config: {
-    extraTools: PilotDeckToolDefinition[];
+    extraTools: G9AgentToolDefinition[];
     sessionOverrides?: SessionConfigOverrides;
   }): void {
     this._extraTools = config.extraTools;
@@ -1189,7 +1189,7 @@ class ProjectRuntimeRegistry {
           });
           // eslint-disable-next-line no-console
           console.warn(
-            `[pilotdeck] memory maintenance failed for project ${runtime.projectRoot}:`,
+            `[g9agent] memory maintenance failed for project ${runtime.projectRoot}:`,
             error instanceof Error ? error.message : String(error),
           );
         }
@@ -1215,16 +1215,16 @@ class ProjectRuntimeRegistry {
         const configServers = loadMcpServerConfig(runtime.projectRoot, this.options.pilotHome);
         for (const diagnostic of configServers.diagnostics) {
           // eslint-disable-next-line no-console
-          console.warn(`[pilotdeck] Ignoring invalid MCP config ${diagnostic.path}: ${diagnostic.message}`);
+          console.warn(`[g9agent] Ignoring invalid MCP config ${diagnostic.path}: ${diagnostic.message}`);
         }
         const rawServers = {
           ...runtime.pluginRuntime.mcpServers(),
           ...configServers.servers,
         };
-        if (process.env.PILOTDECK_COMPUTER_USE_MCP_CONFIG) {
-          delete rawServers['pilotdeck-computer-use'];
-          const managed = configServers.servers['pilotdeck-computer-use'];
-          if (managed) rawServers['pilotdeck-computer-use'] = managed;
+        if (process.env.G9AGENT_COMPUTER_USE_MCP_CONFIG) {
+          delete rawServers['g9agent-computer-use'];
+          const managed = configServers.servers['g9agent-computer-use'];
+          if (managed) rawServers['g9agent-computer-use'] = managed;
         }
         const { servers: parsedServers } = parsePluginMcpServers(rawServers);
         const servers = parsedServers.map((server) => withPythonMcpEnvironment(patchProjectScopedMcpSpec(
@@ -1247,7 +1247,7 @@ class ProjectRuntimeRegistry {
             if (status.status === "error") {
               // eslint-disable-next-line no-console
               console.warn(
-                `[pilotdeck] ${status.serverId === "funasr" ? "ASR unavailable" : "MCP server unavailable"} ` +
+                `[g9agent] ${status.serverId === "funasr" ? "ASR unavailable" : "MCP server unavailable"} ` +
                 `(server=${status.serverId}): ${status.error ?? "unknown error"}`,
               );
             }
@@ -1256,14 +1256,14 @@ class ProjectRuntimeRegistry {
           for (const def of defs) {
             // Bundled component updates and global Driver configuration belong
             // to the application release, never to model-selected MCP tools.
-            if (/^mcp__pilotdeck-computer-use__(check_for_update|install_extension|install_ffmpeg|set_config|get_config|replay_trajectory)$/.test(def.name)) continue;
+            if (/^mcp__g9agent-computer-use__(check_for_update|install_extension|install_ffmpeg|set_config|get_config|replay_trajectory)$/.test(def.name)) continue;
             if (!runtime.tools.has(def.name)) runtime.tools.register(def);
           }
         }
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(
-          `[pilotdeck] MCP runtime startup partial-failed for project ${runtime.projectRoot}:`,
+          `[g9agent] MCP runtime startup partial-failed for project ${runtime.projectRoot}:`,
           (err as Error).message,
         );
       }
@@ -1392,7 +1392,7 @@ class ProjectRuntimeRegistry {
           if (status.status === "error") {
             // eslint-disable-next-line no-console
             console.warn(
-              `[pilotdeck] ${status.serverId === "funasr" ? "ASR unavailable" : "Per-session MCP unavailable"} ` +
+              `[g9agent] ${status.serverId === "funasr" ? "ASR unavailable" : "Per-session MCP unavailable"} ` +
               `(server=${status.serverId}, session=${context.sessionKey}): ${status.error ?? "unknown error"}`,
             );
           }
@@ -1411,14 +1411,14 @@ class ProjectRuntimeRegistry {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.warn(
-          `[pilotdeck] Per-session MCP startup failed for ${context.sessionKey}:`,
+          `[g9agent] Per-session MCP startup failed for ${context.sessionKey}:`,
           (err as Error).message,
         );
       }
     } else if (perSpecs && perSpecs.length > 0) {
       // eslint-disable-next-line no-console
       console.warn(
-        `[pilotdeck] Per-session MCP limit reached (${maxInstances}). ` +
+        `[g9agent] Per-session MCP limit reached (${maxInstances}). ` +
         `Session ${context.sessionKey} will not start: ${perSpecs.map((spec) => spec.id).join(", ")}.`,
       );
     }
@@ -1461,7 +1461,7 @@ class ProjectRuntimeRegistry {
     const excludedTools = new Set(override?.excludeTools ?? []);
     const catalog = createMcpToolCatalogRefresher([runtime.mcpRuntime, sessionMcp].filter((mcp): mcp is McpRuntime => mcp !== undefined),
       tool => !excludedTools.has(tool.name) && !(tool.aliases ?? []).some(alias => excludedTools.has(alias))
-        && !/^mcp__pilotdeck-computer-use__(check_for_update|install_extension|install_ffmpeg|set_config|get_config|replay_trajectory)$/.test(tool.name));
+        && !/^mcp__g9agent-computer-use__(check_for_update|install_extension|install_ffmpeg|set_config|get_config|replay_trajectory)$/.test(tool.name));
     ownResource(() => catalog.dispose());
 
     // Inject the gateway's interactive permission hook so the agent's
@@ -1663,7 +1663,7 @@ class ProjectRuntimeRegistry {
               emit: (event) => gw.emitForSession(context.sessionKey, event),
               dispatchHook: (hookEvent, payload) => {
                 lifecycle.dispatch({
-                  event: hookEvent as import("../extension/hooks/protocol/events.js").PilotDeckHookEvent,
+                  event: hookEvent as import("../extension/hooks/protocol/events.js").G9AgentHookEvent,
                   baseInput: { sessionId: context.sessionKey, transcriptPath: "", cwd: projectRoot },
                   payload,
                   matchQuery: hookEvent,
@@ -1782,7 +1782,7 @@ class ProjectRuntimeRegistry {
     } catch {
       maxContextTokens = agent.maxContextTokens;
     }
-    maxOutputTokens = readPositiveIntegerEnv(this.options.env.PILOTDECK_MAX_OUTPUT_TOKENS)
+    maxOutputTokens = readPositiveIntegerEnv(this.options.env.G9AGENT_MAX_OUTPUT_TOKENS)
       ?? agent.maxOutputTokens
       ?? maxOutputTokens;
     const subagentModel = agent.subagents?.default;
@@ -1813,7 +1813,7 @@ class ProjectRuntimeRegistry {
         ...(subagentMaxContextTokens !== undefined ? { maxContextTokens: subagentMaxContextTokens } : {}),
         ...(subagentMaxOutputTokens !== undefined
           ? {
-              maxOutputTokens: readPositiveIntegerEnv(this.options.env.PILOTDECK_MAX_OUTPUT_TOKENS)
+              maxOutputTokens: readPositiveIntegerEnv(this.options.env.G9AGENT_MAX_OUTPUT_TOKENS)
                 ?? subagentMaxOutputTokens,
             }
           : {}),
@@ -1879,14 +1879,14 @@ function handleExtensionWatchEvent(
   const changed = event.changedPaths.join(", ");
   if (event.scope.kind === "global") {
     // eslint-disable-next-line no-console
-    console.log("[pilotdeck] Extensions changed, invalidating all runtimes:", changed);
+    console.log("[g9agent] Extensions changed, invalidating all runtimes:", changed);
     registry.invalidate();
     router?.markAllDirty("extension_changed");
     return;
   }
   // eslint-disable-next-line no-console
   console.log(
-    `[pilotdeck] Extensions changed for project ${event.scope.projectRoot}, invalidating runtime:`,
+    `[g9agent] Extensions changed for project ${event.scope.projectRoot}, invalidating runtime:`,
     changed,
   );
   registry.invalidate(event.scope.projectRoot);
@@ -1897,7 +1897,7 @@ function describeExtensionScope(scope: ExtensionWatchEvent["scope"]): string {
   return scope.kind === "global" ? "global extensions" : `project extensions (${scope.projectRoot})`;
 }
 
-function createAutoElicitationChannel(): PilotDeckElicitationChannel {
+function createAutoElicitationChannel(): G9AgentElicitationChannel {
   return {
     async askUser(request) {
       const answers: Record<string, string | string[]> = {};
@@ -1978,8 +1978,8 @@ export function buildBrowserUseArgs(
     args,
     "--timeout-action",
     String(
-      readPositiveIntegerEnv(env.PILOTDECK_BROWSER_TIMEOUT_ACTION_MS)
-        ?? readPositiveIntegerEnv(env.PILOTDECK_BROWSER_ACTION_TIMEOUT_MS)
+      readPositiveIntegerEnv(env.G9AGENT_BROWSER_TIMEOUT_ACTION_MS)
+        ?? readPositiveIntegerEnv(env.G9AGENT_BROWSER_ACTION_TIMEOUT_MS)
         ?? DEFAULT_BROWSER_ACTION_TIMEOUT_MS,
     ),
   );
@@ -1987,8 +1987,8 @@ export function buildBrowserUseArgs(
     args,
     "--timeout-navigation",
     String(
-      readPositiveIntegerEnv(env.PILOTDECK_BROWSER_TIMEOUT_NAVIGATION_MS)
-        ?? readPositiveIntegerEnv(env.PILOTDECK_BROWSER_NAVIGATION_TIMEOUT_MS)
+      readPositiveIntegerEnv(env.G9AGENT_BROWSER_TIMEOUT_NAVIGATION_MS)
+        ?? readPositiveIntegerEnv(env.G9AGENT_BROWSER_NAVIGATION_TIMEOUT_MS)
         ?? DEFAULT_BROWSER_NAVIGATION_TIMEOUT_MS,
     ),
   );
@@ -2017,14 +2017,14 @@ function resolveBrowserProxyServer(
   env: Record<string, string | undefined>,
   configProxy?: PilotProxyConfig,
 ): { server: string; source: BrowserProxySource } | undefined {
-  const explicit = cleanEnvValue(env.PILOTDECK_BROWSER_PROXY_SERVER);
+  const explicit = cleanEnvValue(env.G9AGENT_BROWSER_PROXY_SERVER);
   if (explicit) {
     if (/^(0|false|off|none|direct)$/i.test(explicit)) return undefined;
     return { server: explicit, source: "browser-env" };
   }
-  if (/^(1|true|on|yes)$/i.test(cleanEnvValue(env.PILOTDECK_BROWSER_PROXY_FROM_ENV) ?? "")) {
+  if (/^(1|true|on|yes)$/i.test(cleanEnvValue(env.G9AGENT_BROWSER_PROXY_FROM_ENV) ?? "")) {
     const envProxy = (
-      cleanEnvValue(env.PILOTDECK_PROXY)
+      cleanEnvValue(env.G9AGENT_PROXY)
       ?? cleanEnvValue(env.https_proxy)
       ?? cleanEnvValue(env.HTTPS_PROXY)
       ?? cleanEnvValue(env.http_proxy)
@@ -2041,7 +2041,7 @@ function resolveBrowserProxyBypass(
   configProxy: PilotProxyConfig | undefined,
   proxySource: BrowserProxySource,
 ): string {
-  const explicit = cleanEnvValue(env.PILOTDECK_BROWSER_PROXY_BYPASS);
+  const explicit = cleanEnvValue(env.G9AGENT_BROWSER_PROXY_BYPASS);
   if (explicit) return explicit;
   const noProxy = cleanEnvValue(env.no_proxy) ?? cleanEnvValue(env.NO_PROXY);
   const configNoProxy = proxySource === "config" ? cleanEnvValue(configProxy?.noProxy) : undefined;

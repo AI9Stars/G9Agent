@@ -1,5 +1,5 @@
-export class PilotDeckLifecycleRuntimeError extends Error {
-  readonly name = "PilotDeckLifecycleRuntimeError";
+export class G9AgentLifecycleRuntimeError extends Error {
+  readonly name = "G9AgentLifecycleRuntimeError";
 
   constructor(
     readonly code: "hook_blocked" | "hook_failed",

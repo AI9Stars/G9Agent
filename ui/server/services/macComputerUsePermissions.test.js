@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import { afterEach, expect, it, vi } from 'vitest';
 import { probeMacPermissions } from './macComputerUsePermissions.js';
-const runtime = { app: '/fixture/PilotDeck Computer Use.app', bundleId: 'cn.pilotdeck.computer-use', probeSupported: true };
+const runtime = { app: '/fixture/G9Agent Computer Use.app', bundleId: 'cn.g9agent.computer-use', probeSupported: true };
 afterEach(() => vi.useRealTimers());
 
 it('waits for native results without the process-exit watcher that races a short-lived helper', async () => {
@@ -66,7 +66,7 @@ it('queries a fresh native process without permission requests, screenshot probe
   expect(await probeMacPermissions({ runtime, execute, env: {} })).toEqual({ accessibility: false, screenRecording: true });
   expect(execute).toHaveBeenCalledOnce(); expect(fs.existsSync(resultFile)).toBe(false);
 });
-it.each([{ host_bundle_id: 'cn.pilotdeck.desktop', accessibility: true, screen_recording: true },
+it.each([{ host_bundle_id: 'cn.g9agent.desktop', accessibility: true, screen_recording: true },
   { host_bundle_id: runtime.bundleId, accessibility: 'true', screen_recording: true }])('rejects an invalid result instead of turning it into a grant: %j', async value => {
   const execute = async (_command, args) => fs.writeFileSync(args[args.indexOf('--result-file') + 1], JSON.stringify(value));
   await expect(probeMacPermissions({ runtime, execute, env: {} })).rejects.toThrow('valid result');

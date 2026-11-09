@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { pilotDeckDarkBlueTheme } from "./theme.js";
+import { g9agentDarkBlueTheme } from "./theme.js";
 
 export type PermissionPromptProps = {
   toolName: string;
@@ -17,10 +17,10 @@ export function PermissionPrompt({ toolName, payload, queueLength }: PermissionP
     <Box
       flexDirection="column"
       borderStyle="single"
-      borderColor={pilotDeckDarkBlueTheme.warning}
+      borderColor={g9agentDarkBlueTheme.warning}
       paddingX={1}
     >
-      <Text bold color={pilotDeckDarkBlueTheme.warning}>
+      <Text bold color={g9agentDarkBlueTheme.warning}>
         Permission required{queueHint}
       </Text>
       <Text>

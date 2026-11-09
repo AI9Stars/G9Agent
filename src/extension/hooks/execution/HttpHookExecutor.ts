@@ -1,5 +1,5 @@
-import type { PilotDeckHookInput } from "../protocol/input.js";
-import type { PilotDeckHookCommand } from "../protocol/settings.js";
+import type { G9AgentHookInput } from "../protocol/input.js";
+import type { G9AgentHookCommand } from "../protocol/settings.js";
 import { parseHookOutput } from "./parseHookOutput.js";
 import type { CommandHookExecutionResult } from "./CommandHookExecutor.js";
 
@@ -9,8 +9,8 @@ export class HttpHookExecutor {
   constructor(private readonly fetchImpl: HttpHookFetch = fetch) {}
 
   async execute(options: {
-    hook: Extract<PilotDeckHookCommand, { type: "http" }>;
-    hookInput: PilotDeckHookInput;
+    hook: Extract<G9AgentHookCommand, { type: "http" }>;
+    hookInput: G9AgentHookInput;
     env?: NodeJS.ProcessEnv;
     signal?: AbortSignal;
   }): Promise<CommandHookExecutionResult> {

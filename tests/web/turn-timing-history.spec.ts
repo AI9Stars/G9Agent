@@ -10,8 +10,8 @@ import type { AgentTurnResult } from '../../src/agent/protocol/result.js';
 
 for (const stopReason of ['completed', 'aborted_streaming', 'aborted_tools', 'model_error'] as const) {
   test(`turn timing survives ${stopReason} and history replay without counting idle time`, async () => {
-    const projectRoot = await mkdtemp(join(tmpdir(), 'pilotdeck-timing-project-'));
-    const pilotHome = await mkdtemp(join(tmpdir(), 'pilotdeck-timing-home-'));
+    const projectRoot = await mkdtemp(join(tmpdir(), 'g9agent-timing-project-'));
+    const pilotHome = await mkdtemp(join(tmpdir(), 'g9agent-timing-home-'));
     try {
       const sessionKey = 'web:timing', turnId = 'timed-turn';
       // Transcript arrival times intentionally differ from execution bounds.

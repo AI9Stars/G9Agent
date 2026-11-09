@@ -14,4 +14,4 @@ export const IS_PLATFORM = process.env.VITE_IS_PLATFORM === 'true';
  * Unrecognized values keep account authentication enabled.
  * @type {boolean}
  */
-export const DISABLE_LOCAL_AUTH = isLocalAuthDisabled(process.env.PILOTDECK_DISABLE_LOCAL_AUTH);
+export const DISABLE_LOCAL_AUTH = isLocalAuthDisabled(process.env.G9AGENT_DISABLE_LOCAL_AUTH);

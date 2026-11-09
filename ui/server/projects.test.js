@@ -10,11 +10,11 @@ const gateway = vi.hoisted(() => ({
     listSessions: vi.fn(),
 }));
 
-vi.mock('./pilotdeck-bridge.js', () => ({
-    getPilotDeckGateway: vi.fn(async () => gateway),
+vi.mock('./g9agent-bridge.js', () => ({
+    getG9AgentGateway: vi.fn(async () => gateway),
     beginSessionDeletion: vi.fn(() => () => {}),
     isGatewayUnavailableError: (error) => /Gateway WebSocket/i.test(error?.message || ''),
-    withPilotDeckGatewayReadRetry: vi.fn(async (operation) => operation(gateway)),
+    withG9AgentGatewayReadRetry: vi.fn(async (operation) => operation(gateway)),
 }));
 
 vi.mock('./database/db.js', () => ({
@@ -24,7 +24,7 @@ vi.mock('./database/db.js', () => ({
 import { addProjectManually, deleteSession, getProjects, getProjectsSnapshot } from './projects.js';
 import { createProjectId, sanitizeSessionIdForPath } from './utils/pilotPaths.js';
 
-const originalPilotHome = process.env.PILOT_HOME;
+const originalPilotHome = process.env.G9AGENT_HOME;
 const originalWorkspacesRoot = process.env.WORKSPACES_ROOT;
 let testWorkspacesRoot;
 
@@ -38,16 +38,16 @@ function deferred() {
 
 describe('getProjects', () => {
     beforeAll(async () => {
-        process.env.PILOT_HOME = path.resolve('/tmp/pilotdeck-project-sort-test');
-        testWorkspacesRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-projects-test-'));
+        process.env.G9AGENT_HOME = path.resolve('/tmp/g9agent-project-sort-test');
+        testWorkspacesRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-projects-test-'));
         process.env.WORKSPACES_ROOT = testWorkspacesRoot;
     });
 
     afterAll(async () => {
         if (originalPilotHome === undefined) {
-            delete process.env.PILOT_HOME;
+            delete process.env.G9AGENT_HOME;
         } else {
-            process.env.PILOT_HOME = originalPilotHome;
+            process.env.G9AGENT_HOME = originalPilotHome;
         }
         if (originalWorkspacesRoot === undefined) {
             delete process.env.WORKSPACES_ROOT;
@@ -114,8 +114,8 @@ describe('getProjects', () => {
         ]);
         expect(projects.find((project) => project.name === 'general')).toMatchObject({
             kind: 'general',
-            fullPath: process.env.PILOT_HOME,
-            workspaceCwd: path.join(testWorkspacesRoot, 'PilotDeckGeneral'),
+            fullPath: process.env.G9AGENT_HOME,
+            workspaceCwd: path.join(testWorkspacesRoot, 'G9AgentGeneral'),
             capabilities: {
                 files: false,
                 explore: false,
@@ -155,22 +155,22 @@ describe('getProjects', () => {
         const summary = deferred();
         gateway.listProjects.mockResolvedValue({ projects: [] });
         gateway.listSessions.mockImplementation(({ projectKey }) => {
-            if (projectKey === process.env.PILOT_HOME) return sessions.promise;
+            if (projectKey === process.env.G9AGENT_HOME) return sessions.promise;
             return Promise.resolve({ sessions: [] });
         });
         gateway.describeProject.mockImplementation(({ projectKey }) => {
-            if (projectKey === process.env.PILOT_HOME) return summary.promise;
+            if (projectKey === process.env.G9AGENT_HOME) return summary.promise;
             return Promise.resolve({ sessionCount: 0 });
         });
 
         const projectsPromise = getProjects();
         try {
             await vi.waitFor(() => expect(gateway.listSessions).toHaveBeenCalledWith({
-                projectKey: process.env.PILOT_HOME,
+                projectKey: process.env.G9AGENT_HOME,
                 limit: 5,
             }));
             expect(gateway.describeProject).toHaveBeenCalledWith({
-                projectKey: process.env.PILOT_HOME,
+                projectKey: process.env.G9AGENT_HOME,
             });
         } finally {
             sessions.resolve({ sessions: [] });
@@ -187,7 +187,7 @@ describe('getProjects', () => {
         let active = 0;
         let maxActive = 0;
         gateway.listSessions.mockImplementation(async ({ projectKey }) => {
-            if (projectKey === process.env.PILOT_HOME) return { sessions: [] };
+            if (projectKey === process.env.G9AGENT_HOME) return { sessions: [] };
             active += 1;
             maxActive = Math.max(maxActive, active);
             await release.promise;
@@ -209,18 +209,18 @@ describe('project registration and snapshot ordering', () => {
     let previousHome;
     let previousWorkspacesRoot;
     beforeEach(async () => {
-        previousHome = process.env.PILOT_HOME;
+        previousHome = process.env.G9AGENT_HOME;
         previousWorkspacesRoot = process.env.WORKSPACES_ROOT;
-        pilotHome = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-project-registration-'));
-        process.env.PILOT_HOME = pilotHome;
+        pilotHome = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-project-registration-'));
+        process.env.G9AGENT_HOME = pilotHome;
         process.env.WORKSPACES_ROOT = path.join(pilotHome, 'workspaces');
         gateway.listProjects.mockReset().mockResolvedValue({ projects: [] });
         gateway.listSessions.mockReset().mockResolvedValue({ sessions: [] });
         gateway.describeProject.mockReset().mockResolvedValue({ sessionCount: 0 });
     });
     afterEach(async () => {
-        if (previousHome === undefined) delete process.env.PILOT_HOME;
-        else process.env.PILOT_HOME = previousHome;
+        if (previousHome === undefined) delete process.env.G9AGENT_HOME;
+        else process.env.G9AGENT_HOME = previousHome;
         if (previousWorkspacesRoot === undefined) delete process.env.WORKSPACES_ROOT;
         else process.env.WORKSPACES_ROOT = previousWorkspacesRoot;
         vi.restoreAllMocks();
@@ -263,9 +263,9 @@ describe('deleteSession lifecycle', () => {
     let transcript;
     const sessionId = 'web:delete-background-title';
     beforeEach(async () => {
-        previousHome = process.env.PILOT_HOME;
-        pilotHome = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-delete-lifecycle-'));
-        process.env.PILOT_HOME = pilotHome;
+        previousHome = process.env.G9AGENT_HOME;
+        pilotHome = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-delete-lifecycle-'));
+        process.env.G9AGENT_HOME = pilotHome;
         project = path.join(pilotHome, 'workspace');
         const projectDirectory = path.join(pilotHome, 'projects', createProjectId(project));
         await fs.mkdir(path.join(projectDirectory, 'chats'), {recursive: true});
@@ -276,8 +276,8 @@ describe('deleteSession lifecycle', () => {
         gateway.closeSession.mockReset();
     });
     afterEach(async () => {
-        if (previousHome === undefined) delete process.env.PILOT_HOME;
-        else process.env.PILOT_HOME = previousHome;
+        if (previousHome === undefined) delete process.env.G9AGENT_HOME;
+        else process.env.G9AGENT_HOME = previousHome;
         await fs.rm(pilotHome, {recursive: true, force: true});
     });
     it('waits for the gateway writer to close before unlinking its transcript', async () => {

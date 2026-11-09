@@ -5,7 +5,7 @@ import { useSessionStore, type NormalizedMessage } from './useSessionStore';
 
 vi.mock('../utils/api', () => ({ authenticatedFetch: vi.fn(), readAgentStatusErrorFromResponse: vi.fn() }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
-const message = (id: string): NormalizedMessage => ({ id, sessionId: 's', provider: 'pilotdeck',
+const message = (id: string): NormalizedMessage => ({ id, sessionId: 's', provider: 'g9agent',
   timestamp: '2026-09-01T00:00:00Z', kind: 'text', role: 'user', content: 'The same prompt' });
 const response = (messages: NormalizedMessage[], nextCursor?: string, extra = {}) => ({
   ok: true, json: async () => ({ messages, nextCursor, hasMore: Boolean(nextCursor), total: 300, ...extra }),

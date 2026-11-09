@@ -15,7 +15,7 @@ describe('ChatInterface reconnect recovery helpers', () => {
     expect(buildReconnectStatusMessage('session-1', 'run-current')).toEqual({
       type: 'check-session-status',
       sessionId: 'session-1',
-      provider: 'pilotdeck',
+      provider: 'g9agent',
       expectedActiveRunId: 'run-current',
       includeActiveTurnMessages: true,
       statusRequestId: 1,

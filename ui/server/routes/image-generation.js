@@ -5,10 +5,10 @@ import { ImageStore } from '../../../src/tool/builtin/images/ImageStore.js';
 import { imageApiBaseUrl } from '../../../src/pilot/config/imageGenerationConfig.js';
 import { resolveApiKey } from '../../../src/model/config/resolveCredentials.js';
 import { requestOpenAIImage } from '../../../src/tool/builtin/images/openaiImages.js';
-import { readPilotDeckConfigFile } from '../services/pilotdeckConfig.js';
+import { readG9AgentConfigFile } from '../services/g9agentConfig.js';
 
 export function createImageGenerationRouter({ store = new ImageStore(path.join(resolvePilotHome(process.env), 'generated-images')),
-  readConfig = () => readPilotDeckConfigFile().config, fetchImpl } = {}) {
+  readConfig = () => readG9AgentConfigFile().config, fetchImpl } = {}) {
   const router = express.Router();
   router.post('/test', async (req, res) => {
     let apiKey = '';

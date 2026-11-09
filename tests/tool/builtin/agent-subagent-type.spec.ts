@@ -3,15 +3,15 @@ import assert from "node:assert/strict";
 
 import { createAgentTool } from "../../../src/tool/builtin/agent.js";
 import type {
-  PilotDeckSubagentForkApi,
-  PilotDeckToolModelClient,
-  PilotDeckToolRuntimeContext,
+  G9AgentSubagentForkApi,
+  G9AgentToolModelClient,
+  G9AgentToolRuntimeContext,
 } from "../../../src/tool/index.js";
 
 function baseContext(
-  fork: PilotDeckSubagentForkApi,
-  overrides: Partial<PilotDeckToolRuntimeContext> = {},
-): PilotDeckToolRuntimeContext {
+  fork: G9AgentSubagentForkApi,
+  overrides: Partial<G9AgentToolRuntimeContext> = {},
+): G9AgentToolRuntimeContext {
   return {
     sessionId: "s1",
     turnId: "t1",
@@ -30,7 +30,7 @@ function baseContext(
   };
 }
 
-function createFork(calls: string[]): PilotDeckSubagentForkApi {
+function createFork(calls: string[]): G9AgentSubagentForkApi {
   return {
     depth: 0,
     maxSubagentDepth: 1,
@@ -80,7 +80,7 @@ test("agent tool defaults general-purpose to explore in ask mode", async () => {
 
 test("agent tool preserves unknown custom fallback subagent names", async () => {
   const requests: string[] = [];
-  const model: PilotDeckToolModelClient = {
+  const model: G9AgentToolModelClient = {
     async *stream(request) {
       requests.push(String(request.metadata?.subagent));
       yield { type: "text_delta", text: "custom ok" };

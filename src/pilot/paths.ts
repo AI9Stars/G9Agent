@@ -1,4 +1,5 @@
 import { homedir } from "node:os";
+import { resolveConfigHome, migrateLegacyProject } from '@g9agent/config';
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -6,15 +7,16 @@ import { findCanonicalProjectRoot } from "../session/worktree/findCanonicalProje
 
 export type PilotPathEnv = Record<string, string | undefined>;
 
-export const DEFAULT_PILOT_HOME = "~/.pilotdeck";
-export const PILOT_CONFIG_FILE_NAME = "pilotdeck.yaml";
-export const PILOT_PROJECT_DIR_NAME = ".pilotdeck";
+export const DEFAULT_G9AGENT_HOME = "~/.g9agent";
+export const PILOT_CONFIG_FILE_NAME = "g9agent.yaml";
+export const PILOT_PROJECT_DIR_NAME = ".g9agent";
 
 /** Keep project-local runtime data untracked, including before Git is initialized. */
 export function ensurePilotProjectGitIgnore(projectRoot: string, createDirectory = true): void {
   const directory = resolve(projectRoot, PILOT_PROJECT_DIR_NAME);
-  if (!createDirectory && !existsSync(directory)) return;
   try {
+    migrateLegacyProject(projectRoot);
+    if (!createDirectory && !existsSync(directory)) return;
     mkdirSync(directory, { recursive: true });
     const ignorePath = resolve(directory, ".gitignore");
     let content = "";
@@ -24,7 +26,7 @@ export function ensurePilotProjectGitIgnore(projectRoot: string, createDirectory
     if (lastRule === "*") return;
     // Append so existing comments and rules remain intact; the final rule ignores
     // this file too. Later session reads do not change its content or timestamps.
-    appendFileSync(ignorePath, `${content && !content.endsWith("\n") ? "\n" : ""}# PilotDeck internal files\n*\n`, "utf8");
+    appendFileSync(ignorePath, `${content && !content.endsWith("\n") ? "\n" : ""}# G9Agent internal files\n*\n`, "utf8");
   } catch (error) {
     // Session history and Git status remain readable in read-only workspaces.
     if (!["EACCES", "EPERM", "EROFS"].includes((error as NodeJS.ErrnoException).code ?? "")) throw error;
@@ -39,7 +41,7 @@ export type PilotExtensionPaths = {
 };
 
 export function resolvePilotHome(env: PilotPathEnv = process.env): string {
-  return normalizeHomePath(env.PILOT_HOME ?? DEFAULT_PILOT_HOME);
+  return resolveConfigHome(env);
 }
 
 export function getPilotConfigFilePath(pilotHome: string): string {
@@ -47,6 +49,7 @@ export function getPilotConfigFilePath(pilotHome: string): string {
 }
 
 export function getPilotProjectConfigFilePath(projectRoot: string): string {
+  migrateLegacyProject(projectRoot);
   return resolve(projectRoot, PILOT_PROJECT_DIR_NAME, PILOT_CONFIG_FILE_NAME);
 }
 
@@ -75,6 +78,7 @@ export async function getPilotProjectChatDirAsync(
 }
 
 export function getPilotExtensionPaths(projectRoot: string, pilotHome: string): PilotExtensionPaths {
+  migrateLegacyProject(projectRoot);
   return {
     globalPluginsDir: resolve(pilotHome, "plugins"),
     globalSkillsDir: resolve(pilotHome, "skills"),

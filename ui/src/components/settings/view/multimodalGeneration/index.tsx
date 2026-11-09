@@ -2,13 +2,13 @@ import { useMemo, useRef } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { Image, Video } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { usePilotDeckConfig } from '../../../../hooks/usePilotDeckConfig';
+import { useG9AgentConfig } from '../../../../hooks/useG9AgentConfig';
 import { ConfigSaveError } from '../../shared/view';
 import { getMultimodalGenerationTab, type MultimodalGenerationTab } from '../../navigation';
 import { ImageGenerationForm } from '../imageGeneration';
 import { VideoGenerationForm } from '../videoGeneration';
 import { configToYamlString, safeParseYaml } from '../modelPool/utils/configYaml';
-import type { PilotDeckConfig } from '../modelPool/types';
+import type { G9AgentConfig } from '../modelPool/types';
 
 const modalities = [
   { tab: 'image', key: 'imageGeneration', Icon: Image, Form: ImageGenerationForm },
@@ -16,7 +16,7 @@ const modalities = [
 ] as const;
 
 export default function MultimodalGenerationSettings() {
-  const { raw, commitRaw, loading, saving, error } = usePilotDeckConfig();
+  const { raw, commitRaw, loading, saving, error } = useG9AgentConfig();
   const config = useMemo(() => safeParseYaml(raw), [raw]);
   const latestConfig = useRef(config);
   latestConfig.current = config;
@@ -29,12 +29,12 @@ export default function MultimodalGenerationSettings() {
     if (tab === 'image') next.delete('tab'); else next.set('tab', tab);
     setParams(next, { replace: true });
   };
-  if (loading) return <div role="status">{t('pilotDeckConfig.loading')}</div>;
+  if (loading) return <div role="status">{t('g9agentConfig.loading')}</div>;
   if (!config) return <div>{t('settingsPage.invalidYaml.agentSearch')}</div>;
 
   // Each form owns its draft. Save only its namespace against the latest
   // shared snapshot so a sibling's settings never come from a stale closure.
-  const commit = (key: typeof modalities[number]['key'], next: PilotDeckConfig) => {
+  const commit = (key: typeof modalities[number]['key'], next: G9AgentConfig) => {
     const base = latestConfig.current!;
     const merged = { ...base, tools: { ...base.tools, [key]: next.tools?.[key] } };
     latestConfig.current = merged;

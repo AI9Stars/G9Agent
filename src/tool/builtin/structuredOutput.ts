@@ -1,10 +1,10 @@
-import type { PilotDeckToolDefinition } from "../protocol/types.js";
+import type { G9AgentToolDefinition } from "../protocol/types.js";
 
 export type StructuredOutputInput = {
   value: unknown;
 };
 
-export function createStructuredOutputTool(): PilotDeckToolDefinition<StructuredOutputInput> {
+export function createStructuredOutputTool(): G9AgentToolDefinition<StructuredOutputInput> {
   return {
     name: "structured_output",
     aliases: ["StructuredOutput"],

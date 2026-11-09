@@ -12,15 +12,15 @@ Built-in computer use is controlled in Settings > External integrations > Comput
 
 Enable the component, grant the required operating-system permissions, and recheck its status before a task. The model needs image input support. Multiple tasks share the logged-in desktop, so use one desktop-control task at a time. After a lost connection, observe the current state before repeating an action whose outcome is unknown.
 
-On macOS, grant Accessibility and Screen Recording to the exact `PilotDeck Computer Use.app` path shown in settings. If the system omits it, add that path manually. Production and development signing identities can require separate grants. Windows elevated/security windows and Linux Wayland have platform restrictions.
+On macOS, grant Accessibility and Screen Recording to the exact `G9Agent Computer Use.app` path shown in settings. If the system omits it, add that path manually. Production and development signing identities can require separate grants. Windows elevated/security windows and Linux Wayland have platform restrictions.
 
-The native controller owns each instance's Driver, private connection and lifecycle. Disabling the instance revokes its generated MCP configuration and stops owned processes. Generated connection files are host-managed, and project/plugin configuration cannot replace the reserved `pilotdeck-computer-use` service.
+The native controller owns each instance's Driver, private connection and lifecycle. Disabling the instance revokes its generated MCP configuration and stops owned processes. Generated connection files are host-managed, and project/plugin configuration cannot replace the reserved `g9agent-computer-use` service.
 
 Standalone Windows/Linux startup checks the owned child before publishing tools, bounds each readiness probe to one second within its 15-second wait, and stops an unready child on failure. Disable and server shutdown cancel pending startup commands and polling before waiting for process cleanup. A missing or failed Driver never publishes an MCP connection; recheck starts a new owned generation.
 
 Settings keeps Stop and disable available while enable/reconnect is pending. A completed stop supersedes older responses so a delayed enable result cannot restore a connected state in the page. The desktop host also cancels its native startup command and endpoint polling on disable or quit.
 
-An HTTPS reverse proxy requires login (`PILOTDECK_DISABLE_LOCAL_AUTH=0`), the browser-facing `Host`, and an overwritten `X-Forwarded-Proto`. Configure non-loopback proxy IPs/CIDRs through `PILOTDECK_TRUST_PROXY`. Request-origin validation uses the trusted proxy policy and the actual host.
+An HTTPS reverse proxy requires login (`G9AGENT_DISABLE_LOCAL_AUTH=0`), the browser-facing `Host`, and an overwritten `X-Forwarded-Proto`. Configure non-loopback proxy IPs/CIDRs through `G9AGENT_TRUST_PROXY`. Request-origin validation uses the trusted proxy policy and the actual host.
 
 Tests: [tests/mcp](../../tests/mcp). See the [test guide](../../docs/testing.md) for runner selection.
 

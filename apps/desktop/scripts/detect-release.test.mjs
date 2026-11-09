@@ -9,7 +9,7 @@ import test from "node:test";
 const script = fileURLToPath(new URL("./detect-release.mjs", import.meta.url));
 
 function repository(t) {
-  const root = mkdtempSync(join(tmpdir(), "pilotdeck-release-detect-"));
+  const root = mkdtempSync(join(tmpdir(), "g9agent-release-detect-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
   git("init", "--quiet");
@@ -31,7 +31,7 @@ function repository(t) {
       encoding: "utf8",
       env: {
         ...process.env,
-        PILOTDECK_RELEASE_DATE: "2026-09-07",
+        G9AGENT_RELEASE_DATE: "2026-09-07",
         FORCE_RELEASE: "false",
         REQUESTED_REVISION: "",
         GITHUB_OUTPUT: outputFile,
@@ -71,8 +71,7 @@ test("unchanged and documentation-only commits skip unless forced", (t) => {
 
 for (const file of [
   "ui/app.js", "apps/desktop/src/main.ts", "Dockerfile",
-  ".github/workflows/desktop-build.yml", ".github/workflows/desktop-windows.yml",
-  ".github/workflows/desktop-linux.yml", ".github/workflows/desktop-macos.yml",
+  ".github/workflows/desktop-windows.yml",
   ".github/workflows/release.yml", ".github/workflows/release-retry.yml",
 ]) {
   test(`production changes trigger a release: ${file}`, (t) => {
@@ -98,6 +97,28 @@ test("same-day revisions use the latest baseline and select the next free tag", 
   assert.equal(result.output.revision, "11");
 });
 
+test("manual releases build unchanged code using the original run's Shanghai date", (t) => {
+  const { git, detect, sha } = repository(t);
+  git("tag", "v2026.09.07");
+  const env = {
+    FORCE_RELEASE: "true", G9AGENT_RELEASE_DATE: "",
+    // UTC is still September 6; Shanghai has already crossed midnight.
+    G9AGENT_RELEASE_STARTED_AT: "2026-09-06T16:01:00Z",
+  };
+  const result = detect(env);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(result.output, {
+    should_build: "true", release_date: "2026-09-07", revision: "1", source_sha: sha,
+  });
+  assert.deepEqual(detect(env).output, result.output);
+});
+
+test("an invalid manual run timestamp cannot allocate a release", (t) => {
+  const { detect } = repository(t);
+  const result = detect({ G9AGENT_RELEASE_DATE: "", G9AGENT_RELEASE_STARTED_AT: "invalid" });
+  assert.notEqual(result.status, 0);
+});
+
 test("manual revisions are validated and existing tags cannot be reused", (t) => {
   const { git, detect } = repository(t);
   git("tag", "v2026.09.07");
@@ -105,7 +126,7 @@ test("manual revisions are validated and existing tags cannot be reused", (t) =>
   assert.notEqual(collision.status, 0);
   assert.match(collision.stderr, /Release tag already exists: v2026\.09\.07/);
   assert.notEqual(detect({ REQUESTED_REVISION: "1x" }).status, 0);
-  assert.notEqual(detect({ PILOTDECK_RELEASE_DATE: "2026-02-30" }).status, 0);
+  assert.notEqual(detect({ G9AGENT_RELEASE_DATE: "2026-02-30" }).status, 0);
   assert.equal(detect({ REQUESTED_REVISION: "2" }).output.revision, "2");
 });
 

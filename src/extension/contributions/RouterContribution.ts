@@ -1,7 +1,7 @@
-import type { PilotDeckCustomRouter } from "../../router/customRouter/customRouter.js";
+import type { G9AgentCustomRouter } from "../../router/customRouter/customRouter.js";
 
 export type RouterContribution = {
   id: string;
   description?: string;
-  createCustomRouter(): PilotDeckCustomRouter;
+  createCustomRouter(): G9AgentCustomRouter;
 };

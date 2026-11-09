@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { api } from './api';
 import { officeBinaryPathExample, readOfficePreviewStatus } from './officePreviewStatus';
 
-vi.mock('./api', () => ({ api: { officePreviewStatus: vi.fn(), pilotDeckConfig: vi.fn() } }));
+vi.mock('./api', () => ({ api: { officePreviewStatus: vi.fn(), g9agentConfig: vi.fn() } }));
 afterEach(() => vi.resetAllMocks());
 
 it.each([
@@ -24,7 +24,7 @@ it('uses a generic hint when an older server omits the platform', async () => {
 
 it('preserves configured values without assuming an OS when detection fails', async () => {
   vi.mocked(api.officePreviewStatus).mockResolvedValue(new Response('unavailable', { status: 503 }));
-  vi.mocked(api.pilotDeckConfig).mockResolvedValue(new Response(JSON.stringify({ config: {
+  vi.mocked(api.g9agentConfig).mockResolvedValue(new Response(JSON.stringify({ config: {
     webui: { officePreview: { service: 'libreoffice', binaryPath: '/custom/soffice' } },
   } })));
   const status = await readOfficePreviewStatus();

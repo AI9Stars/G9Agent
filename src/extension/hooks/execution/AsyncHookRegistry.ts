@@ -1,12 +1,12 @@
-import type { PilotDeckHookEvent } from "../protocol/events.js";
+import type { G9AgentHookEvent } from "../protocol/events.js";
 import { parseHookOutput } from "./parseHookOutput.js";
-import type { PilotDeckHookOutput } from "../protocol/output.js";
+import type { G9AgentHookOutput } from "../protocol/output.js";
 
 export type PendingAsyncHook = {
   id: string;
   startedAt: Date;
   hookName: string;
-  hookEvent: PilotDeckHookEvent;
+  hookEvent: G9AgentHookEvent;
   stdout: string;
   stderr: string;
   responseDelivered: boolean;
@@ -16,10 +16,10 @@ export type PendingAsyncHook = {
 export type AsyncHookResponse = {
   id: string;
   hookName: string;
-  hookEvent: PilotDeckHookEvent;
+  hookEvent: G9AgentHookEvent;
   stdout: string;
   stderr: string;
-  output: PilotDeckHookOutput;
+  output: G9AgentHookOutput;
   rewake: boolean;
 };
 
@@ -71,6 +71,6 @@ export class AsyncHookRegistry {
   }
 }
 
-function isBlockingOutput(output: PilotDeckHookOutput): boolean {
+function isBlockingOutput(output: G9AgentHookOutput): boolean {
   return output.type === "sync" && (output.continue === false || output.decision === "block");
 }

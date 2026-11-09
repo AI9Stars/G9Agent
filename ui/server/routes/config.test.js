@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { validatePilotDeckConfig } from '../services/pilotdeckConfig.js';
+import { validateG9AgentConfig } from '../services/g9agentConfig.js';
 import { rewriteModelReferences } from '../services/modelReferences.js';
 import { resolveWebSearchConfig, updateWebSearchProviderConfig } from '../../../src/pilot/config/webSearchConfig.js';
 import { webSearchConfigForProvider } from '../../src/components/settings/view/agentSearch/utils/webSearchConfig.ts';
@@ -35,10 +35,10 @@ it('performs a full Python check only on explicit POST and reports Gateway Git',
 });
 
 it('normalizes the Python preference to true and rejects non-boolean values', () => {
-  expect(validatePilotDeckConfig({}).config.runtime.python.enabled).toBe(true);
-  expect(validatePilotDeckConfig({ runtime: { python: { enabled: false } } }).config.runtime.python.enabled).toBe(false);
+  expect(validateG9AgentConfig({}).config.runtime.python.enabled).toBe(true);
+  expect(validateG9AgentConfig({ runtime: { python: { enabled: false } } }).config.runtime.python.enabled).toBe(false);
   for (const runtime of [null, false, { python: null }, { python: { enabled: 'false' } }]) {
-    expect(validatePilotDeckConfig({ runtime }).errors).toContain('runtime.python.enabled must be a boolean');
+    expect(validateG9AgentConfig({ runtime }).errors).toContain('runtime.python.enabled must be a boolean');
   }
 });
 
@@ -48,16 +48,16 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.doUnmock('child_process');
   vi.resetModules();
-  delete process.env.PILOT_HOME;
-  delete process.env.PILOTDECK_CONFIG_PATH;
+  delete process.env.G9AGENT_HOME;
+  delete process.env.G9AGENT_CONFIG_PATH;
   for (const dir of tempDirs.splice(0)) {
     rmSync(dir, { recursive: true, force: true });
   }
 });
 
-describe('pilotdeck config model validation', () => {
+describe('g9agent config model validation', () => {
   it('rejects an agent model missing from an existing provider', () => {
-    const validation = validatePilotDeckConfig({
+    const validation = validateG9AgentConfig({
       agent: { model: 'ollama/missing' },
       model: { providers: { ollama: { protocol: 'openai', url: 'http://localhost:11434/v1', models: { known: {} } } } },
     });
@@ -907,7 +907,7 @@ describe('config model-pool connection test routes', () => {
       agent: { model: 'openai/model-a' },
       model: { providers: { openai: { protocol: 'openai', url: '', apiKey: 'key', models: {} } } },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial, probe });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial, probe });
     const tested = await requestStatus('/api/config/test-connections', {
       method: 'POST',
       body: JSON.stringify({ providerId: 'openai', apiKey: 'key', models: ['model-a'], retryPolicy: retryPolicy() }),
@@ -923,7 +923,7 @@ describe('config model-pool connection test routes', () => {
       body: JSON.stringify({ config: next, modelTestBindings: [{ testId: tested.body.testId }] }),
     });
     expect(saved.status).toBe(200);
-    expect(writePilotDeckConfig).toHaveBeenCalled();
+    expect(writeG9AgentConfig).toHaveBeenCalled();
   });
 
   it('matches the UI catalog endpoint for MiniMax when provider url is empty', async () => {
@@ -1142,7 +1142,7 @@ describe('config model-pool connection test routes', () => {
         },
       },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({
       config: initial,
       probe,
     });
@@ -1170,7 +1170,7 @@ describe('config model-pool connection test routes', () => {
     });
 
     expect(saved.status).toBe(200);
-    expect(writePilotDeckConfig.mock.calls[0][0].model.providers.openai.models['model-a'].connectionTest)
+    expect(writeG9AgentConfig.mock.calls[0][0].model.providers.openai.models['model-a'].connectionTest)
       .toMatchObject({ status: 'passed' });
   });
 
@@ -1196,7 +1196,7 @@ describe('config model-pool connection test routes', () => {
       agent: { model: 'openai/model-a' },
       model: { providers: { openai: { protocol: 'openai', url: 'https://api.openai.com/v1', apiKey: 'key', models: { 'model-a': {} } } } },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial, probe });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial, probe });
     const tested = await requestStatus('/api/config/test-connections', {
       method: 'POST', headers: { 'x-user': 'settings-user' },
       body: JSON.stringify({ providerId: 'openai', apiKey: 'key', models: ['model-a'], retryPolicy: { maxRetries: 1, maxStreamRetries: 1, streamIdleTimeoutMs: 1000 } }),
@@ -1209,8 +1209,8 @@ describe('config model-pool connection test routes', () => {
       body: JSON.stringify({ config: initial, modelTestBindings: [{ testId: tested.body.testId }] }),
     });
     expect(saved.status).toBe(200);
-    expect(writePilotDeckConfig.mock.calls[0][0].model.providers.openai.models['model-a'].connectionTest).toMatchObject({ status: 'passed', textInput: 'supported', imageInput: 'supported' });
-    expect(writePilotDeckConfig.mock.calls[0][0].model.providers.openai.models['model-a'].multimodal).toMatchObject({ input: ['text', 'image'] });
+    expect(writeG9AgentConfig.mock.calls[0][0].model.providers.openai.models['model-a'].connectionTest).toMatchObject({ status: 'passed', textInput: 'supported', imageInput: 'supported' });
+    expect(writeG9AgentConfig.mock.calls[0][0].model.providers.openai.models['model-a'].multimodal).toMatchObject({ input: ['text', 'image'] });
   });
 
   it('writes a passing binding for a newly referenced model', async () => {
@@ -1219,7 +1219,7 @@ describe('config model-pool connection test routes', () => {
       agent: { model: 'openai/model-a' },
       model: { providers: { openai: { protocol: 'openai', url: 'https://api.openai.com/v1', apiKey: 'key', models: { 'model-a': {} } } } },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial, probe });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial, probe });
     const tested = await requestStatus('/api/config/test-connections', {
       method: 'POST', headers: { 'x-user': 'settings-user' },
       body: JSON.stringify({ providerId: 'openai', apiKey: 'key', models: ['model-b'], retryPolicy: { maxRetries: 1, maxStreamRetries: 1, streamIdleTimeoutMs: 1000 } }),
@@ -1234,7 +1234,7 @@ describe('config model-pool connection test routes', () => {
       body: JSON.stringify({ config: next, modelTestBindings: [{ testId: tested.body.testId }] }),
     });
     expect(saved.status).toBe(200);
-    expect(writePilotDeckConfig.mock.calls[0][0].model.providers.openai.models['model-b'].connectionTest).toMatchObject({ status: 'passed' });
+    expect(writeG9AgentConfig.mock.calls[0][0].model.providers.openai.models['model-b'].connectionTest).toMatchObject({ status: 'passed' });
   });
 
   it('accepts a newly referenced model without a connection test', async () => {
@@ -1295,7 +1295,7 @@ describe('config model-pool connection test routes', () => {
       agent: { model: 'openai/model-a' },
       model: { providers: { openai: { protocol: 'openai', url: 'https://api.openai.com/v1', apiKey: 'key', models: { 'model-a': {} } } } },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial });
     const next = {
       ...initial,
       agent: { model: 'openai/model-a', subagents: { default: 'openai/model-b' } },
@@ -1307,7 +1307,7 @@ describe('config model-pool connection test routes', () => {
       body: JSON.stringify({ config: next }),
     });
     expect(response.status).toBe(200);
-    expect(writePilotDeckConfig).toHaveBeenCalled();
+    expect(writeG9AgentConfig).toHaveBeenCalled();
   });
 
   it('allows router and pricing references without separate model test bindings', async () => {
@@ -1337,7 +1337,7 @@ describe('config model-pool connection test routes', () => {
       agent: { model: 'openai/model-a' },
       model: { providers: { openai: { protocol: 'openai', url: 'https://api.openai.com/v1', apiKey: 'key', models: { 'model-a': {} } } } },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial });
     const next = {
       ...initial,
       model: { providers: { openai: { ...initial.model.providers.openai, models: { 'model-a': {}, 'model-b': {} } } } },
@@ -1347,7 +1347,7 @@ describe('config model-pool connection test routes', () => {
       body: JSON.stringify({ config: next }),
     });
     expect(response.status).toBe(200);
-    expect(writePilotDeckConfig).toHaveBeenCalled();
+    expect(writeG9AgentConfig).toHaveBeenCalled();
   });
 
   it('allows an existing model connection change without a binding', async () => {
@@ -1355,7 +1355,7 @@ describe('config model-pool connection test routes', () => {
       agent: { model: 'openai/model-a' },
       model: { providers: { openai: { protocol: 'openai', url: 'https://api.openai.com/v1', apiKey: 'key', models: { 'model-a': {} } } } },
     };
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial });
     const next = {
       ...initial,
       model: { providers: { openai: { ...initial.model.providers.openai, url: 'https://api.example.test/v1', models: { 'model-a': {} } } } },
@@ -1365,7 +1365,7 @@ describe('config model-pool connection test routes', () => {
       body: JSON.stringify({ config: next }),
     });
     expect(response.status).toBe(200);
-    expect(writePilotDeckConfig).toHaveBeenCalled();
+    expect(writeG9AgentConfig).toHaveBeenCalled();
   });
 
 });
@@ -1506,7 +1506,7 @@ describe('config model reference and rename routes', () => {
   });
 
   it('atomically rewrites provider/model references and pricing keys', async () => {
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: baseConfig });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: baseConfig });
     const nextConfig = structuredClone(baseConfig);
     nextConfig.model.providers = {
       'new-provider': { ...nextConfig.model.providers['old-provider'], models: { 'new-model': {} } },
@@ -1520,7 +1520,7 @@ describe('config model reference and rename routes', () => {
       }),
     });
     expect(response.status).toBe(200);
-    const saved = writePilotDeckConfig.mock.calls[0][0];
+    const saved = writeG9AgentConfig.mock.calls[0][0];
     expect(saved.agent.model).toBe('new-provider/new-model');
     expect(saved.router.tokenSaver.tiers.fast.model).toBe('new-provider/new-model');
     expect(saved.router.stats.modelPricing).toEqual({ 'new-provider/new-model': { input: 1, output: 2 } });
@@ -1538,30 +1538,30 @@ describe('config model reference and rename routes', () => {
   });
 
   it('rejects deletion while a model remains referenced', async () => {
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: baseConfig });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: baseConfig });
     const response = await requestStatus('/api/config', {
       method: 'PUT',
       body: JSON.stringify({ config: { ...baseConfig, model: { providers: {} } } }),
     });
     expect(response.status).toBe(409);
     expect(response.body.code).toBe('MODEL_IN_USE');
-    expect(writePilotDeckConfig).not.toHaveBeenCalled();
+    expect(writeG9AgentConfig).not.toHaveBeenCalled();
   });
 
   it('allows deletion of an unreferenced model', async () => {
     const initial = structuredClone(baseConfig);
     initial.model.providers['old-provider'].models.unused = {};
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: initial });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: initial });
     const response = await requestStatus('/api/config', {
       method: 'PUT',
       body: JSON.stringify({ config: baseConfig }),
     });
     expect(response.status).toBe(200);
-    expect(writePilotDeckConfig).toHaveBeenCalled();
+    expect(writeG9AgentConfig).toHaveBeenCalled();
   });
 
   it('rejects rename metadata that does not match the provider map', async () => {
-    const { requestStatus, writePilotDeckConfig } = await createConfigApp({ config: baseConfig });
+    const { requestStatus, writeG9AgentConfig } = await createConfigApp({ config: baseConfig });
     const response = await requestStatus('/api/config', {
       method: 'PUT',
       body: JSON.stringify({
@@ -1571,7 +1571,7 @@ describe('config model reference and rename routes', () => {
     });
     expect(response.status).toBe(400);
     expect(response.body.code).toBe('RENAME_INVALID');
-    expect(writePilotDeckConfig).not.toHaveBeenCalled();
+    expect(writeG9AgentConfig).not.toHaveBeenCalled();
   });
 });
 
@@ -1677,7 +1677,7 @@ describe('config model removal route', () => {
     // Use the Gateway's real loader, not the UI validator or mocked reloader:
     // a successful API write must also survive restarting the application.
     const { loadPilotConfig } = await import('../../../src/pilot/config/loadPilotConfig.ts');
-    const snapshot = loadPilotConfig({ configPath, env: { PILOT_HOME: dirname(configPath) } });
+    const snapshot = loadPilotConfig({ configPath, env: { G9AGENT_HOME: dirname(configPath) } });
     expect(snapshot.config.agent.model.id).toBe('deepseek/deepseek-chat');
     expect(snapshot.config.memory.model).toBeUndefined();
     expect(snapshot.config.memory.enabled).toBe(enabled);
@@ -2059,7 +2059,7 @@ describe('config test-web-search route', () => {
   });
 
   it('does not preserve a masked Web Search key when its credential scope changes on save', async () => {
-    const { request, writePilotDeckConfig } = await createConfigApp({
+    const { request, writeG9AgentConfig } = await createConfigApp({
       config: {
         tools: {
           webSearch: {
@@ -2086,7 +2086,7 @@ describe('config test-web-search route', () => {
     });
 
     expect(data.error).toContain('Enter the Web Search API key again');
-    expect(writePilotDeckConfig).not.toHaveBeenCalled();
+    expect(writeG9AgentConfig).not.toHaveBeenCalled();
   });
 });
 
@@ -2224,15 +2224,15 @@ describe('saved Web Search provider configurations', () => {
     expect(JSON.stringify(refreshed)).not.toContain('glm-updated');
     expect(JSON.stringify(refreshed)).not.toContain('tavily-saved');
     const restarted = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '-e', `
-      import { readPilotDeckConfigFile } from ${JSON.stringify(pathToFileURL(join(process.cwd(), 'server/services/pilotdeckConfig.js')).href)};
+      import { readG9AgentConfigFile } from ${JSON.stringify(pathToFileURL(join(process.cwd(), 'server/services/g9agentConfig.js')).href)};
       import { resolveWebSearchConfig } from ${JSON.stringify(pathToFileURL(join(process.cwd(), '../src/pilot/config/webSearchConfig.ts')).href)};
-      const saved = readPilotDeckConfigFile().config.tools.webSearch;
+      const saved = readG9AgentConfigFile().config.tools.webSearch;
       console.log(JSON.stringify({
         provider: saved.provider,
         glmRetained: resolveWebSearchConfig({ ...saved, provider: 'glm' }).apiKey === 'glm-updated',
         tavilyRetained: resolveWebSearchConfig(saved).apiKey === 'tavily-saved',
       }));
-    `], { env: { ...process.env, PILOTDECK_CONFIG_PATH: configPath }, encoding: 'utf8' });
+    `], { env: { ...process.env, G9AGENT_CONFIG_PATH: configPath }, encoding: 'utf8' });
     expect(restarted.status, restarted.stderr).toBe(0);
     expect(JSON.parse(restarted.stdout)).toEqual({ provider: 'tavily', glmRetained: true, tavilyRetained: true });
   });
@@ -2715,8 +2715,8 @@ describe('config routes invalid YAML fallback', () => {
   });
 
   it('rejects reload without applying defaults when YAML is invalid', async () => {
-    const reloadPilotDeckConfig = vi.fn(async () => ({ processEnv: { reloaded: true } }));
-    const { request } = await createDiskConfigApp('schemaVersion: 1\nmodel:\n  providers: [\n', { reloadPilotDeckConfig });
+    const reloadG9AgentConfig = vi.fn(async () => ({ processEnv: { reloaded: true } }));
+    const { request } = await createDiskConfigApp('schemaVersion: 1\nmodel:\n  providers: [\n', { reloadG9AgentConfig });
 
     const response = await request('/api/config/reload', { method: 'POST' });
 
@@ -2724,7 +2724,7 @@ describe('config routes invalid YAML fallback', () => {
     expect(response.body.configDisabled).toBe(true);
     expect(response.body.validation.valid).toBe(false);
     expect(response.body.validation.errors[0]).toMatch(/^Invalid YAML:/);
-    expect(reloadPilotDeckConfig).not.toHaveBeenCalled();
+    expect(reloadG9AgentConfig).not.toHaveBeenCalled();
   });
 
   it('rejects structured config saves without overwriting invalid YAML', async () => {
@@ -2744,36 +2744,36 @@ describe('config routes invalid YAML fallback', () => {
 });
 
 async function createConfigApp({ config = {}, probe, pythonStatus, gitStatus } = {}) {
-  const writePilotDeckConfig = vi.fn(async (nextConfig) => ({
+  const writeG9AgentConfig = vi.fn(async (nextConfig) => ({
     config: nextConfig,
     raw: stringifyYaml(nextConfig),
     validation: { valid: true, errors: [], warnings: [] },
   }));
-  const writeRawPilotDeckYaml = vi.fn(async (nextConfig) => ({
+  const writeRawG9AgentYaml = vi.fn(async (nextConfig) => ({
     config: nextConfig,
     raw: stringifyYaml(nextConfig),
     validation: { valid: true, errors: [], warnings: [] },
   }));
-  vi.doMock('../services/pilotdeckConfigWatcher.js', () => ({
+  vi.doMock('../services/g9agentConfigWatcher.js', () => ({
     suppressNextWatchEvent: vi.fn(),
   }));
-  vi.doMock('../services/pilotdeckConfigReloader.js', () => ({
-    reloadPilotDeckConfig: vi.fn(async () => undefined),
+  vi.doMock('../services/g9agentConfigReloader.js', () => ({
+    reloadG9AgentConfig: vi.fn(async () => undefined),
   }));
   if (probe) {
     vi.doMock('../services/modelConnectionProbe.js', () => ({ probeModelConnection: probe }));
   }
-  vi.doMock('../services/pilotdeckConfig.js', async () => {
-    const actual = await vi.importActual('../services/pilotdeckConfig.js');
+  vi.doMock('../services/g9agentConfig.js', async () => {
+    const actual = await vi.importActual('../services/g9agentConfig.js');
     return {
       ...actual,
-      readPilotDeckConfigFile: vi.fn(() => ({ exists: false, configPath: '', config, rawYaml: {} })),
-      writePilotDeckConfig,
-      writeRawPilotDeckYaml,
+      readG9AgentConfigFile: vi.fn(() => ({ exists: false, configPath: '', config, rawYaml: {} })),
+      writeG9AgentConfig,
+      writeRawG9AgentYaml,
     };
   });
-  vi.doMock('../pilotdeck-bridge.js', () => ({
-    getPilotDeckGateway: vi.fn(async () => ({ reloadConfig: vi.fn(async () => undefined), getPythonRuntimeStatus: pythonStatus, getGitRuntimeStatus: gitStatus })),
+  vi.doMock('../g9agent-bridge.js', () => ({
+    getG9AgentGateway: vi.fn(async () => ({ reloadConfig: vi.fn(async () => undefined), getPythonRuntimeStatus: pythonStatus, getGitRuntimeStatus: gitStatus })),
   }));
 
   const { default: configRoutes } = await import('./config.js');
@@ -2785,8 +2785,8 @@ async function createConfigApp({ config = {}, probe, pythonStatus, gitStatus } =
   return {
     request: (path, init) => requestBodyJson(app, path, init),
     requestStatus: (path, init) => requestStatusJson(app, path, init),
-    writePilotDeckConfig,
-    writeRawPilotDeckYaml,
+    writeG9AgentConfig,
+    writeRawG9AgentYaml,
   };
 }
 
@@ -2805,24 +2805,24 @@ async function requestBodyJson(app, path, init = {}) {
 }
 
 async function createDiskConfigApp(initialRaw, overrides = {}) {
-  const pilotHome = mkdtempSync(join(tmpdir(), 'pilotdeck-config-route-'));
+  const pilotHome = mkdtempSync(join(tmpdir(), 'g9agent-config-route-'));
   tempDirs.push(pilotHome);
-  const configPath = join(pilotHome, 'pilotdeck.yaml');
+  const configPath = join(pilotHome, 'g9agent.yaml');
   if (initialRaw !== null) writeFileSync(configPath, initialRaw, 'utf8');
 
-  process.env.PILOT_HOME = pilotHome;
-  process.env.PILOTDECK_CONFIG_PATH = configPath;
+  process.env.G9AGENT_HOME = pilotHome;
+  process.env.G9AGENT_CONFIG_PATH = configPath;
 
   vi.resetModules();
-  vi.doUnmock('../services/pilotdeckConfig.js');
-  vi.doMock('../services/pilotdeckConfigWatcher.js', () => ({
+  vi.doUnmock('../services/g9agentConfig.js');
+  vi.doMock('../services/g9agentConfigWatcher.js', () => ({
     suppressNextWatchEvent: vi.fn(),
   }));
-  vi.doMock('../services/pilotdeckConfigReloader.js', () => ({
-    reloadPilotDeckConfig: overrides.reloadPilotDeckConfig ?? vi.fn(async () => ({ processEnv: { reloaded: true } })),
+  vi.doMock('../services/g9agentConfigReloader.js', () => ({
+    reloadG9AgentConfig: overrides.reloadG9AgentConfig ?? vi.fn(async () => ({ processEnv: { reloaded: true } })),
   }));
-  vi.doMock('../pilotdeck-bridge.js', () => ({
-    getPilotDeckGateway: vi.fn(async () => ({ reloadConfig: vi.fn(async () => undefined) })),
+  vi.doMock('../g9agent-bridge.js', () => ({
+    getG9AgentGateway: vi.fn(async () => ({ reloadConfig: vi.fn(async () => undefined) })),
   }));
 
   if (overrides.probe) vi.doMock('../services/modelConnectionProbe.js', () => ({ probeModelConnection: overrides.probe }));
@@ -2877,7 +2877,7 @@ function retryPolicy() {
 }
 
 it('round-trips custom request templates and response mappings through masked API and YAML', async () => {
-  const customProvider = { method: 'POST', auth: 'headerApiKey', apiKeyParam: 'X-Key', headers: { 'X-Client': 'PilotDeck', Authorization: 'Bearer {{apiKey}}' },
+  const customProvider = { method: 'POST', auth: 'headerApiKey', apiKeyParam: 'X-Key', headers: { 'X-Client': 'G9Agent', Authorization: 'Bearer {{apiKey}}' },
     queryParams: { format: 'json' }, requestBody: { messages: [{ role: 'user', content: '{{query}}' }], count: '{{limit}}', credentials: { api_key: '{{apiKey}}' } },
     resultsPath: 'data.hits', urlField: 'links[0].url', titleField: 'headline', snippetField: 'text' };
   const initial = { tools: { webSearch: { enabled: true, provider: 'custom', providers: { custom: {

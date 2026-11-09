@@ -24,7 +24,7 @@ function renderUserMessage(
     <MessageRow
       message={message}
       prevMessage={null}
-      provider="pilotdeck"
+      provider="g9agent"
       selectedProject={null}
       createDiff={() => []}
       canEdit={options.canEdit}
@@ -72,7 +72,7 @@ describe('MessageRow user actions', () => {
       <MessageRow
         message={message}
         prevMessage={null}
-        provider="pilotdeck"
+        provider="g9agent"
         selectedProject={null}
         createDiff={() => []}
         canEdit={false}
@@ -146,7 +146,7 @@ describe('MessageRow assistant actions', () => {
       <MessageRow
         message={message}
         prevMessage={null}
-        provider="pilotdeck"
+        provider="g9agent"
         selectedProject={null}
         createDiff={() => []}
         onFork={vi.fn()}
@@ -173,7 +173,7 @@ describe('MessageRow assistant actions', () => {
 
 
 it('shows only the response model before time inside the existing hover actions', () => {
-  render(<MessageRow message={{ id: 'model-response', type: 'assistant', content: 'Answer', model: 'qwen3.8-27b', timestamp: '2026-09-05T12:58:00Z' }} prevMessage={null} provider="pilotdeck" selectedProject={null} createDiff={() => []} />);
+  render(<MessageRow message={{ id: 'model-response', type: 'assistant', content: 'Answer', model: 'qwen3.8-27b', timestamp: '2026-09-05T12:58:00Z' }} prevMessage={null} provider="g9agent" selectedProject={null} createDiff={() => []} />);
   const row = screen.getByTestId('assistant-message-actions');
   expect(row.className).toContain('opacity-0');
   expect(row.className).toContain('group-hover/assistant-msg:opacity-100');

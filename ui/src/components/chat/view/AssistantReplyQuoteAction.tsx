@@ -127,14 +127,14 @@ export default function AssistantReplyQuoteAction() {
       onMouseDown={(event) => event.preventDefault()}
       onPointerDown={(event) => event.preventDefault()}
       onClick={() => {
-        window.dispatchEvent(new CustomEvent('pilotdeck:add-chat-reference', {
+        window.dispatchEvent(new CustomEvent('g9agent:add-chat-reference', {
           detail: action.reference,
         }));
         window.getSelection()?.removeAllRanges();
         setAction(null);
       }}
     >
-      {t('replyQuotes.addToChat', { defaultValue: '添加到PilotDeck对话' })}
+      {t('replyQuotes.addToChat', { defaultValue: '添加到九格智能体对话' })}
     </button>,
     document.body,
   );

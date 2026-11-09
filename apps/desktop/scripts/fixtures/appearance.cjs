@@ -11,7 +11,7 @@ const { normalizeAppearance } = require('../../dist/appearance');
 const { saveAppearancePatch, writeAppearanceImage, appearanceImagePath } = require('../../dist/appearanceStorage');
 const { createFilePicker } = require('../../dist/filePicker');
 const { windowPalette, windowChromeOptions, WINDOWS_CAPTION_HEIGHT } = require('../../dist/windowChrome');
-const profile = process.env.PILOTDECK_APPEARANCE_PROFILE;
+const profile = process.env.G9AGENT_APPEARANCE_PROFILE;
 if (!profile) throw new Error('An isolated profile is required');
 app.setPath('userData', profile);
 const read = () => {
@@ -31,24 +31,24 @@ function publishWindowState() {
     globalThis.captionOverlay = { color: state.palette.caption, symbolColor: state.palette.symbol, height: WINDOWS_CAPTION_HEIGHT };
     win.setTitleBarOverlay(globalThis.captionOverlay);
   }
-  win.webContents.send('pilotdeck:window-state', state);
+  win.webContents.send('g9agent:window-state', state);
 }
 nativeTheme.on('updated', publishWindowState);
-ipcMain.on('pilotdeck:get-runtime-status', event => { event.returnValue = { phase: 'ready', progress: 100, completed: true }; });
-ipcMain.on('pilotdeck:get-appearance', e => { e.returnValue = read(); });
-ipcMain.on('pilotdeck:get-window-state', e => { e.returnValue = windowState(); });
-ipcMain.handle('pilotdeck:set-appearance', (_e, value) => {
+ipcMain.on('g9agent:get-runtime-status', event => { event.returnValue = { phase: 'ready', progress: 100, completed: true }; });
+ipcMain.on('g9agent:get-appearance', e => { e.returnValue = read(); });
+ipcMain.on('g9agent:get-window-state', e => { e.returnValue = windowState(); });
+ipcMain.handle('g9agent:set-appearance', (_e, value) => {
   const next = saveAppearancePatch(profile, read(), value, 'zh-CN');
   nativeTheme.themeSource = next.themeMode;
   publishWindowState();
 });
-ipcMain.handle('pilotdeck:save-appearance-image', (_e, bytes) => writeAppearanceImage(profile, bytes, b => nativeImage.createFromBuffer(b).getSize()));
-ipcMain.handle('pilotdeck:read-appearance-image', (_e, id) => new Uint8Array(fs.readFileSync(appearanceImagePath(profile, id))));
-ipcMain.handle('pilotdeck:appearance-capabilities', () => ({ hardwareAcceleration: startupHardware }));
-ipcMain.handle('pilotdeck:delete-appearance-image', (_e, id) => {
+ipcMain.handle('g9agent:save-appearance-image', (_e, bytes) => writeAppearanceImage(profile, bytes, b => nativeImage.createFromBuffer(b).getSize()));
+ipcMain.handle('g9agent:read-appearance-image', (_e, id) => new Uint8Array(fs.readFileSync(appearanceImagePath(profile, id))));
+ipcMain.handle('g9agent:appearance-capabilities', () => ({ hardwareAcceleration: startupHardware }));
+ipcMain.handle('g9agent:delete-appearance-image', (_e, id) => {
   if (read().lightAppearance?.background.imageId !== id) fs.rmSync(appearanceImagePath(profile, id), { force: true });
 });
-ipcMain.handle('pilotdeck:menu-state', () => {});
+ipcMain.handle('g9agent:menu-state', () => {});
 globalThis.filePickerCalls = [];
 globalThis.filePickerErrors = [];
 const pickFiles = createFilePicker({
@@ -59,13 +59,13 @@ const pickFiles = createFilePicker({
     return globalThis.filePickerResults ? Promise.resolve(globalThis.filePickerResults.shift() || { canceled: true, filePaths: [] }) : dialog.showOpenDialog(owner, options);
   },
 });
-ipcMain.handle('pilotdeck:pick-files', async (event, request) => {
+ipcMain.handle('g9agent:pick-files', async (event, request) => {
   try { return await pickFiles(BrowserWindow.fromWebContents(event.sender), request); }
   catch (error) { globalThis.filePickerErrors.push(String(error)); throw error; }
 });
-ipcMain.handle('pilotdeck:get-runtime-info', () => null);
-ipcMain.handle('pilotdeck:update-status', () => ({ state: 'idle', progress: 0 }));
-ipcMain.handle('pilotdeck:update-check', () => ({ current: { version: 'test' }, latest: null, hasUpdate: false }));
+ipcMain.handle('g9agent:get-runtime-info', () => null);
+ipcMain.handle('g9agent:update-status', () => ({ state: 'idle', progress: 0 }));
+ipcMain.handle('g9agent:update-check', () => ({ current: { version: 'test' }, latest: null, hasUpdate: false }));
 app.whenReady().then(async () => {
   nativeTheme.themeSource = read().themeMode;
   win = new BrowserWindow({ ...windowChromeOptions(process.platform, nativeTheme.shouldUseDarkColors, read().lightAppearance), show: false, width: 1320, height: 900,

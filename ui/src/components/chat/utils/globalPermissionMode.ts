@@ -1,10 +1,10 @@
 import { authenticatedFetch } from '../../../utils/api';
 import type { PermissionMode } from '../types/types';
-import { PILOTDECK_SETTINGS_KEY, getPilotDeckSettings, safeLocalStorage } from './chatStorage';
+import { G9AGENT_SETTINGS_KEY, getG9AgentSettings, safeLocalStorage } from './chatStorage';
 
 type GlobalPermissionMode = Extract<PermissionMode, 'default' | 'bypassPermissions'>;
 type State = { mode: GlobalPermissionMode; loading: boolean; error: string | null };
-export const PERMISSION_PREFERENCE_CHANGED = 'pilotdeck:permission-preference-changed';
+export const PERMISSION_PREFERENCE_CHANGED = 'g9agent:permission-preference-changed';
 
 /** The server preference is authoritative; session/browser legacy keys are never restored. */
 export function createGlobalPermissionModeStore(request = authenticatedFetch) {
@@ -34,9 +34,9 @@ export function createGlobalPermissionModeStore(request = authenticatedFetch) {
       confirmed = data.permissions.skipPermissions ? 'bypassPermissions' : 'default';
       loaded = true;
       // This cache is for rule editors only; it never initializes the global preference.
-      safeLocalStorage.setItem(PILOTDECK_SETTINGS_KEY, JSON.stringify({ ...getPilotDeckSettings(), ...data.permissions }));
+      safeLocalStorage.setItem(G9AGENT_SETTINGS_KEY, JSON.stringify({ ...getG9AgentSettings(), ...data.permissions }));
       if (mode && typeof window !== 'undefined') {
-        window.dispatchEvent(new Event('pilotdeck-settings-changed'));
+        window.dispatchEvent(new Event('g9agent-settings-changed'));
         // Other windows refresh from the server, rather than trusting this signal's value.
         safeLocalStorage.setItem(PERMISSION_PREFERENCE_CHANGED, `${Date.now()}:${currentRevision}`);
       }

@@ -34,12 +34,12 @@ PDF_TOOL="$SKILL_ROOT/scripts/pdf.sh"
 bash "$PDF_TOOL" check || bash "$PDF_TOOL" fix
 ```
 
-`fix` creates an isolated Python environment under `${PDF_SKILL_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/pilotdeck-pdf}`. Poppler is a system dependency; if `pdfinfo` or `pdftoppm` is missing, follow the platform-specific hint printed by `fix`.
+`fix` creates an isolated Python environment under `${PDF_SKILL_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/g9agent-pdf}`. Poppler is a system dependency; if `pdfinfo` or `pdftoppm` is missing, follow the platform-specific hint printed by `fix`.
 
-Use the turn-scoped PilotDeck work directory for every intermediate. The host sets `PILOTDECK_WORK_DIR`; the fallback keeps manual runs internal to the project:
+Use the turn-scoped G9Agent work directory for every intermediate. The host sets `G9AGENT_WORK_DIR`; the fallback keeps manual runs internal to the project:
 
 ```bash
-WORKSPACE="${PILOTDECK_WORK_DIR:-$PWD/.pilotdeck/work/manual/<task-slug>}/pdf"
+WORKSPACE="${G9AGENT_WORK_DIR:-$PWD/.g9agent/work/manual/<task-slug>}/pdf"
 mkdir -p "$WORKSPACE/tmp" "$WORKSPACE/qa"
 ```
 

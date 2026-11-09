@@ -7,7 +7,7 @@ import { WorkspaceCheckpoints, getCheckpointStore } from "../../src/session/chec
 import { createReadFileTool } from "../../src/tool/builtin/readFile.js";
 import { createWriteFileTool } from "../../src/tool/builtin/writeFile.js";
 import { resolveDefaultCommandShell } from "../../src/runtime/commandShell.js";
-import type { PilotDeckToolRuntimeContext } from "../../src/tool/protocol/types.js";
+import type { G9AgentToolRuntimeContext } from "../../src/tool/protocol/types.js";
 
 export async function fixture(t: test.TestContext, initialFiles: Record<string, string> = {}) {
   // Detached children and task wait timers are unref'ed in the server runtime.
@@ -18,7 +18,7 @@ export async function fixture(t: test.TestContext, initialFiles: Record<string, 
   const workspace = join(base, "workspace"), home = join(base, "home");
   await mkdir(workspace); await mkdir(home);
   const history = new WorkspaceCheckpoints(workspace, home), store = await getCheckpointStore(workspace, home);
-  const context: PilotDeckToolRuntimeContext = {
+  const context: G9AgentToolRuntimeContext = {
     cwd: workspace, env: process.env, sessionId: "session", turnId: "turn", fileHistory: history,
     permissionMode: "bypassPermissions", permissionContext: { mode: "bypassPermissions", cwd: workspace,
       additionalWorkingDirectories: [], canPrompt: false, bypassAvailable: true, rules: { allow: [], deny: [], ask: [] } },

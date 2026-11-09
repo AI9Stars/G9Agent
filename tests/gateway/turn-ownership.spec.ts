@@ -9,7 +9,7 @@ import { SessionRouter } from '../../src/gateway/SessionRouter.js';
 import type { GatewayEvent } from '../../src/gateway/protocol/types.js';
 import { GatewayWsConnection } from '../../src/gateway/server/GatewayWsConnection.js';
 import type { TextWebSocketConnection } from '../../src/gateway/server/websocket.js';
-import { PILOTDECK_GATEWAY_PROTOCOL_VERSION } from '../../src/gateway/protocol/version.js';
+import { G9AGENT_GATEWAY_PROTOCOL_VERSION } from '../../src/gateway/protocol/version.js';
 
 function deferred() {
   let resolve!: () => void;
@@ -24,11 +24,11 @@ async function collect(events: AsyncIterable<GatewayEvent>) {
   return result;
 }
 async function fixture(t: TestContext, createSession: () => AgentSession | Promise<AgentSession>, options: InProcessGatewayOptions = {}) {
-  const home = await mkdtemp(join(tmpdir(), 'pilotdeck-turn-ownership-'));
-  const previous = process.env.PILOT_HOME;
-  process.env.PILOT_HOME = home;
+  const home = await mkdtemp(join(tmpdir(), 'g9agent-turn-ownership-'));
+  const previous = process.env.G9AGENT_HOME;
+  process.env.G9AGENT_HOME = home;
   const router = new SessionRouter({ createSession, idleSweepIntervalMs: 0 });
-  t.after(async () => { router.shutdown(); if (previous === undefined) delete process.env.PILOT_HOME; else process.env.PILOT_HOME = previous; await rm(home, { recursive: true, force: true }); });
+  t.after(async () => { router.shutdown(); if (previous === undefined) delete process.env.G9AGENT_HOME; else process.env.G9AGENT_HOME = previous; await rm(home, { recursive: true, force: true }); });
   return { router, gateway: new InProcessGateway(router, options) };
 }
 
@@ -37,7 +37,7 @@ async function socketConnection(gateway: InProcessGateway) {
   const sent: any[] = [];
   const socket = { onMessage(handler: typeof receive) { receive = handler; }, onClose(handler: () => void) { close = handler; }, sendText(text: string) { sent.push(JSON.parse(text)); }, close() { close(); } };
   new GatewayWsConnection(socket as unknown as TextWebSocketConnection, { gateway, token: 'synthetic', serverVersion: 'test' });
-  receive(JSON.stringify({ type: 'hello', protocolVersion: PILOTDECK_GATEWAY_PROTOCOL_VERSION, token: 'synthetic', clientName: 'test', clientVersion: 'test' }));
+  receive(JSON.stringify({ type: 'hello', protocolVersion: G9AGENT_GATEWAY_PROTOCOL_VERSION, token: 'synthetic', clientName: 'test', clientVersion: 'test' }));
   await tick();
   return { close, sent, send: (frame: unknown) => receive(JSON.stringify(frame)) };
 }

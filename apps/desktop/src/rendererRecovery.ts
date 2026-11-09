@@ -1,3 +1,4 @@
+import { productName } from './brand';
 import type { BrowserWindow, MessageBoxOptions, MessageBoxReturnValue } from 'electron';
 
 type RecoveryOptions = {
@@ -16,7 +17,7 @@ export function installRendererRecovery(window: BrowserWindow, options: Recovery
     const zh = options.isChinese();
     try {
       const { response } = await options.showDialog({
-        type: 'warning', title: 'PilotDeck',
+        type: 'warning', title: productName(options.isChinese() ? 'zh-CN' : 'en'),
         message: zh
           ? (crashed ? '界面意外关闭' : '界面暂时没有响应')
           : (crashed ? 'The interface closed unexpectedly' : 'The interface is not responding'),

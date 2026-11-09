@@ -44,18 +44,18 @@ def _edit_candidate(source: Path, output: Path) -> None:
 
 
 def run_smoke_test() -> dict[str, Any]:
-    previous_work_dir = os.environ.get("PILOTDECK_WORK_DIR")
-    previous_workspace = os.environ.get("PILOTDECK_WORKSPACE_CWD")
+    previous_work_dir = os.environ.get("G9AGENT_WORK_DIR")
+    previous_workspace = os.environ.get("G9AGENT_WORKSPACE_CWD")
     checks: list[str] = []
     try:
-        with tempfile.TemporaryDirectory(prefix="pilotdeck_docx_smoke_") as temporary:
+        with tempfile.TemporaryDirectory(prefix="g9agent_docx_smoke_") as temporary:
             root = Path(temporary)
-            work = root / ".pilotdeck" / "work" / "turn"
+            work = root / ".g9agent" / "work" / "turn"
             project = root / "project"
             work.mkdir(parents=True)
             project.mkdir()
-            os.environ["PILOTDECK_WORK_DIR"] = str(work)
-            os.environ["PILOTDECK_WORKSPACE_CWD"] = str(project)
+            os.environ["G9AGENT_WORK_DIR"] = str(work)
+            os.environ["G9AGENT_WORKSPACE_CWD"] = str(project)
 
             candidate = work / "docx" / "tmp" / "candidate.docx"
             _create_candidate(candidate)
@@ -109,7 +109,7 @@ def run_smoke_test() -> dict[str, Any]:
                             {
                                 "match": "项目简报",
                                 "text": "请确认标题。",
-                                "author": "PilotDeck",
+                                "author": "G9Agent",
                             }
                         ]
                     },
@@ -140,10 +140,10 @@ def run_smoke_test() -> dict[str, Any]:
             }
     finally:
         if previous_work_dir is None:
-            os.environ.pop("PILOTDECK_WORK_DIR", None)
+            os.environ.pop("G9AGENT_WORK_DIR", None)
         else:
-            os.environ["PILOTDECK_WORK_DIR"] = previous_work_dir
+            os.environ["G9AGENT_WORK_DIR"] = previous_work_dir
         if previous_workspace is None:
-            os.environ.pop("PILOTDECK_WORKSPACE_CWD", None)
+            os.environ.pop("G9AGENT_WORKSPACE_CWD", None)
         else:
-            os.environ["PILOTDECK_WORKSPACE_CWD"] = previous_workspace
+            os.environ["G9AGENT_WORKSPACE_CWD"] = previous_workspace

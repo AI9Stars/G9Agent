@@ -31,7 +31,8 @@ test('real chat diagrams wait for the stream, support source/copy and use indepe
   await page.getByRole('button', { name: 'Show source', exact: true }).first().click();
   await expect(page.locator('pre code.language-mermaid')).toHaveText(flow + '\n');
   await page.getByRole('button', { name: 'Copy code', exact: true }).first().click();
-  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(flow);
+  // The Windows clipboard serializes line endings as CRLF.
+  await expect.poll(() => page.evaluate(async () => (await navigator.clipboard.readText()).replace(/\r\n/g, '\n'))).toBe(flow);
   await page.getByRole('button', { name: 'Show diagram', exact: true }).click();
   await expect(diagrams(page)).toHaveCount(2);
   await page.emulateMedia({ colorScheme: 'dark' });

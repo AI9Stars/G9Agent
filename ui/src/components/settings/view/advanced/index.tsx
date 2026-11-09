@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { usePilotDeckConfig } from "../../../../hooks/usePilotDeckConfig";
+import { useG9AgentConfig } from "../../../../hooks/useG9AgentConfig";
 import { ConfigSaveError } from "../../shared/view";
 import { configToYamlString, safeParseYaml } from "../modelPool/utils/configYaml";
-import type { PilotDeckConfig } from "../modelPool/types";
+import type { G9AgentConfig } from "../modelPool/types";
 import AdvancedRetrySection from "./components/AdvancedRetrySection";
 import ServiceSection from "./components/ServiceSection";
 import CustomEnvSection from "./components/CustomEnvSection";
@@ -24,10 +24,10 @@ export default function AdvancedSections({ title: _title }: AdvancedSectionsProp
     loading,
     saving,
     error,
-  } = usePilotDeckConfig();
+  } = useG9AgentConfig();
   const parsedConfig = useMemo(() => safeParseYaml(raw), [raw]);
 
-  const saveConfig = async (next: PilotDeckConfig) => {
+  const saveConfig = async (next: G9AgentConfig) => {
     try {
       const result = await commitRaw(configToYamlString(next));
       return result.ok;
@@ -42,7 +42,7 @@ export default function AdvancedSections({ title: _title }: AdvancedSectionsProp
       <ConfigSaveError error={error} />
       {loading ? (
         <div className="py-6 text-xs text-muted-foreground">
-          {t("pilotDeckConfig.loading")}
+          {t("g9agentConfig.loading")}
         </div>
       ) : parsedConfig ? (
         <>
@@ -73,9 +73,9 @@ export default function AdvancedSections({ title: _title }: AdvancedSectionsProp
 
       {!loading && path ? (
         <p className="advanced-config-file-note">
-          {t("pilotDeckConfig.panels.advancedPage.configFilePrefix")}{" "}
+          {t("g9agentConfig.panels.advancedPage.configFilePrefix")}{" "}
           <code>{path}</code>
-          {t("pilotDeckConfig.panels.advancedPage.configFileSuffix")}
+          {t("g9agentConfig.panels.advancedPage.configFileSuffix")}
         </p>
       ) : null}
     </div>

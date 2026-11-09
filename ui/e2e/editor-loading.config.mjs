@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const port = Number(process.env.PILOTDECK_EDITOR_TEST_PORT || 5193);
+const port = Number(process.env.G9AGENT_EDITOR_TEST_PORT || 5193);
 export default defineConfig({
   testDir: '.',
   testMatch: 'editor-loading.spec.mjs',

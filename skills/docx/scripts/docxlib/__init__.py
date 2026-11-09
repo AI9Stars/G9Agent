@@ -1,1 +1,1 @@
-"""PilotDeck DOCX skill implementation."""
+"""G9Agent DOCX skill implementation."""

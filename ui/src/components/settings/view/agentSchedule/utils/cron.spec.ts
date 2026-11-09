@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { patch } from "../../modelPool/utils/patch";
-import type { PilotDeckConfig } from "../../modelPool/types";
+import type { G9AgentConfig } from "../../modelPool/types";
 import { isCronConfigEnabled } from "./cron";
 
 describe("isCronConfigEnabled", () => {
@@ -12,14 +12,14 @@ describe("isCronConfigEnabled", () => {
     { label: "explicitly disabled cron section", config: { cron: { enabled: false } }, expected: false },
   ] satisfies Array<{
     label: string;
-    config: PilotDeckConfig;
+    config: G9AgentConfig;
     expected: boolean;
   }>)("treats $label as enabled=$expected", ({ config, expected }) => {
     expect(isCronConfigEnabled(config)).toBe(expected);
   });
 
   it("creates cron.enabled without changing the source config", () => {
-    const config: PilotDeckConfig = {
+    const config: G9AgentConfig = {
       agent: { model: "provider/model" },
       customEnv: { EXISTING_VALUE: "preserved" },
     };

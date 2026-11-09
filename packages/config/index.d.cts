@@ -1,4 +1,12 @@
 export function resolveConfigHome(env?: Record<string,string|undefined>): string;
+export function migrateLegacyNamespace(env?: Record<string,string|undefined>, options?: { homeDirectory?: string; appData?: string }): void;
+export function migrateLegacyEnvironment(env: Record<string,string|undefined>): void;
+export function migrateLegacyProject(projectRoot: string): void;
+export const LEGACY_PRODUCT_NAME: string;
+export const LEGACY_PROJECT_DIR: string;
+export const LEGACY_WORKSPACE_MARKER: string;
+export const LEGACY_GENERAL_NAMES: RegExp;
+export const LEGACY_INSTALLER_GUID: string;
 export function classifyRuntimeError(error: unknown,evidence?: string,status?: number): string;
 export function redactDiagnostic(value: unknown): string;
 export function registerDiagnosticSecrets(value: unknown): void;

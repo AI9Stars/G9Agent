@@ -11,7 +11,7 @@ import type { AgentContextRuntime } from "../../context/ContextRuntime.js";
 import type { ContextModelTarget, ContextPrepareInput, ModelContext } from "../../context/protocol/types.js";
 import { NullContextRuntime } from "../../context/NullContextRuntime.js";
 import { buildCachePlan } from "../../context/cache/CachePlan.js";
-import type { PilotDeckToolDefinition, ToolRegistry } from "../../tool/index.js";
+import type { G9AgentToolDefinition, ToolRegistry } from "../../tool/index.js";
 import { requiresPromptCapability } from "../../tool/userInteractionConstraints.js";
 import { ASK_MODE_DESCRIPTION_SUFFIX, isAskModeAllowedTool } from "../../tool/askModeConstraints.js";
 import { buildAskModeAgentToolSchema } from "../../tool/builtin/agent.js";
@@ -166,7 +166,7 @@ async function finishRequest(config: ModelRequestConfig, dependencies: ModelRequ
   for (const diagnostic of materialized.diagnostics) {
     // eslint-disable-next-line no-console
     console.warn(
-      `[pilotdeck] ${diagnostic.code}: ${diagnostic.message} (${diagnostic.mediaType}, ${diagnostic.path})`,
+      `[g9agent] ${diagnostic.code}: ${diagnostic.message} (${diagnostic.mediaType}, ${diagnostic.path})`,
     );
   }
 
@@ -209,14 +209,14 @@ function planModeReminderMessage(planDirectory?: string): string {
     "Plan mode is active.",
     planDirectory
       ? `Read first using read-only tools, then use write_file/edit_file to write plan markdown ONLY under this absolute plan directory: ${planDirectory}`
-      : "Read first using read-only tools, then write or refine plan markdown only under `.pilotdeck/plans/`.",
-    ...(planDirectory ? ["Use that absolute directory for file paths and exit_plan_mode; do not assume cwd/.pilotdeck/plans is the plan directory."] : []),
+      : "Read first using read-only tools, then write or refine plan markdown only under `.g9agent/plans/`.",
+    ...(planDirectory ? ["Use that absolute directory for file paths and exit_plan_mode; do not assume cwd/.g9agent/plans is the plan directory."] : []),
     "Do not make implementation changes while planning.",
     "When the plan is ready for user review, call `exit_plan_mode` with the plan file path.",
   ].join("\n");
 }
 
-function filterAskModeTools(tools: PilotDeckToolDefinition[]): CanonicalToolSchema[] {
+function filterAskModeTools(tools: G9AgentToolDefinition[]): CanonicalToolSchema[] {
   const agentOverride = buildAskModeAgentToolSchema();
   return tools
     .filter(isAskModeAllowedTool)
@@ -230,7 +230,7 @@ function filterAskModeTools(tools: PilotDeckToolDefinition[]): CanonicalToolSche
     });
 }
 
-function toolToCanonicalSchema(tool: PilotDeckToolDefinition): CanonicalToolSchema {
+function toolToCanonicalSchema(tool: G9AgentToolDefinition): CanonicalToolSchema {
   return {
     name: tool.name,
     description: tool.description,

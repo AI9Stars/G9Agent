@@ -5,7 +5,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { parse } from 'yaml';
-import { PilotDeckConfigProvider } from '../../../../hooks/usePilotDeckConfig';
+import { G9AgentConfigProvider } from '../../../../hooks/useG9AgentConfig';
 import MultimodalGenerationSettings from './index';
 import SettingsSidebar from '../SettingsSidebar';
 import en from '../../../../i18n/locales/en/settings.json';
@@ -36,10 +36,10 @@ function Location() { const value = useLocation(); return <output data-testid="l
 async function mount(path = '/settings/multimodal-generation', lng = 'zh-CN') {
   const i18n = createInstance();
   await i18n.init({ lng, defaultNS: 'settings', resources: { en: { settings: en }, 'zh-CN': { settings: zh } }, interpolation: { escapeValue: false } });
-  render(<I18nextProvider i18n={i18n}><MemoryRouter initialEntries={[path]}><PilotDeckConfigProvider>
+  render(<I18nextProvider i18n={i18n}><MemoryRouter initialEntries={[path]}><G9AgentConfigProvider>
     <SettingsSidebar selectedKey="multimodalGeneration" onSelect={vi.fn()} onClose={vi.fn()} />
     <MultimodalGenerationSettings /><Location />
-  </PilotDeckConfigProvider></MemoryRouter></I18nextProvider>);
+  </G9AgentConfigProvider></MemoryRouter></I18nextProvider>);
   await screen.findByRole('tab', { name: /图像|Images/ });
 }
 const panel = () => within(screen.getByRole('tabpanel'));

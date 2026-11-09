@@ -6,12 +6,12 @@ import os from 'node:os';
 import { fileSymlinkOrSkip } from '../test-support/symlink.js';
 
 const mocks = vi.hoisted(() => ({ read: vi.fn(), list: vi.fn() }));
-vi.mock('../pilotdeck-bridge.js', () => ({
-  getPilotDeckGateway: async () => ({ skillRead: mocks.read, skillsList: mocks.list }),
+vi.mock('../g9agent-bridge.js', () => ({
+  getG9AgentGateway: async () => ({ skillRead: mocks.read, skillsList: mocks.list }),
 }));
 let temporary, skillPath, router;
 beforeAll(async () => {
-  temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-documents-test-'));
+  temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-documents-test-'));
   const root = path.join(temporary, 'gateway-release', 'skills');
   skillPath = path.join(root, 'example');
   await fs.mkdir(path.join(skillPath, 'references'), { recursive: true });
@@ -24,7 +24,7 @@ beforeAll(async () => {
   await fs.symlink(outside, path.join(skillPath, 'escape'), process.platform === 'win32' ? 'junction' : 'dir');
   await fs.writeFile(path.join(skillPath, 'script.sh'), 'echo run');
   await fs.writeFile(path.join(skillPath, 'large.md'), 'a'.repeat(1024 * 1024 + 1));
-  vi.stubEnv('PILOTDECK_BUNDLED_SKILLS_DIR', path.join(temporary, 'other-web-release', 'skills'));
+  vi.stubEnv('G9AGENT_BUNDLED_SKILLS_DIR', path.join(temporary, 'other-web-release', 'skills'));
   vi.resetModules();
   router = (await import('./skills.js')).default;
 });

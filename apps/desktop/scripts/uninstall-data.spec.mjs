@@ -13,38 +13,38 @@ const mod = { exports: {} };
 new Function('module','exports', ts.transpileModule(fs.readFileSync(new URL('../src/desktopUninstall.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText)(mod,mod.exports);
 
 test('cleanup removes only named personal data and never traverses a workspace junction', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(),'pilotdeck-uninstall-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(),'g9agent-uninstall-'));
   try {
-    const profile = path.join(root,'用户'), pilot = path.join(profile,'.pilotdeck'), appData = path.join(profile,'AppData/Roaming'), localAppData = path.join(profile,'AppData/Local');
-    fs.mkdirSync(pilot,{recursive:true});fs.mkdirSync(path.join(appData,'pilotdeck-desktop'),{recursive:true});fs.mkdirSync(path.join(localAppData,'pilotdeck-desktop-updater'),{recursive:true});
-    fs.writeFileSync(path.join(pilot,'pilotdeck.yaml'),'apiKey: private\n');
+    const profile = path.join(root,'用户'), pilot = path.join(profile,'.g9agent'), appData = path.join(profile,'AppData/Roaming'), localAppData = path.join(profile,'AppData/Local');
+    fs.mkdirSync(pilot,{recursive:true});fs.mkdirSync(path.join(appData,'g9agent-desktop'),{recursive:true});fs.mkdirSync(path.join(localAppData,'g9agent-desktop-updater'),{recursive:true});
+    fs.writeFileSync(path.join(pilot,'g9agent.yaml'),'apiKey: private\n');
     const outside = path.join(root,'workspace');fs.mkdirSync(outside);fs.writeFileSync(path.join(outside,'source.txt'),'preserve');
     fs.symlinkSync(outside,path.join(pilot,'workspace-link'),process.platform==='win32'?'junction':'dir');
     const result = cleanupPersonalData({profile,pilotHome:pilot,appData,localAppData});
     assert.equal(result.skipped.length,0);assert.equal(fs.existsSync(pilot),false);
     assert.equal(fs.readFileSync(path.join(outside,'source.txt'),'utf8'),'preserve');
-    assert.equal(fs.existsSync(path.join(appData,'pilotdeck-desktop')),false);
+    assert.equal(fs.existsSync(path.join(appData,'g9agent-desktop')),false);
   } finally { fs.rmSync(root,{recursive:true,force:true}); }
 });
 
 test('cleanup refuses broad custom homes and repositories', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(),'pilotdeck-uninstall-guard-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(),'g9agent-uninstall-guard-'));
   try {
     const profile = path.join(root,'profile');fs.mkdirSync(profile);fs.writeFileSync(path.join(profile,'personal.txt'),'keep');
     const result = cleanupPersonalData({profile,pilotHome:profile});assert.deepEqual(result.removed,[]);assert.ok(result.skipped.includes(profile));
-    const repo = path.join(profile,'.pilotdeck');fs.mkdirSync(path.join(repo,'.git'),{recursive:true});
+    const repo = path.join(profile,'.g9agent');fs.mkdirSync(path.join(repo,'.git'),{recursive:true});
     assert.ok(cleanupPersonalData({profile,pilotHome:repo}).skipped.includes(repo));
     assert.equal(fs.readFileSync(path.join(profile,'personal.txt'),'utf8'),'keep');
   } finally { fs.rmSync(root,{recursive:true,force:true}); }
 });
 
 test('cleanup preserves a General workspace even when nested inside a client data directory', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pilotdeck-uninstall-workspace-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'g9agent-uninstall-workspace-'));
   try {
     const profile = path.join(root, 'profile'), appData = path.join(profile, 'AppData', 'Roaming');
-    const client = path.join(appData, 'PilotDeck'), workspace = path.join(client, 'custom', 'General');
+    const client = path.join(appData, 'G9Agent'), workspace = path.join(client, 'custom', 'General');
     fs.mkdirSync(workspace, { recursive: true });
-    fs.writeFileSync(path.join(workspace, '.pilotdeck-workspace'), 'workspace marker');
+    fs.writeFileSync(path.join(workspace, '.g9agent-workspace'), 'workspace marker');
     fs.writeFileSync(path.join(workspace, 'report.md'), 'user file');
     const result = cleanupPersonalData({ profile, appData });
     assert.ok(result.skipped.includes(client));
@@ -56,17 +56,17 @@ test('cleanup preserves a General workspace even when nested inside a client dat
 });
 
 test('uninstall language probing respects the saved preference and cannot clean data', () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(),'pilotdeck-uninstall-language-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(),'g9agent-uninstall-language-'));
   try {
     const profile = path.join(root,'profile'), appData = path.join(profile,'AppData/Roaming');
-    const client = path.join(appData,'pilotdeck-desktop'), pilot = path.join(profile,'.pilotdeck');
+    const client = path.join(appData,'g9agent-desktop'), pilot = path.join(profile,'.g9agent');
     fs.mkdirSync(client,{recursive:true}); fs.mkdirSync(pilot,{recursive:true});
-    fs.writeFileSync(path.join(pilot,'pilotdeck.yaml'),'preserve credentials');
+    fs.writeFileSync(path.join(pilot,'g9agent.yaml'),'preserve credentials');
     for (const language of ['en','zh-CN']) {
       fs.writeFileSync(path.join(client,'appearance.json'),JSON.stringify({language}));
       const result = spawnSync(process.execPath,[fileURLToPath(new URL('../resources/uninstall-data.cjs',import.meta.url)),'--language','--profile',profile,'--app-data',appData],{encoding:'utf8',windowsHide:true});
       assert.equal(result.status,0,result.stderr); assert.equal(result.stdout,language);
-      assert.equal(fs.readFileSync(path.join(pilot,'pilotdeck.yaml'),'utf8'),'preserve credentials');
+      assert.equal(fs.readFileSync(path.join(pilot,'g9agent.yaml'),'utf8'),'preserve credentials');
     }
   } finally { fs.rmSync(root,{recursive:true,force:true}); }
 });

@@ -29,7 +29,7 @@ it.each(['en', 'zh-CN'])('replays all answers and exact multi-select labels from
     { question: 'Which source?', header: 'Source', options: [{ label: 'Docs' }, { label: 'Code' }] },
   ];
   const answers = { 'Which paths?': ['A, B', 'C', 'Custom, answer'], 'How detailed?': 'Summary', 'Which source?': 'Docs' };
-  const base = { sessionId: 'question-session', provider: 'pilotdeck' as const, timestamp: '2026-01-01T00:00:00Z' };
+  const base = { sessionId: 'question-session', provider: 'g9agent' as const, timestamp: '2026-01-01T00:00:00Z' };
   const [message] = normalizedToChatMessages([
     { ...base, id: 'question-call', kind: 'tool_use', toolName: 'ask_user_question', toolId: 'question-call', toolInput: { questions, answers: {} } },
     { ...base, id: 'question-result', kind: 'tool_result', toolId: 'question-call', content: 'User has answered', isError: false, toolUseResult: { questions, answers } },

@@ -1,16 +1,16 @@
-import type { PilotDeckToolResult } from "../protocol/result.js";
-import type { PilotDeckToolCall, PilotDeckToolRuntimeContext } from "../protocol/types.js";
+import type { G9AgentToolResult } from "../protocol/result.js";
+import type { G9AgentToolCall, G9AgentToolRuntimeContext } from "../protocol/types.js";
 import type { ToolRuntime } from "../execution/ToolRuntime.js";
-import type { PilotDeckToolScheduler } from "./ToolScheduler.js";
+import type { G9AgentToolScheduler } from "./ToolScheduler.js";
 
-export class SequentialToolScheduler implements PilotDeckToolScheduler {
+export class SequentialToolScheduler implements G9AgentToolScheduler {
   constructor(private readonly runtime: ToolRuntime) {}
 
   async executeAll(
-    calls: PilotDeckToolCall[],
-    context: PilotDeckToolRuntimeContext,
-  ): Promise<PilotDeckToolResult[]> {
-    const results: PilotDeckToolResult[] = [];
+    calls: G9AgentToolCall[],
+    context: G9AgentToolRuntimeContext,
+  ): Promise<G9AgentToolResult[]> {
+    const results: G9AgentToolResult[] = [];
     for (const call of calls) {
       results.push(await this.runtime.execute(call, context));
     }

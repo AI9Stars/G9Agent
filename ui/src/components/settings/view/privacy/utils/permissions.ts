@@ -1,10 +1,10 @@
 import {
-  PILOTDECK_SETTINGS_KEY,
-  getPilotDeckSettings,
+  G9AGENT_SETTINGS_KEY,
+  getG9AgentSettings,
   safeLocalStorage,
-  savePilotDeckPermissionSettings,
+  saveG9AgentPermissionSettings,
 } from "../../../../chat/utils/chatStorage";
-import type { PilotDeckSettings } from "../../../../chat/types/types";
+import type { G9AgentSettings } from "../../../../chat/types/types";
 import type { ParsedPermissionsImport, PermissionsExport } from "../types";
 
 export const addUnique = (items: string[], value: string): string[] => {
@@ -28,27 +28,27 @@ export const mergeUnique = (a: string[], b: string[]): string[] => {
   return out;
 };
 
-export function persistPermissionSettings(updates: Partial<PilotDeckSettings>) {
-  const current = getPilotDeckSettings();
-  const next: PilotDeckSettings = {
+export function persistPermissionSettings(updates: Partial<G9AgentSettings>) {
+  const current = getG9AgentSettings();
+  const next: G9AgentSettings = {
     ...current,
     ...updates,
     lastUpdated: new Date().toISOString(),
   };
-  safeLocalStorage.setItem(PILOTDECK_SETTINGS_KEY, JSON.stringify(next));
-  window.dispatchEvent(new Event("pilotdeck-settings-changed"));
-  savePilotDeckPermissionSettings(updates).catch((error) => {
+  safeLocalStorage.setItem(G9AGENT_SETTINGS_KEY, JSON.stringify(next));
+  window.dispatchEvent(new Event("g9agent-settings-changed"));
+  saveG9AgentPermissionSettings(updates).catch((error) => {
     console.error("Failed to persist permission settings to backend:", error);
   });
   return next;
 }
 
 export function buildExportPayload(): PermissionsExport {
-  const settings = getPilotDeckSettings();
+  const settings = getG9AgentSettings();
   return {
     version: 2,
     exportedAt: new Date().toISOString(),
-    source: "pilotdeck",
+    source: "g9agent",
     allowedTools: settings.allowedTools,
     disallowedTools: settings.disallowedTools,
     skipPermissions: settings.skipPermissions,

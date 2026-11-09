@@ -154,7 +154,7 @@ const ACTIVE_TOOL_BUTTON_CLASS =
   'bg-[var(--pd-accent-soft,#dbeafe)] text-[var(--pd-accent-strong,#1d4ed8)] hover:bg-[var(--pd-accent-hover,#bfdbfe)] dark:bg-[var(--pd-accent-selected,#172554)] dark:text-[var(--pd-accent-strong,#bfdbfe)] dark:hover:bg-[var(--pd-accent-hover,#1e3a8a)]';
 
 const ALWAYS_ON_EVENT_BADGE_POLL_INTERVAL_MS = 15_000;
-const ALWAYS_ON_LAST_VIEWED_MARKER_KEY = 'pilotdeck:always-on-last-viewed-marker';
+const ALWAYS_ON_LAST_VIEWED_MARKER_KEY = 'g9agent:always-on-last-viewed-marker';
 const ALWAYS_ON_EVENT_BADGE_LIMIT = 200;
 
 const BADGE_EVENT_PHASES = new Set<AlwaysOnDashboardEvent['phase']>([
@@ -366,7 +366,7 @@ function MainAreaContent(props: MainAreaProps) {
     <div className="pd-workspace-content flex h-full min-w-0 flex-col bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <header className="workspace-header relative z-[80] shrink-0 overflow-visible">
         {isSidebarCollapsed ? (
-          // Just the "expand sidebar" affordance — the PilotDeck logo lives
+          // Just the "expand sidebar" affordance — the G9Agent logo lives
           // in the sidebar header, so showing a duplicate badge here when
           // the sidebar is collapsed feels redundant.
           <button

@@ -1,5 +1,5 @@
-import type { PilotDeckHooksSettings } from "../hooks/protocol/settings.js";
+import type { G9AgentHooksSettings } from "../hooks/protocol/settings.js";
 
 export type HookContribution = {
-  hooks: PilotDeckHooksSettings;
+  hooks: G9AgentHooksSettings;
 };

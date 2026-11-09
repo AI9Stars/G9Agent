@@ -2,12 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { buildToolErrorRecovery } from "../../src/tool/execution/errorRecovery.js";
-import type { PilotDeckToolValidationIssue } from "../../src/tool/protocol/schema.js";
+import type { G9AgentToolValidationIssue } from "../../src/tool/protocol/schema.js";
 
 function recovery(options: {
   toolName: string;
   message: string;
-  issues?: PilotDeckToolValidationIssue[];
+  issues?: G9AgentToolValidationIssue[];
 }) {
   return buildToolErrorRecovery({
     code: "invalid_tool_input",

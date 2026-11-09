@@ -67,7 +67,7 @@ const projectSkill = {
   slug: 'project-work',
   name: 'Project workflow',
   scope: 'project',
-  skillDir: '/project/.pilotdeck/skills/project-work',
+  skillDir: '/project/.g9agent/skills/project-work',
 };
 const project = { name: 'project', displayName: 'My project', fullPath: '/project' };
 const response = (data: unknown, ok = true) => ({
@@ -539,7 +539,7 @@ it('keeps the chosen document when general context finishes loading', async () =
   await screen.findByRole('heading', { name: 'Rendered instructions' });
   fireEvent.click(screen.getByRole('button', { name: /Other skill Built-in workflow/ }));
   await screen.findByRole('region', { name: 'Skill details: Other skill' });
-  const general = { name: 'general', displayName: 'general', fullPath: '/home/pilotdeck' };
+  const general = { name: 'general', displayName: 'general', fullPath: '/home/g9agent' };
   view.rerender(<SkillsPanel selectedProject={general} projects={[general]} />);
   await waitFor(() =>
     expect(mocks.fetch.mock.calls.filter(([url]) => url.endsWith('/list')).length).toBe(2),
@@ -594,19 +594,19 @@ function mockProjectSwitch(
     ...projectSkill,
     slug: 'b-default',
     name: 'B default',
-    skillDir: '/other/.pilotdeck/skills/b-default',
+    skillDir: '/other/.g9agent/skills/b-default',
   };
   const otherChosen = {
     ...projectSkill,
     slug: 'race-work',
     name: 'B workflow',
-    skillDir: '/other/.pilotdeck/skills/race-work',
+    skillDir: '/other/.g9agent/skills/race-work',
   };
   const projectA = {
     ...list,
     builtin: [],
     project: [
-      { ...projectSkill, slug: 'race-work', skillDir: '/project/.pilotdeck/skills/race-work' },
+      { ...projectSkill, slug: 'race-work', skillDir: '/project/.g9agent/skills/race-work' },
     ],
   };
   const projectB = {

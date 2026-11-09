@@ -21,7 +21,7 @@ import {
   type SessionSlot,
 } from './useSessionStore';
 
-const PROVIDER = 'pilotdeck' as SessionProvider;
+const PROVIDER = 'g9agent' as SessionProvider;
 
 function makeSlot(overrides: Partial<SessionSlot> = {}): SessionSlot {
   return {
@@ -995,7 +995,7 @@ describe('computeMerged', () => {
       timestamp: '2026-08-13T00:00:01.000Z',
       provider: PROVIDER,
       kind: 'error',
-      content: 'Unknown projectKey: /Users/example/.pilotdeck',
+      content: 'Unknown projectKey: /Users/example/.g9agent',
       turnId: 'run-failure',
       runId: 'run-failure',
     };

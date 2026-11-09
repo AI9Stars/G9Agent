@@ -19,7 +19,7 @@ function artifacts(root, sha, content = 'old', clean = true) {
   for (const dir of ['node_modules', 'ui/node_modules']) write(root, `${dir}/marker`, content);
 }
 function fixture() {
-  const temp = mkdtempSync(path.join(os.tmpdir(), 'pilotdeck-web-update-'));
+  const temp = mkdtempSync(path.join(os.tmpdir(), 'g9agent-web-update-'));
   temporary.push(temp);
   const upstream = path.join(temp, 'upstream');
   mkdirSync(upstream);
@@ -77,7 +77,7 @@ describe('web deployment eligibility', { timeout: 60_000 }, () => {
   it('disables container and development runtimes', async () => {
     const f = fixture();
     expect(await f.create({ isContainer: () => true }).check()).toMatchObject({ canUpdate: false, reason: 'container' });
-    expect(await f.create({ env: { PILOTDECK_RESTART_MODE: 'dev' } }).check()).toMatchObject({ reason: 'development' });
+    expect(await f.create({ env: { G9AGENT_RESTART_MODE: 'dev' } }).check()).toMatchObject({ reason: 'development' });
   });
   it('disables archives, linked worktrees and shallow clones', async () => {
     const f = fixture();
@@ -127,7 +127,7 @@ describe('staged web updates', { timeout: 60_000 }, () => {
     expect(service.status().lastUpdateResult.needsRestart).toBe(true);
     expect(await service.check()).toMatchObject({ reason: 'runtimeMismatch', current: { sourceSha: f.oldSha } });
     expect(await f.create().check()).toMatchObject({ reason: 'upToDate', current: { tagName: f.target.tagName } });
-    expect(readdirSync(path.join(f.root, '.git')).filter((name) => name.startsWith('pilotdeck-update'))).toEqual([]);
+    expect(readdirSync(path.join(f.root, '.git')).filter((name) => name.startsWith('g9agent-update'))).toEqual([]);
   });
   it('revalidates eligibility and the selected target on apply', async () => {
     const f = fixture(); const service = f.create();
@@ -159,9 +159,9 @@ describe('staged web updates', { timeout: 60_000 }, () => {
     expect(service.status()).toMatchObject({ updateInProgress: false, currentUpdateId: null,
       lastUpdateResult: { success: false, reason, target: f.target, updateId: 'test-update' } });
     expect(git(f.root, 'rev-parse', 'HEAD')).toBe(f.oldSha);
-    const leftovers = readdirSync(path.join(f.root, '.git')).filter(name => name.startsWith('pilotdeck-update'));
+    const leftovers = readdirSync(path.join(f.root, '.git')).filter(name => name.startsWith('g9agent-update'));
     if (reason === 'processStopFailed') {
-      expect(leftovers).toContain('pilotdeck-update.lock');
+      expect(leftovers).toContain('g9agent-update.lock');
       expect(leftovers.length).toBe(2);
       expect(await service.check()).toMatchObject({ canUpdate: false, reason: 'lockBusy' });
     } else expect(leftovers).toEqual([]);
@@ -193,7 +193,7 @@ describe('staged web updates', { timeout: 60_000 }, () => {
     await expect(service.apply(f.target)).rejects.toMatchObject({ reason: 'inProgress' });
     await expect(f.create().apply(f.target)).rejects.toMatchObject({ reason: 'lockBusy' });
     releaseBuild(); await applying;
-    expect(existsSync(path.join(f.root, '.git/pilotdeck-update.lock'))).toBe(false);
+    expect(existsSync(path.join(f.root, '.git/g9agent-update.lock'))).toBe(false);
   });
 });
 

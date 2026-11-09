@@ -119,12 +119,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // poll to reveal a workspace whose Gateway has finished starting.
   useEffect(() => {
     if (modelConfiguration.state !== 'ready') return;
-    const update = (status: ReturnType<NonNullable<NonNullable<Window['pilotdeckDesktop']>['getRuntimeStatus']>>) => {
+    const update = (status: ReturnType<NonNullable<NonNullable<Window['g9agentDesktop']>['getRuntimeStatus']>>) => {
       if (status?.phase === 'ready') setGatewayRuntime({ state: 'ready' });
       else if (status?.phase === 'gateway') setGatewayRuntime({ state: 'starting' });
     };
-    update(window.pilotdeckDesktop?.getRuntimeStatus?.() ?? null);
-    return window.pilotdeckDesktop?.onRuntimeStatus?.(update);
+    update(window.g9agentDesktop?.getRuntimeStatus?.() ?? null);
+    return window.g9agentDesktop?.onRuntimeStatus?.(update);
   }, [modelConfiguration.state]);
 
   useEffect(() => {

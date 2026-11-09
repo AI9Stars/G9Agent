@@ -1,4 +1,4 @@
-export type PilotDeckToolErrorCode =
+export type G9AgentToolErrorCode =
   | "tool_not_found"
   | "tool_unavailable"
   | "invalid_tool_input"
@@ -17,35 +17,35 @@ export type PilotDeckToolErrorCode =
   | "plan_mode_violation"
   | "ask_mode_violation";
 
-export type PilotDeckToolError = {
-  code: PilotDeckToolErrorCode;
+export type G9AgentToolError = {
+  code: G9AgentToolErrorCode;
   message: string;
   cause?: unknown;
   details?: Record<string, unknown>;
 };
 
-export class PilotDeckToolRuntimeError extends Error {
-  readonly code: PilotDeckToolErrorCode;
+export class G9AgentToolRuntimeError extends Error {
+  readonly code: G9AgentToolErrorCode;
   readonly details?: Record<string, unknown>;
 
-  constructor(code: PilotDeckToolErrorCode, message: string, details?: Record<string, unknown>) {
+  constructor(code: G9AgentToolErrorCode, message: string, details?: Record<string, unknown>) {
     super(message);
-    this.name = "PilotDeckToolRuntimeError";
+    this.name = "G9AgentToolRuntimeError";
     this.code = code;
     this.details = details;
   }
 }
 
 export function toolError(
-  code: PilotDeckToolErrorCode,
+  code: G9AgentToolErrorCode,
   message: string,
   details?: Record<string, unknown>,
-): PilotDeckToolError {
+): G9AgentToolError {
   return { code, message, details };
 }
 
-export function normalizeToolError(error: unknown): PilotDeckToolError {
-  if (error instanceof PilotDeckToolRuntimeError) {
+export function normalizeToolError(error: unknown): G9AgentToolError {
+  if (error instanceof G9AgentToolRuntimeError) {
     return toolError(error.code, error.message, error.details);
   }
 

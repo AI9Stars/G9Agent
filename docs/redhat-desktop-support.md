@@ -1,7 +1,11 @@
 # RPM desktop support
 
-PilotDeck ships separate RPM installers for Linux x64 and ARM64, alongside the
-existing Ubuntu DEBs. The RPM build baseline is Rocky Linux 9 (glibc 2.34), with
+This fork packages only Windows x64 and ARM64. The following is retained
+upstream implementation guidance, not an enabled build or release target.
+Linux package scripts, builder targets, feeds and workflows must be restored
+and validated together before these commands can be used.
+
+The upstream RPM build baseline is Rocky Linux 9 (glibc 2.34), with
 native architecture-matched CI runners. The target family is RHEL 9+, Rocky Linux
 9+, AlmaLinux 9+, and Fedora desktops. RHEL 8 and older are outside this baseline.
 A build baseline does not certify every distribution or desktop environment;
@@ -16,9 +20,9 @@ Build in a Rocky Linux 9 container on the matching CPU architecture:
 bash apps/desktop/scripts/install-rpm-build-deps.sh
 # Install Node.js 22.23.1 and pnpm 10.32.1, then:
 pnpm install --frozen-lockfile
-USE_SYSTEM_FPM=true pnpm --filter pilotdeck-desktop dist:linux:rpm:x64
+USE_SYSTEM_FPM=true pnpm --filter g9agent-desktop dist:linux:rpm:x64
 # Or, on ARM64:
-USE_SYSTEM_FPM=true pnpm --filter pilotdeck-desktop dist:linux:rpm:arm64
+USE_SYSTEM_FPM=true pnpm --filter g9agent-desktop dist:linux:rpm:arm64
 ```
 
 The installer names use `linux-x64.rpm` and `linux-arm64.rpm`; their RPM header
@@ -27,11 +31,11 @@ so the declared Git, GTK3, audio, GBM, NSS, notification, Secret Service and X11
 library dependencies are resolved:
 
 ```bash
-sudo dnf install ./PilotDeck-VERSION-linux-arm64.rpm
+sudo dnf install ./G9Agent-VERSION-linux-arm64.rpm
 # Substitute linux-x64.rpm on x64 devices. yum is supported on RHEL systems too.
 ```
 
-The app installs at `/opt/PilotDeck`, with a desktop launcher and hicolor icon.
+The app installs at `/opt/G9Agent`, with a desktop launcher and hicolor icon.
 RPM payloads use gzip compression to keep memory use practical on 4 GB build
 VMs. Its Node.js runtime and native SQLite, bcrypt, image and terminal modules are
 bundled. Linux menus, localization, appearance and window chrome share the
@@ -48,16 +52,9 @@ unified release manifest and SHA256/SHA512 checksums before installation.
 The RPM updater installs through the system package manager with elevated
 authorization; the current dependency tries dnf/yum after zypper.
 
-Desktop Smoke and Daily Release call the same RPM workflow. Each architecture
-builds on Rocky Linux 9, validates the RPM header, feed and package marker,
-installs on that baseline, and executes the bundled native modules and updater.
-The same RPM job starts the installed server and Electron window under X11 and
-Wayland on Rocky Linux 9 before uploading the installer. Linux CI exposes only
-DEB and RPM jobs for x64 and ARM64. Daily Release requires both RPMs and both
-RPM feeds before publishing. Native desktop acceptance is still needed for
-each supported distribution.
-The Wayland test installs Weston from EPEL after baseline package verification;
-this test-tool repository is not required by the PilotDeck RPM itself.
+This repository's GitHub Actions publish only Windows x64 and ARM64. Linux
+packaging targets, commands, workflows and release feeds are not enabled.
+Shared source and helper scripts alone do not establish a Linux release.
 
 
 References: [electron-builder Linux targets](https://www.electron.build/v26/docs/linux/),

@@ -9,18 +9,18 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const mac = process.platform === 'darwin';
 const platformName = mac ? 'mac' : process.platform === 'linux' ? 'linux' : 'windows';
-const artifactDir = process.env.PILOTDECK_CHROME_ARTIFACTS || path.join(root, 'outputs/desktop-chrome-review');
+const artifactDir = process.env.G9AGENT_CHROME_ARTIFACTS || path.join(root, 'outputs/desktop-chrome-review');
 await fs.mkdir(artifactDir, { recursive: true });
-const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'pilotdeck-chrome-'));
+const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'g9agent-chrome-'));
 const app = await electron.launch({
   timeout: 60_000,
   executablePath: createRequire(import.meta.url)(path.join(root, 'apps/desktop/node_modules/electron')),
   args: [path.join(root, 'apps/desktop/scripts/fixtures/desktop-chrome.cjs'),
-    ...(process.env.PILOTDECK_CHROME_SCALE ? [`--force-device-scale-factor=${process.env.PILOTDECK_CHROME_SCALE}`] : []),
-    ...(process.env.PILOTDECK_CHROME_OZONE ? [`--ozone-platform=${process.env.PILOTDECK_CHROME_OZONE}`] : []),
-    ...(process.env.PILOTDECK_CHROME_DISABLE_SANDBOX ? ['--no-sandbox'] : []),
-    ...(process.env.PILOTDECK_CHROME_DISABLE_GPU ? ['--disable-gpu', '--disable-dev-shm-usage'] : [])],
-  env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'ELECTRON_RUN_AS_NODE')), PILOTDECK_CHROME_PROFILE: profile },
+    ...(process.env.G9AGENT_CHROME_SCALE ? [`--force-device-scale-factor=${process.env.G9AGENT_CHROME_SCALE}`] : []),
+    ...(process.env.G9AGENT_CHROME_OZONE ? [`--ozone-platform=${process.env.G9AGENT_CHROME_OZONE}`] : []),
+    ...(process.env.G9AGENT_CHROME_DISABLE_SANDBOX ? ['--no-sandbox'] : []),
+    ...(process.env.G9AGENT_CHROME_DISABLE_GPU ? ['--disable-gpu', '--disable-dev-shm-usage'] : [])],
+  env: { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => key !== 'ELECTRON_RUN_AS_NODE')), G9AGENT_CHROME_PROFILE: profile },
 });
 app.process().on('exit', (code, signal) => console.log('Electron exited', { code, signal }));
 const errors = [];
@@ -106,7 +106,7 @@ try {
   await context.screenshot({ path: path.join(artifactDir, `${platformName}-context-summary-dark.png`) });
   await page.keyboard.press('Escape');
   await expect(context).toHaveCount(0);
-  await page.evaluate(() => window.pilotdeckDesktop.setAppearance({ language: 'zh-CN', themeMode: 'light' }));
+  await page.evaluate(() => window.g9agentDesktop.setAppearance({ language: 'zh-CN', themeMode: 'light' }));
   await page.reload();
   await expect(page.locator('.app-shell')).toBeVisible();
   await expect(page.locator('html')).not.toHaveClass(/dark/);
@@ -128,7 +128,7 @@ try {
   expect(compactBounds.height).toBeLessThan(200);
   await compactContext.screenshot({ path: path.join(artifactDir, `${platformName}-context-summary-light-zh.png`) });
   await page.keyboard.press('Escape');
-  await page.evaluate(() => window.pilotdeckDesktop.setAppearance({ language: 'en', themeMode: 'dark' }));
+  await page.evaluate(() => window.g9agentDesktop.setAppearance({ language: 'en', themeMode: 'dark' }));
   await page.reload();
   await expect(page.locator('.app-shell')).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-desktop-platform', process.platform);
@@ -148,7 +148,7 @@ try {
   if (mac) {
     expect(mainHeader).toEqual({ top: 0, bottom: 52 });
     await expect(page.locator('html')).toHaveAttribute('data-desktop-toolbar', '');
-    await expect.poll(async () => page.locator('#pilotdeck-window-caption').evaluate(el => el.getBoundingClientRect().width))
+    await expect.poll(async () => page.locator('#g9agent-window-caption').evaluate(el => el.getBoundingClientRect().width))
       .toBe(await page.locator('.project-sidebar').evaluate(el => el.getBoundingClientRect().width));
     const verifyToolbarHitTargets = async () => {
       const targets = await page.locator('.workspace-header button, .workspace-header input, .compact-brand').evaluateAll(elements =>
@@ -169,10 +169,10 @@ try {
       expect(await page.locator('.sidebar-brand-row, .compact-brand').evaluate(el => el.getBoundingClientRect().bottom)).toBe(110);
       expect(await page.locator('.workspace-title').evaluate(el => el.getBoundingClientRect().left)).toBeGreaterThanOrEqual(100);
       await verifyToolbarHitTargets();
-      await expect(page.locator('#pilotdeck-window-caption')).toHaveCSS('width', `${Math.max(100, width)}px`);
+      await expect(page.locator('#g9agent-window-caption')).toHaveCSS('width', `${Math.max(100, width)}px`);
       if (width === 76) await page.screenshot({ path: path.join(artifactDir, 'mac-compact-sidebar.png') });
     }
-    await expect(page.locator('#pilotdeck-window-caption')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(page.locator('#g9agent-window-caption')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     // The compact expansion control stays below the native window controls.
     const resizer = await page.locator('.sidebar-resizer').boundingBox();
     await page.mouse.move(resizer.x, resizer.y + 180); await page.mouse.down();
@@ -208,7 +208,7 @@ try {
   if (!mac) {
     expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isMenuBarVisible())).toBe(false);
     expect(await app.evaluate(({ nativeTheme }) => nativeTheme.shouldUseDarkColors)).toBe(true);
-    const caption = page.locator('#pilotdeck-window-caption');
+    const caption = page.locator('#g9agent-window-caption');
     await expect(caption.locator('button')).toHaveCount(5);
     await expect(caption).toHaveCSS('background-color', 'rgb(43, 44, 46)');
     await expect(page.locator('.project-sidebar')).toHaveCSS('background-color', 'rgb(43, 44, 46)');
@@ -221,7 +221,7 @@ try {
       await expect(caption.getByRole('button', { name: label, exact: true })).toHaveAttribute('aria-expanded', 'true');
       // Avoid main-process debugger evaluation inside the native popup loop.
       // Renderer IPC acknowledges closure after the native teardown completes.
-      await page.evaluate(() => window.pilotdeckChromeFixture.closeMenu());
+      await page.evaluate(() => window.g9agentChromeFixture.closeMenu());
       // Native closePopup completes asynchronously (notably GTK/X11). Wait for
       // the real close callback and renderer state before the next mouse click.
       await expect(caption.getByRole('button', { name: label, exact: true })).toHaveAttribute('aria-expanded', 'false');
@@ -229,9 +229,9 @@ try {
       console.log(`[desktop-chrome] closed native ${id}`);
     }
     await page.keyboard.press('F10');
-    await page.evaluate(() => window.pilotdeckChromeFixture.closeMenu());
+    await page.evaluate(() => window.g9agentChromeFixture.closeMenu());
     await expect.poll(() => app.evaluate(() => global.chromeTest.menuRequests().at(-1)?.id)).toBe('all');
-    await expect(page.locator('#pilotdeck-linux-popup')).toHaveCount(0);
+    await expect(page.locator('#g9agent-linux-popup')).toHaveCount(0);
   }
   const command = async id => {
     await expect.poll(() => app.evaluate(({ Menu }, id) => Menu.getApplicationMenu().getMenuItemById(id)?.enabled, id)).toBe(true);
@@ -247,7 +247,7 @@ try {
     await expect.poll(() => app.evaluate(() => global.chromeTest.state().blocked)).toBe(false);
   };
   if (!mac) {
-    const caption = page.locator('#pilotdeck-window-caption');
+    const caption = page.locator('#g9agent-window-caption');
     await expect(caption).toHaveCSS('height', '32px');
     await command('help-about');
     const firstAbout = await app.evaluate(() => global.chromeTest.about().dialogs.at(-1));
@@ -259,17 +259,17 @@ try {
     await expect.poll(() => app.evaluate(() => global.chromeTest.about().copiedVersion)).toContain('Commit: abc123fixture');
     await app.evaluate(() => { global.aboutResponse = 2; });
     await command('help-about');
-    await expect.poll(() => app.evaluate(() => global.chromeTest.about().openedWebsite)).toBe('https://github.com/OpenBMB/PilotDeck');
+    await expect.poll(() => app.evaluate(() => global.chromeTest.about().openedWebsite)).toBe('https://github.com/AI9Stars/G9Agent');
     console.log('PASS: compact caption and rich About dialog, version copy and project link');
   }
-  if (process.env.PILOTDECK_CHROME_MANUAL === '1') {
-    await page.evaluate(() => window.pilotdeckDesktop.setAppearance({ language: 'zh-CN', themeMode: 'light' }));
+  if (process.env.G9AGENT_CHROME_MANUAL === '1') {
+    await page.evaluate(() => window.g9agentDesktop.setAppearance({ language: 'zh-CN', themeMode: 'light' }));
     await page.reload();
     await page.goto('http://127.0.0.1:5187/p/demo/c/chrome-review');
     await expect(page.locator('.workspace-header h1')).toHaveAttribute('data-desktop-no-drag', '');
     console.log('Native review window ready; waiting for manual inspection.');
-    await new Promise(resolve => setTimeout(resolve, Number(process.env.PILOTDECK_CHROME_MANUAL_WAIT_MS) || 120000));
-    await page.evaluate(() => window.pilotdeckDesktop.setAppearance({ language: 'en', themeMode: 'dark' }));
+    await new Promise(resolve => setTimeout(resolve, Number(process.env.G9AGENT_CHROME_MANUAL_WAIT_MS) || 120000));
+    await page.evaluate(() => window.g9agentDesktop.setAppearance({ language: 'en', themeMode: 'dark' }));
     await page.reload();
   }
   await command('new-project');
@@ -305,7 +305,7 @@ try {
   await command('chat');
   await page.goto('http://127.0.0.1:5187/p/demo/c/chrome-review');
   await expect(page.locator('.workspace-actions').getByRole('button', { name: 'Search current conversation', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Search PilotDeck', exact: true }).click();
+  await page.getByRole('button', { name: 'Search G9Agent', exact: true }).click();
   await expect(page.locator('[data-global-search]')).toBeVisible();
   await page.getByRole('combobox', { name: 'Search chats and files' }).fill('Native');
   await expect.poll(() => searchRequests.at(-1)?.query).toBe('Native');
@@ -330,9 +330,9 @@ try {
   if (mac) await expect(page.locator('html')).toHaveAttribute('data-desktop-integrated', '');
   await command('check-updates');
   await expect(page).toHaveURL(/\/settings\/about$/);
-  await expect(page.locator('.pilotdeck-settings-app')).toBeVisible();
+  await expect(page.locator('.g9agent-settings-app')).toBeVisible();
   await expect.poll(() => app.evaluate(() => global.chromeTest.checks())).toBeGreaterThan(0);
-  if (mac) await expect(page.locator('.pilotdeck-settings-app')).toHaveCSS('border-top-left-radius', '0px');
+  if (mac) await expect(page.locator('.g9agent-settings-app')).toHaveCSS('border-top-left-radius', '0px');
   if (mac) {
     const settingsHeader = await page.locator('.settings-main > .topbar').evaluate(el => ({ top: el.getBoundingClientRect().top, bottom: el.getBoundingClientRect().bottom }));
     expect(settingsHeader).toEqual(mainHeader);
@@ -368,7 +368,7 @@ try {
   }));
   const darkPageIdentity = await pageIdentity();
   await page.screenshot({ path: path.join(artifactDir, `${platformName}-dark.png`) });
-  await page.evaluate(() => window.pilotdeckDesktop.setAppearance({ language: 'en', themeMode: 'light' }));
+  await page.evaluate(() => window.g9agentDesktop.setAppearance({ language: 'en', themeMode: 'light' }));
   await expect(page.locator('html')).not.toHaveAttribute('data-desktop-dark');
   expect(await app.evaluate(({ nativeTheme }) => nativeTheme.shouldUseDarkColors)).toBe(false);
   // ThemeContext consumes the persisted desktop appearance on reload.
@@ -379,14 +379,14 @@ try {
   expect(await pageIdentity()).toEqual(darkPageIdentity);
   await page.screenshot({ path: path.join(artifactDir, `${platformName}-light.png`) });
   if (!mac) {
-    await expect(page.locator('#pilotdeck-window-caption')).toHaveCSS('background-color', process.platform === 'win32' ? 'rgba(0, 0, 0, 0)' : 'rgb(244, 244, 245)');
+    await expect(page.locator('#g9agent-window-caption')).toHaveCSS('background-color', process.platform === 'win32' ? 'rgba(0, 0, 0, 0)' : 'rgb(244, 244, 245)');
     await verifyOriginalContentStyle();
     await expect(page.locator('.project-sidebar')).toHaveCSS('background-image', 'linear-gradient(rgb(251, 250, 255), rgb(244, 243, 255) 58%, rgb(240, 244, 255))');
 
     // Exercise the actual i18n instance, including persistence across reload.
     await page.evaluate(async () => { const { default: i18n } = await import('/src/i18n/config.js'); await i18n.changeLanguage('zh-CN'); });
     await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN');
-    await expect(page.locator('#pilotdeck-window-caption button')).toHaveText(['文件', '编辑', '查看', '前往', '帮助']);
+    await expect(page.locator('#g9agent-window-caption button')).toHaveText(['文件', '编辑', '查看', '前往', '帮助']);
     await expect.poll(() => app.evaluate(({ Menu }) => Menu.getApplicationMenu().getMenuItemById('menu-file').label)).toBe('文件');
     expect(await app.evaluate(({ Menu }) => [
       Menu.getApplicationMenu().getMenuItemById('new-conversation').label,
@@ -395,16 +395,16 @@ try {
 
     await page.reload();
     await expect(page.locator('.app-shell')).toBeVisible();
-    await expect(page.locator('#pilotdeck-window-caption button')).toHaveText(['文件', '编辑', '查看', '前往', '帮助']);
+    await expect(page.locator('#g9agent-window-caption button')).toHaveText(['文件', '编辑', '查看', '前往', '帮助']);
     await page.screenshot({ path: path.join(artifactDir, `${platformName}-light-zh.png`) });
     await page.evaluate(async () => { const { default: i18n } = await import('/src/i18n/config.js'); await i18n.changeLanguage('en'); });
-    await expect(page.locator('#pilotdeck-window-caption button')).toHaveText(['File', 'Edit', 'View', 'Go', 'Help']);
+    await expect(page.locator('#g9agent-window-caption button')).toHaveText(['File', 'Edit', 'View', 'Go', 'Help']);
     await expect.poll(() => app.evaluate(({ Menu }) => Menu.getApplicationMenu().getMenuItemById('menu-file').label)).toBe('&File');
     expect(await app.evaluate(({ Menu }) => [
       Menu.getApplicationMenu().getMenuItemById('new-conversation').label,
       Menu.getApplicationMenu().getMenuItemById('help-docs').label,
     ])).toEqual(['New Conversation', 'Documentation']);
-    const safeArea = await page.locator('#pilotdeck-window-caption').evaluate(el => ({
+    const safeArea = await page.locator('#g9agent-window-caption').evaluate(el => ({
       left: el.getBoundingClientRect().left, right: el.getBoundingClientRect().right, width: innerWidth,
     }));
     expect(safeArea.left > 80 || safeArea.right < safeArea.width - 80).toBe(true);
@@ -415,19 +415,19 @@ try {
       await expect.poll(() => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isMaximized())).toBe(false);
     }
   }
-  const simulateFullscreen = process.env.PILOTDECK_CHROME_SIMULATE_FULLSCREEN === '1';
+  const simulateFullscreen = process.env.G9AGENT_CHROME_SIMULATE_FULLSCREEN === '1';
   if (simulateFullscreen) {
     console.log('INFO: fullscreen IPC simulation requested; this run does not validate a native fullscreen transition');
-    await app.evaluate(({ BrowserWindow, nativeTheme }) => BrowserWindow.getAllWindows()[0].webContents.send('pilotdeck:window-state', { fullscreen: true, dark: nativeTheme.shouldUseDarkColors }));
+    await app.evaluate(({ BrowserWindow, nativeTheme }) => BrowserWindow.getAllWindows()[0].webContents.send('g9agent:window-state', { fullscreen: true, dark: nativeTheme.shouldUseDarkColors }));
   } else {
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setFullScreen(true));
     await expect.poll(() => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isFullScreen()), { timeout: 15000 }).toBe(true);
   }
   await expect(page.locator('html')).toHaveAttribute('data-desktop-fullscreen', '');
-  await expect(page.locator('#pilotdeck-window-caption')).toBeHidden();
+  await expect(page.locator('#g9agent-window-caption')).toBeHidden();
   await expect(page.locator('.app-root')).toHaveCSS('padding-top', mac ? '0px' : '6px');
   if (mac) expect(await headerGeometry()).toEqual({ top: 0, bottom: 52 });
-  if (simulateFullscreen) await app.evaluate(({ BrowserWindow, nativeTheme }) => BrowserWindow.getAllWindows()[0].webContents.send('pilotdeck:window-state', { fullscreen: false, dark: nativeTheme.shouldUseDarkColors }));
+  if (simulateFullscreen) await app.evaluate(({ BrowserWindow, nativeTheme }) => BrowserWindow.getAllWindows()[0].webContents.send('g9agent:window-state', { fullscreen: false, dark: nativeTheme.shouldUseDarkColors }));
   else await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setFullScreen(false));
   await expect(page.locator('html')).not.toHaveAttribute('data-desktop-fullscreen');
   if (!mac) await expect(page.locator('.app-root')).toHaveCSS('padding-top', '38px');
@@ -440,7 +440,7 @@ try {
   await expect(page.locator('.desktop-prototype-shell')).toBeVisible();
   // Visibility starts during the loading screen's fade. Measure only after
   // that transition releases the real page and its first layout is painted.
-  await expect(page.locator('#root')).not.toHaveAttribute('data-pilotdeck-startup');
+  await expect(page.locator('#root')).not.toHaveAttribute('data-g9agent-startup');
   await page.evaluate(async () => {
     await document.fonts.ready;
     await new Promise(requestAnimationFrame);
@@ -448,7 +448,7 @@ try {
   });
   if (mac) {
     await expect(page.locator('html')).not.toHaveAttribute('data-desktop-toolbar');
-    await expect(page.locator('#pilotdeck-window-caption')).toHaveCSS('width', `${await page.evaluate(() => innerWidth)}px`);
+    await expect(page.locator('#g9agent-window-caption')).toHaveCSS('width', `${await page.evaluate(() => innerWidth)}px`);
   }
   await expect.poll(() => page.locator('.content-page').evaluate(page =>
     page.getAnimations().some(animation => animation.playState === 'running'))).toBe(false);

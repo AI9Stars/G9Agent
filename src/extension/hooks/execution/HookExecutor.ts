@@ -1,1 +1,1 @@
-export type PilotDeckHookExecutorKind = "command" | "prompt" | "http" | "agent";
+export type G9AgentHookExecutorKind = "command" | "prompt" | "http" | "agent";

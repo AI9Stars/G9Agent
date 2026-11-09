@@ -18,7 +18,7 @@ it('shows child file preparation before dispatch and retires it when the actual 
     activityId: 'file-input:child', phase: 'file_input', state: 'running', toolId: 'write', toolName: 'write_file',
     fileInputProgress: { filePath: 'src/example.ts', receivedBytes: 2048 } };
   const view = (messages: ChatMessage[]) => <I18nextProvider i18n={i18n}><FindShortcutProvider activeScope="chat">
-    <SubagentDetailMessageFlow messages={messages} provider="pilotdeck" selectedProject={null} createDiff={() => []} isRunning />
+    <SubagentDetailMessageFlow messages={messages} provider="g9agent" selectedProject={null} createDiff={() => []} isRunning />
   </FindShortcutProvider></I18nextProvider>;
   const result = render(view([preparing]));
   expect(screen.getByText('正在生成文件内容')).toBeTruthy();
@@ -90,7 +90,7 @@ function renderFlow(messages: ChatMessage[], isRunning = true) {
     <FindShortcutProvider activeScope="chat">
       <SubagentDetailMessageFlow
         messages={messages}
-        provider="pilotdeck"
+        provider="g9agent"
         selectedProject={null}
         createDiff={() => []}
         showThinking
@@ -113,7 +113,7 @@ it.each(['generate_image', 'edit_image'])('loads a live %s result before the chi
   const previousRevoke = URL.revokeObjectURL;
   URL.createObjectURL = vi.fn(() => 'blob:child-image'); URL.revokeObjectURL = vi.fn();
   try {
-    const call = { id: 'child-draw', sessionId: 'web:parent', provider: 'pilotdeck' as const,
+    const call = { id: 'child-draw', sessionId: 'web:parent', provider: 'g9agent' as const,
       kind: 'tool_use' as const, role: 'assistant' as const, toolId: 'child-draw', toolName,
       toolInput: { prompt: 'A blue circle', purpose: 'deliverable' }, timestamp: timestamp(300) };
     const pending = normalizedToChatMessages([call]);
@@ -124,7 +124,7 @@ it.each(['generate_image', 'edit_image'])('loads a live %s result before the chi
     const messages = normalizedToChatMessages([call, { ...call, id: 'child-draw-result', kind: 'tool_result',
       content: 'Image attached', isError: false, toolUseResult: { imageGeneration } }]);
     view.rerender(<FindShortcutProvider activeScope="chat"><SubagentDetailMessageFlow
-      messages={[...messages, assistant('continuing', 'Continuing the subtask.', 500)]} provider="pilotdeck" selectedProject={null}
+      messages={[...messages, assistant('continuing', 'Continuing the subtask.', 500)]} provider="g9agent" selectedProject={null}
       createDiff={() => []} showThinking isRunning /></FindShortcutProvider>);
     await waitFor(() => expect(screen.getByRole('img').getAttribute('src')).toBe('blob:child-image'));
     fireEvent.load(screen.getByRole('img'));
@@ -213,14 +213,14 @@ describe('SubagentDetailMessageFlow', () => {
 it('passes subagent lifecycle state to normalized tool cards and updates it without new messages', async () => {
   const i18n = await createTestI18n();
   const messages = normalizedToChatMessages([{
-    id: 'subagent-bash', sessionId: 'web:subagent-test', provider: 'pilotdeck',
+    id: 'subagent-bash', sessionId: 'web:subagent-test', provider: 'g9agent',
     kind: 'tool_use', role: 'assistant', toolId: 'subagent-bash', toolName: 'bash',
     toolInput: { command: 'pnpm build', description: 'Build app' }, timestamp: timestamp(300),
   }]);
   const pane = (isRunning: boolean, items = messages) => (
     <I18nextProvider i18n={i18n}>
       <FindShortcutProvider activeScope="chat">
-        <SubagentDetailMessageFlow messages={items} provider="pilotdeck" selectedProject={null}
+        <SubagentDetailMessageFlow messages={items} provider="g9agent" selectedProject={null}
           createDiff={() => []} isRunning={isRunning} />
       </FindShortcutProvider>
     </I18nextProvider>
@@ -278,7 +278,7 @@ it('keeps a recovering intermediate video visible after the child turn stops', (
 it('shows the model-call spinner after a child tool finishes and hides it during output', () => {
   const pending = tool('child-model-tool', 'Read');
   const view = (messages: ChatMessage[]) => <FindShortcutProvider activeScope="chat">
-    <SubagentDetailMessageFlow messages={messages} provider="pilotdeck" selectedProject={null} createDiff={() => []} isRunning />
+    <SubagentDetailMessageFlow messages={messages} provider="g9agent" selectedProject={null} createDiff={() => []} isRunning />
   </FindShortcutProvider>;
   const result = render(view([pending]));
   const status = () => result.container.querySelector('[data-process-status="subagent-model-call"]');
@@ -296,7 +296,7 @@ it('shows the model-call spinner after a child tool finishes and hides it during
 it('folds inspected child work on a streaming reply and retains details when reopened', () => {
   const call = { ...tool('child-inspect', 'Read'), toolResult: { content: 'Inspectable file contents' } };
   const element = (messages: ChatMessage[], running: boolean) => <FindShortcutProvider activeScope="chat">
-    <SubagentDetailMessageFlow messages={messages} provider="pilotdeck" selectedProject={null} createDiff={() => []} isRunning={running} />
+    <SubagentDetailMessageFlow messages={messages} provider="g9agent" selectedProject={null} createDiff={() => []} isRunning={running} />
   </FindShortcutProvider>;
   const view = render(element([call], true));
   const toolToggle = view.container.querySelector('.tool-call > div > button')!;
@@ -322,7 +322,7 @@ it('folds inspected child batches at the limit and keeps a short live tail expan
   const calls = Array.from({ length: 13 }, (_, index) => ({ ...tool(`child-batch-${index}`, 'bash'),
     toolInput: { command: `check ${index}` }, toolResult: { content: 'ok' } }));
   const element = (count: number) => <FindShortcutProvider activeScope="chat">
-    <SubagentDetailMessageFlow messages={calls.slice(0, count)} provider="pilotdeck" selectedProject={null}
+    <SubagentDetailMessageFlow messages={calls.slice(0, count)} provider="g9agent" selectedProject={null}
       createDiff={() => []} isRunning />
   </FindShortcutProvider>;
   const view = render(element(2));

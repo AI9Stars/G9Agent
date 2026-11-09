@@ -76,9 +76,9 @@ vi.mock('../skills/view/SkillsPanel', () => ({
 }));
 
 const project: Project = {
-  name: 'pilotdeck',
-  displayName: 'PilotDeck',
-  fullPath: '/workspace/PilotDeck',
+  name: 'g9agent',
+  displayName: 'G9Agent',
+  fullPath: '/workspace/G9Agent',
 };
 
 function Harness({
@@ -151,7 +151,7 @@ describe('MainArea dashboard switcher', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
 
     expect(screen.getByTitle('Renamed conversation').textContent).toBe('Renamed conversation');
-    expect(JSON.parse(localStorage.getItem('pilotdeck:customSessionTitles') || '{}')).toEqual({
+    expect(JSON.parse(localStorage.getItem('g9agent:customSessionTitles') || '{}')).toEqual({
       'session-1': 'Renamed conversation',
     });
   });
@@ -165,7 +165,7 @@ describe('MainArea dashboard switcher', () => {
     fireEvent.keyDown(input, { key: 'Escape' });
 
     expect(screen.getByTitle('Searchable chat').textContent).toBe('Searchable chat');
-    expect(localStorage.getItem('pilotdeck:customSessionTitles')).toBeNull();
+    expect(localStorage.getItem('g9agent:customSessionTitles')).toBeNull();
   });
 
   it('keeps header search absent and opens global search without leaving Files', () => {

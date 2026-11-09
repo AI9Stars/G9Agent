@@ -13,14 +13,14 @@ import { BackgroundTaskRuntime } from '../../src/task/runtime/BackgroundTaskRunt
 import { createLocalGateway } from '../../src/cli/createLocalGateway.js';
 import { createModelRuntime, type CanonicalModelEvent, type CanonicalModelRequest } from '../../src/model/index.js';
 
-const root = resolve(process.env.PILOTDECK_PYTHON_TEST_ROOT ?? 'apps/desktop/resources/python-runtime');
-const hasBundle = Boolean(process.env.PILOTDECK_PYTHON_TEST_ROOT) || existsSync(join(root, 'manifest.json'));
+const root = resolve(process.env.G9AGENT_PYTHON_TEST_ROOT ?? 'apps/desktop/resources/python-runtime');
+const hasBundle = Boolean(process.env.G9AGENT_PYTHON_TEST_ROOT) || existsSync(join(root, 'manifest.json'));
 const execute = promisify(execFile);
 const quoted = (path: string) => `"${path.replaceAll('\\', '/')}"`;
 const deferred = () => { let resolve!: () => void; const promise = new Promise<void>(done => { resolve = done; }); return { promise, resolve }; };
 
 test('native bundle executes offline data/documents/plots, installs user packages, and retains live tasks and MCP across toggles', { skip: !hasBundle, timeout: 300000 }, async t => {
-  const home = await mkdtemp(join(tmpdir(), 'PilotDeck 用户 profile '));
+  const home = await mkdtemp(join(tmpdir(), 'G9Agent 用户 profile '));
   const cleanups: (() => Promise<unknown> | void)[] = [];
   const onCleanup = (cleanup: () => Promise<unknown> | void) => cleanups.push(cleanup);
   t.after(async () => {
@@ -32,11 +32,11 @@ test('native bundle executes offline data/documents/plots, installs user package
     SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR,
     ComSpec: process.env.ComSpec, TEMP: home, TMP: home, HOME: home, USERPROFILE: home,
     APPDATA: home, LOCALAPPDATA: home, PATH: process.platform === 'win32' ? join(process.env.SystemRoot!, 'System32') : '/usr/bin:/bin',
-    PILOT_HOME: home, PILOTDECK_PYTHON_ROOT: root, UV_OFFLINE: '1', UV_NO_CONFIG: '1',
+    G9AGENT_HOME: home, G9AGENT_PYTHON_ROOT: root, UV_OFFLINE: '1', UV_NO_CONFIG: '1',
     PIP_NO_INDEX: '1', PIP_CONFIG_FILE: process.platform === 'win32' ? 'NUL' : '/dev/null',
   };
   const bundledBash = resolve('apps/desktop/resources/git/bin/bash.exe');
-  if (process.platform === 'win32' && existsSync(bundledBash)) env.PILOTDECK_GIT_BASH_PATH = bundledBash;
+  if (process.platform === 'win32' && existsSync(bundledBash)) env.G9AGENT_GIT_BASH_PATH = bundledBash;
   const manager = new PythonRuntimeManager({ pilotHome: home, env });
   const runtime = await manager.resolve();
   assert.equal(runtime.status.state, 'ready', 'the native bundle must initialize without downloading Python or packages');
@@ -51,12 +51,12 @@ test('native bundle executes offline data/documents/plots, installs user package
     assert.equal(result.exitCode, 0, result.stderr);
     assert.equal(await realpath(JSON.parse(result.stdout)), await realpath(runtime.status.environment!));
   }
-  const installed = await shell.run(`uv pip install --offline --no-index --no-deps ${quoted(join(work, 'pilotdeck_fixture-1.0-py3-none-any.whl'))}`, { cwd: work, env: runtime.env, timeoutMs: 15000 });
+  const installed = await shell.run(`uv pip install --offline --no-index --no-deps ${quoted(join(work, 'g9agent_fixture-1.0-py3-none-any.whl'))}`, { cwd: work, env: runtime.env, timeoutMs: 15000 });
   assert.equal(installed.exitCode, 0, installed.stderr);
-  const userPackage = await execute(python, ['-c', 'import pilotdeck_fixture; assert pilotdeck_fixture.VALUE == 42; print(pilotdeck_fixture.__file__)'], { env: runtime.env, windowsHide: true });
+  const userPackage = await execute(python, ['-c', 'import g9agent_fixture; assert g9agent_fixture.VALUE == 42; print(g9agent_fixture.__file__)'], { env: runtime.env, windowsHide: true });
   assert.ok((await realpath(userPackage.stdout.trim())).toLowerCase().startsWith((await realpath(runtime.status.environment!)).toLowerCase()));
   const basePython = join(root, JSON.parse(manifestBefore.toString()).python);
-  await execute(basePython, ['-I', '-B', '-c', 'import importlib.util; assert importlib.util.find_spec("pilotdeck_fixture") is None'], { env, windowsHide: true });
+  await execute(basePython, ['-I', '-B', '-c', 'import importlib.util; assert importlib.util.find_spec("g9agent_fixture") is None'], { env, windowsHide: true });
   assert.deepEqual(await readFile(join(root, 'manifest.json')), manifestBefore);
   assert.deepEqual(await readFile(basePython), pythonBefore);
 
@@ -84,7 +84,7 @@ test('native bundle executes offline data/documents/plots, installs user package
   await mcp.close();
 
   // Exercise the real Gateway reload and context/execution wiring with a deterministic model.
-  const configPath = join(home, 'pilotdeck.yaml');
+  const configPath = join(home, 'g9agent.yaml');
   const config = (enabled: boolean) => `schemaVersion: 1\nagent: { model: test/model }\nmodel:\n  providers:\n    test:\n      protocol: openai\n      url: https://example.test/v1\n      apiKey: fixture-key\n      models: { model: {} }\nextension:\n  builtinPluginsEnabled: { windows-skills: false, browser-use: false, funasr: false }\ntelemetry: { enabled: false }\nruntime: { python: { enabled: ${enabled} } }\n`;
   await writeFile(configPath, config(true));
   await writeFile(join(home, 'mcp.json'), JSON.stringify({ mcpServers: { python: { command: 'python', args: [resolve('tests/runtime/fixtures/python-mcp.py')] } } }));
@@ -92,7 +92,7 @@ test('native bundle executes offline data/documents/plots, installs user package
   const requests: CanonicalModelRequest[] = [];
   let round = 0;
   const local = createLocalGateway({ pilotHome: home, projectRoot: home, builtinSkillsRoot: join(home, 'skills'), permissionMode: 'bypassPermissions',
-    env: { ...env, PILOTDECK_CONFIG_PATH: configPath },
+    env: { ...env, G9AGENT_CONFIG_PATH: configPath },
     __testModelFactory(snapshot) {
       return { ...createModelRuntime(snapshot.config.model),
         async *stream(request): AsyncIterable<CanonicalModelEvent> {

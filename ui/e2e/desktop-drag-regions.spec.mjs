@@ -9,7 +9,7 @@ test('macOS caption covers sidebar whitespace and excludes only session text', a
   page.on('pageerror', error => errors.push(error.message));
   await context.addInitScript(() => {
     localStorage.setItem('userLanguage', 'en');
-    window.pilotdeckDesktop = {
+    window.g9agentDesktop = {
       platform: 'darwin', getAppearance: () => ({ language: 'en', themeMode: 'light' }),
       getRuntimeStatus: () => ({ phase: 'ready', progress: 96 }),
       onRuntimeStatus: () => () => {},
@@ -23,7 +23,7 @@ test('macOS caption covers sidebar whitespace and excludes only session text', a
     let body = {};
     if (pathname === '/api/auth/status') body = { authDisabled: true };
     else if (pathname.includes('onboarding-status')) body = { hasCompletedOnboarding: true };
-    else if (pathname === '/api/projects') body = [{ name: 'demo', displayName: 'Demo', fullPath: '/fixture/demo', sessions: [{ id: 'title', title: 'Short title', __provider: 'pilotdeck' }] }];
+    else if (pathname === '/api/projects') body = [{ name: 'demo', displayName: 'Demo', fullPath: '/fixture/demo', sessions: [{ id: 'title', title: 'Short title', __provider: 'g9agent' }] }];
     else if (pathname.includes('messages')) body = { messages: [] };
     else if (pathname.includes('sessions')) body = { sessions: [], total: 0, hasMore: false };
     else if (pathname.includes('config')) body = { config: {} };
@@ -34,16 +34,16 @@ test('macOS caption covers sidebar whitespace and excludes only session text', a
   });
   await page.goto('/p/demo/c/title');
   await expect(page.locator('.workspace-header h1')).toHaveText('Short title', { timeout: 30_000 });
-  await expect(page.locator('#root')).not.toHaveAttribute('data-pilotdeck-startup');
+  await expect(page.locator('#root')).not.toHaveAttribute('data-g9agent-startup');
   // Exercise the real preload CSS in Chromium; native macOS hit testing is a
   // separate desktop-chrome smoke check, not simulated by DOM pointer events.
   const preloadPath = fileURLToPath(new URL('../../apps/desktop/src/preloadChrome.ts', import.meta.url)).replaceAll('\\', '/');
   await page.evaluate(async preloadPath => {
     const { installWindowChrome } = await import(`/@fs/${preloadPath}`);
-    installWindowChrome('darwin', { on() {}, invoke: async () => {}, sendSync: channel => channel === 'pilotdeck:get-appearance'
+    installWindowChrome('darwin', { on() {}, invoke: async () => {}, sendSync: channel => channel === 'g9agent:get-appearance'
       ? { language: 'en' } : { fullscreen: false, dark: false } });
   }, preloadPath);
-  const caption = page.locator('#pilotdeck-window-caption');
+  const caption = page.locator('#g9agent-window-caption');
   const title = page.locator('.workspace-header h1');
   await expect(title).toHaveCSS('-webkit-app-region', 'no-drag');
   await expect(page.locator('.workspace-header')).toHaveCSS('-webkit-app-region', 'drag');

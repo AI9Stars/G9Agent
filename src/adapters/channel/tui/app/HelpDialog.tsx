@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { pilotDeckDarkBlueTheme as t } from "./theme.js";
+import { g9agentDarkBlueTheme as t } from "./theme.js";
 import type { GatewayMode } from "../../../../gateway/index.js";
 
 export type HelpTab = "shortcuts" | "settings" | "about";
@@ -61,7 +61,7 @@ function ShortcutsTab(): React.ReactNode {
       <Row keys="/permissions" desc="View/edit permission rules" />
       <Row keys="/view [N]" desc="View tool output block" />
       <Row keys="/clear" desc="Clear transcript" />
-      <Row keys="/exit" desc="Quit PilotDeck" />
+      <Row keys="/exit" desc="Quit G9Agent" />
 
       <Separator />
 
@@ -163,7 +163,7 @@ function SettingsTab({ mode, connection, sessionKey, model, cursor }: {
 function AboutTab(): React.ReactNode {
   return (
     <Box flexDirection="column">
-      <Text bold color={t.brand}>PilotDeck</Text>
+      <Text bold color={t.brand}>G9Agent</Text>
       <Text> </Text>
       <Text color={t.text}>AI agent runtime with multi-session terminal interface.</Text>
       <Text> </Text>

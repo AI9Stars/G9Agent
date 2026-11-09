@@ -1,7 +1,7 @@
 import path from "node:path";
-import type { PilotDeckToolDefinition } from "../protocol/types.js";
-import { PilotDeckToolRuntimeError } from "../protocol/errors.js";
-import { resolvePilotDeckWorkspacePath } from "./filesystem/pathSafety.js";
+import type { G9AgentToolDefinition } from "../protocol/types.js";
+import { G9AgentToolRuntimeError } from "../protocol/errors.js";
+import { resolveG9AgentWorkspacePath } from "./filesystem/pathSafety.js";
 import { ripgrepFiles } from "./filesystem/ripgrepFiles.js";
 
 export type GlobInput = {
@@ -45,7 +45,7 @@ export function extractGlobBaseDirectory(pattern: string): {
   return { baseDir, relativePattern };
 }
 
-export function createGlobTool(): PilotDeckToolDefinition<GlobInput> {
+export function createGlobTool(): G9AgentToolDefinition<GlobInput> {
   return {
     name: "glob",
     aliases: ["Glob"],
@@ -71,7 +71,7 @@ export function createGlobTool(): PilotDeckToolDefinition<GlobInput> {
         limit: {
           type: "integer",
           description:
-            "Maximum number of file paths to return. This is a PilotDeck-specific output cap; defaults to 1000. Results remain stable and sorted before truncation.",
+            "Maximum number of file paths to return. This is a G9Agent-specific output cap; defaults to 1000. Results remain stable and sorted before truncation.",
         },
       },
     },
@@ -90,13 +90,13 @@ export function createGlobTool(): PilotDeckToolDefinition<GlobInput> {
         }
       }
 
-      const resolvedSearchPath = resolvePilotDeckWorkspacePath(
+      const resolvedSearchPath = resolveG9AgentWorkspacePath(
         searchPath,
         context,
         { mustExist: true },
       );
       if (!resolvedSearchPath.ok) {
-        throw new PilotDeckToolRuntimeError(
+        throw new G9AgentToolRuntimeError(
           resolvedSearchPath.error.code,
           resolvedSearchPath.error.message,
           resolvedSearchPath.error.details,

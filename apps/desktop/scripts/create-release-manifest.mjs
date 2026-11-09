@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { describeReleaseAsset, compatibilityFeeds } from "../../../ui/shared/releaseArtifacts.js";
+import { manifestRepository } from '../../../ui/shared/releaseRepository.js';
 
 const assetsDir = resolve(process.argv[2] || "release-assets");
 const files = listFiles(assetsDir)
@@ -22,13 +23,14 @@ const assets = files.map(record);
 const manifest = {
   schemaVersion: 1,
   artifactSchemaVersion: 1,
-  differentialUpdates: process.env.PILOTDECK_DIFFERENTIAL_UPDATES !== '0',
-  version: requiredEnv("PILOTDECK_RELEASE_VERSION"),
-  tag: requiredEnv("PILOTDECK_RELEASE_TAG"),
-  date: requiredEnv("PILOTDECK_RELEASE_DATE"),
-  buildTime: requiredEnv("PILOTDECK_RELEASE_BUILD_TIME"),
-  sourceSha: requiredEnv("PILOTDECK_COMMIT_SHA"),
-  repository: requiredEnv("PILOTDECK_UPDATE_REPOSITORY"),
+  differentialUpdates: process.env.G9AGENT_DIFFERENTIAL_UPDATES !== '0',
+  version: requiredEnv("G9AGENT_RELEASE_VERSION"),
+  tag: requiredEnv("G9AGENT_RELEASE_TAG"),
+  date: requiredEnv("G9AGENT_RELEASE_DATE"),
+  buildTime: requiredEnv("G9AGENT_RELEASE_BUILD_TIME"),
+  sourceSha: requiredEnv("G9AGENT_COMMIT_SHA"),
+  repository: manifestRepository(requiredEnv("G9AGENT_UPDATE_REPOSITORY")),
+  canonicalRepository: requiredEnv("G9AGENT_UPDATE_REPOSITORY"),
   assets,
 };
 

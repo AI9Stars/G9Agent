@@ -9,11 +9,11 @@ import { SessionRouter } from '../../src/gateway/SessionRouter.js';
 import { AgentSession } from '../../src/agent/session/AgentSession.js';
 
 test('Python defaults on, validates booleans, and participates in runtime reload hashes', async t => {
-  const home = await mkdtemp(join(tmpdir(), 'pilotdeck-python-config-'));
+  const home = await mkdtemp(join(tmpdir(), 'g9agent-python-config-'));
   t.after(() => rm(home, { recursive: true, force: true }));
-  const path = join(home, 'pilotdeck.yaml');
+  const path = join(home, 'g9agent.yaml');
   const base = 'agent: { model: test/model }\nmodel:\n  providers:\n    test:\n      protocol: openai\n      url: https://example.test/v1\n      apiKey: fixture\n      models: { model: {} }\n';
-  const read = () => loadPilotConfig({ configPath: path, env: { PILOT_HOME: home } });
+  const read = () => loadPilotConfig({ configPath: path, env: { G9AGENT_HOME: home } });
   await writeFile(path, base);
   const on = read(); assert.equal(on.config.runtime?.python.enabled, true);
   await writeFile(path, base + 'runtime: { python: { enabled: false } }\n');
@@ -24,7 +24,7 @@ test('Python defaults on, validates booleans, and participates in runtime reload
   assert.deepEqual(classifyConfigChanges(paths), ['next-runtime']);
   for (const value of ['"false"', 'null', '1']) {
     await writeFile(path, base + `runtime: { python: { enabled: ${value} } }\n`);
-    assert.throws(read, /runtime.python.enabled|Invalid PilotDeck config/);
+    assert.throws(read, /runtime.python.enabled|Invalid G9Agent config/);
   }
 });
 

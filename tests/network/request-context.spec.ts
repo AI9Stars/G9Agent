@@ -12,11 +12,11 @@ import { buildProviderHeaders, complete, streamModel } from "../../src/model/str
 import { parseModelConfig } from "../../src/model/config/parseModelConfig.js";
 import type { ModelProtocol } from "../../src/model/protocol/canonical.js";
 
-const home = mkdtempSync(join(tmpdir(), "pilotdeck-request-context-"));
-const saved = { home: process.env.PILOT_HOME, mode: process.env.PILOTDECK_REQUEST_HEADERS };
-before(() => { process.env.PILOT_HOME = home; process.env.PILOTDECK_REQUEST_HEADERS = "full"; });
+const home = mkdtempSync(join(tmpdir(), "g9agent-request-context-"));
+const saved = { home: process.env.G9AGENT_HOME, mode: process.env.G9AGENT_REQUEST_HEADERS };
+before(() => { process.env.G9AGENT_HOME = home; process.env.G9AGENT_REQUEST_HEADERS = "full"; });
 after(() => {
-  for (const [key, value] of [["PILOT_HOME", saved.home], ["PILOTDECK_REQUEST_HEADERS", saved.mode]]) {
+  for (const [key, value] of [["G9AGENT_HOME", saved.home], ["G9AGENT_REQUEST_HEADERS", saved.mode]]) {
     if (value === undefined) delete process.env[key!]; else process.env[key!] = value;
   }
   rmSync(home, { recursive: true, force: true });
@@ -46,26 +46,26 @@ test("installation identity survives processes and is independent of credentials
 
 test("headers omit raw paths, named sessions, invalid values and missing context", () => {
   const headers = requestContextHeaders({ projectPath: "/private/customer", sessionId: "weixin:private-person", clientVersion: "bad\r\nx: y" });
-  assert.match(headers["x-pilotdeck-project-id"], /^[a-f0-9]{32}$/);
-  assert.match(headers["x-pilotdeck-session-id"], /^[a-f0-9]{32}$/);
-  assert.equal(headers["x-pilotdeck-client-version"], undefined);
+  assert.match(headers["x-g9agent-project-id"], /^[a-f0-9]{32}$/);
+  assert.match(headers["x-g9agent-session-id"], /^[a-f0-9]{32}$/);
+  assert.equal(headers["x-g9agent-client-version"], undefined);
   assert.doesNotMatch(JSON.stringify(headers), /private|customer|weixin/);
-  assert.equal(requestContextHeaders()["x-pilotdeck-session-id"], undefined);
+  assert.equal(requestContextHeaders()["x-g9agent-session-id"], undefined);
   assert.doesNotThrow(() => requestContextHeaders({ projectPath: {} as string, sessionId: {} as string }));
-  assert.equal(requestAppVersion({ PILOTDECK_VERSION: "2.3.4" }), "2.3.4");
+  assert.equal(requestAppVersion({ G9AGENT_VERSION: "2.3.4" }), "2.3.4");
   assert.notEqual(requestAppVersion({ npm_package_version: "wrong-package" }), "wrong-package");
 });
 
 test("off and basic modes suppress persistent identities and context", () => {
-  process.env.PILOTDECK_REQUEST_HEADERS = "off";
+  process.env.G9AGENT_REQUEST_HEADERS = "off";
   assert.deepEqual(requestContextHeaders(), {});
-  process.env.PILOTDECK_REQUEST_HEADERS = "basic";
+  process.env.G9AGENT_REQUEST_HEADERS = "basic";
   const headers = requestContextHeaders({ sessionId: randomUUID() });
-  assert.equal(headers["x-pilotdeck-user-id"], undefined);
-  assert.equal(headers["x-pilotdeck-device-id"], undefined);
-  assert.equal(headers["x-pilotdeck-session-id"], undefined);
-  assert.ok(headers["x-pilotdeck-version"]);
-  process.env.PILOTDECK_REQUEST_HEADERS = "full";
+  assert.equal(headers["x-g9agent-user-id"], undefined);
+  assert.equal(headers["x-g9agent-device-id"], undefined);
+  assert.equal(headers["x-g9agent-session-id"], undefined);
+  assert.ok(headers["x-g9agent-version"]);
+  process.env.G9AGENT_REQUEST_HEADERS = "full";
 });
 
 test("concurrent operations and nested scopes never leak session/user context", async () => {
@@ -73,8 +73,8 @@ test("concurrent operations and nested scopes never leak session/user context", 
   await Promise.all(sessions.map((sessionId, index) => withRequestContext({ sessionId, userId: anonymousRequestId("user", String(index)) }, async () => {
     await new Promise(resolve => setTimeout(resolve, index ? 2 : 10));
     const headers = requestContextHeaders();
-    assert.equal(headers["x-pilotdeck-session-id"], sessionId);
-    assert.equal(headers["x-pilotdeck-user-id"], anonymousRequestId("user", String(index)));
+    assert.equal(headers["x-g9agent-session-id"], sessionId);
+    assert.equal(headers["x-g9agent-user-id"], anonymousRequestId("user", String(index)));
     await assert.rejects(withRequestContext({ sessionId: "child" }, async () => { throw new Error("cancelled"); }));
     assert.equal(currentRequestContext().sessionId, sessionId);
   })));
@@ -83,11 +83,11 @@ test("concurrent operations and nested scopes never leak session/user context", 
 
 test("configured headers override defaults case-insensitively without duplicate auth", () => {
   const provider = config("openai").providers.test;
-  provider.headers = { "User-Agent": "Enterprise/1", Authorization: "Bearer explicit", "X-PilotDeck-Version": "custom" };
+  provider.headers = { "User-Agent": "Enterprise/1", Authorization: "Bearer explicit", "X-G9Agent-Version": "custom" };
   const headers = new Headers(buildProviderHeaders(provider));
   assert.equal(headers.get("user-agent"), "Enterprise/1");
   assert.equal(headers.get("authorization"), "Bearer explicit");
-  assert.equal(headers.get("x-pilotdeck-version"), "custom");
+  assert.equal(headers.get("x-g9agent-version"), "custom");
 });
 
 test("provider modes are validated and cannot bypass global off", () => {
@@ -96,11 +96,11 @@ test("provider modes are validated and cannot bypass global off", () => {
     const provider = parseModelConfig(raw).providers.test;
     assert.equal(provider.requestHeadersMode, mode);
     const headers = new Headers(buildProviderHeaders(provider));
-    assert.equal(headers.has("x-pilotdeck-version"), mode !== "off");
-    assert.equal(headers.has("x-pilotdeck-installation-id"), mode === "full");
-    process.env.PILOTDECK_REQUEST_HEADERS = "off";
-    assert.equal(new Headers(buildProviderHeaders(provider)).has("x-pilotdeck-version"), false);
-    process.env.PILOTDECK_REQUEST_HEADERS = "full";
+    assert.equal(headers.has("x-g9agent-version"), mode !== "off");
+    assert.equal(headers.has("x-g9agent-installation-id"), mode === "full");
+    process.env.G9AGENT_REQUEST_HEADERS = "off";
+    assert.equal(new Headers(buildProviderHeaders(provider)).has("x-g9agent-version"), false);
+    process.env.G9AGENT_REQUEST_HEADERS = "full";
   }
   assert.throws(() => parseModelConfig({ providers: { test: { protocol: "openai", url: "https://example.test", apiKey: "key", models: { model: {} }, requestHeadersMode: "invalid" } } }), /requestHeadersMode/);
 });
@@ -120,12 +120,12 @@ for (const protocol of ["openai", "openai-responses", "anthropic", "google"] as 
       const port = (server.address() as { port: number }).port;
       const sessionId = randomUUID();
       await withRequestContext({ sessionId, projectPath: "/private/project", purpose: "conversation" }, () => complete(request, config(protocol, `http://127.0.0.1:${port}/v1`)));
-      assert.match(String(received["user-agent"]), /PilotDeck\//);
-      assert.equal(received["x-pilotdeck-session-id"], sessionId);
-      assert.ok(received["x-pilotdeck-operation-id"]);
-      assert.ok(received["x-pilotdeck-request-id"]);
-      assert.ok(received["x-pilotdeck-project-id"]);
-      assert.doesNotMatch(body, /x-pilotdeck|private\/project|operationId|requestContext/);
+      assert.match(String(received["user-agent"]), /G9Agent\//);
+      assert.equal(received["x-g9agent-session-id"], sessionId);
+      assert.ok(received["x-g9agent-operation-id"]);
+      assert.ok(received["x-g9agent-request-id"]);
+      assert.ok(received["x-g9agent-project-id"]);
+      assert.doesNotMatch(body, /x-g9agent|private\/project|operationId|requestContext/);
     } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); }
   });
 }
@@ -143,7 +143,7 @@ test("stream retry has distinct wire IDs, one operation ID, and stable session",
   });
   for await (const _ of stream) { /* consume */ }
   assert.equal(seen.length, 2);
-  assert.notEqual(seen[0].get("x-pilotdeck-request-id"), seen[1].get("x-pilotdeck-request-id"));
-  assert.equal(seen[0].get("x-pilotdeck-operation-id"), seen[1].get("x-pilotdeck-operation-id"));
-  assert.equal(seen[1].get("x-pilotdeck-session-id"), sessionId);
+  assert.notEqual(seen[0].get("x-g9agent-request-id"), seen[1].get("x-g9agent-request-id"));
+  assert.equal(seen[0].get("x-g9agent-operation-id"), seen[1].get("x-g9agent-operation-id"));
+  assert.equal(seen[1].get("x-g9agent-session-id"), sessionId);
 });

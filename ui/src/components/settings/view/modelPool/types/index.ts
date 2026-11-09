@@ -14,7 +14,7 @@ export type V2Provider = {
   };
 };
 
-export type PilotDeckConfig = {
+export type G9AgentConfig = {
   runtime?: { python?: { enabled?: boolean } };
   agent?: {
     model?: string;

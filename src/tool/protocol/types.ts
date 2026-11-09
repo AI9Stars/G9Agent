@@ -12,9 +12,9 @@ import type {
   PermissionResult,
 } from "../../permission/index.js";
 import type { AgentRunMode } from "../../agent/protocol/input.js";
-import type { PilotDeckToolAuditRecorder } from "../audit/ToolAuditRecorder.js";
-import type { PilotDeckElicitationChannel } from "../elicitation/PilotDeckElicitationChannel.js";
-import type { PilotDeckToolInputSchema, PilotDeckToolValidationResult } from "./schema.js";
+import type { G9AgentToolAuditRecorder } from "../audit/ToolAuditRecorder.js";
+import type { G9AgentElicitationChannel } from "../elicitation/G9AgentElicitationChannel.js";
+import type { G9AgentToolInputSchema, G9AgentToolValidationResult } from "./schema.js";
 
 /**
  * File-history sink used by `edit_file` / `write_file` to backup files
@@ -23,7 +23,7 @@ import type { PilotDeckToolInputSchema, PilotDeckToolValidationResult } from "./
  * runtimes (tests, scripted invocations) — affected tools tolerate the
  * missing sink and proceed without backups.
  */
-export type PilotDeckToolFileHistorySink = {
+export type G9AgentToolFileHistorySink = {
   trackEdit(filePath: string, messageId: string, options?: { allowUnprotected?: boolean }): Promise<void>;
   recordEdit?(filePath: string, messageId: string, writtenContent?: string): Promise<void>;
   /** Capture an execution through completion, including failed or background commands. */
@@ -41,7 +41,7 @@ export type PilotDeckToolFileHistorySink = {
  * `AgentModelRuntime` but lives in the tool protocol to avoid a tool→agent
  * dependency cycle.
  */
-export type PilotDeckToolModelClient = {
+export type G9AgentToolModelClient = {
   stream(request: CanonicalModelRequest, signal?: AbortSignal): AsyncIterable<CanonicalModelEvent>;
 };
 
@@ -55,7 +55,7 @@ export type PilotDeckToolModelClient = {
  * `maxSubagentDepth` is the cap (default 1) — the `agent` tool raises
  * `subagent_depth_exceeded` when `depth >= maxSubagentDepth`.
  */
-export type PilotDeckSubagentForkApi = {
+export type G9AgentSubagentForkApi = {
   depth: number;
   maxSubagentDepth: number;
   listDefinitions(): { id: string; description: string }[];
@@ -76,7 +76,7 @@ export type PilotDeckSubagentForkApi = {
   }>;
 };
 
-export type PilotDeckToolKind =
+export type G9AgentToolKind =
   | "filesystem"
   | "shell"
   | "network"
@@ -86,14 +86,14 @@ export type PilotDeckToolKind =
   | "structured_output"
   | "custom";
 
-export type PilotDeckToolResultContent =
+export type G9AgentToolResultContent =
   | { type: "text"; text: string }
   | { type: "json"; value: unknown }
   | { type: "image"; mimeType: string; data: string; bytes?: number; detail?: "auto" | "low" | "high" }
   | { type: "pdf"; mimeType: "application/pdf"; data: string; bytes: number; pages?: number }
   | { type: "file"; path: string; mimeType?: string; description?: string };
 
-export type PilotDeckReadFileStateEntry = {
+export type G9AgentReadFileStateEntry = {
   mtimeMs: number;
   managedRevision?: string;
   kind: "text" | "image" | "pdf" | "notebook";
@@ -102,9 +102,9 @@ export type PilotDeckReadFileStateEntry = {
   pages?: string;
 };
 
-export type PilotDeckReadFileStateMap = Map<string, PilotDeckReadFileStateEntry>;
+export type G9AgentReadFileStateMap = Map<string, G9AgentReadFileStateEntry>;
 
-export type PilotDeckWriteSnapshotEntry = {
+export type G9AgentWriteSnapshotEntry = {
   absolutePath: string;
   mtimeMs: number;
   contentHash: string;
@@ -116,9 +116,9 @@ export type PilotDeckWriteSnapshotEntry = {
   limit?: number;
 };
 
-export type PilotDeckWriteSnapshotMap = Map<string, PilotDeckWriteSnapshotEntry>;
+export type G9AgentWriteSnapshotMap = Map<string, G9AgentWriteSnapshotEntry>;
 
-export type PilotDeckFileUpdateNotification = {
+export type G9AgentFileUpdateNotification = {
   absolutePath: string;
   relativePath: string;
   root: string;
@@ -126,40 +126,40 @@ export type PilotDeckFileUpdateNotification = {
   previousContent: string | null;
 };
 
-export type PilotDeckFileUpdateNotifier = {
-  didChange?(update: PilotDeckFileUpdateNotification): Promise<void> | void;
-  didSave?(update: PilotDeckFileUpdateNotification): Promise<void> | void;
+export type G9AgentFileUpdateNotifier = {
+  didChange?(update: G9AgentFileUpdateNotification): Promise<void> | void;
+  didSave?(update: G9AgentFileUpdateNotification): Promise<void> | void;
 };
 
-export type PilotDeckToolSupplementalMessage = {
+export type G9AgentToolSupplementalMessage = {
   role: "user";
-  content: PilotDeckToolResultContent[];
+  content: G9AgentToolResultContent[];
   isMeta?: boolean;
 };
 
-export type PilotDeckToolExecutionOutput<Output = unknown> = {
-  content: PilotDeckToolResultContent[];
-  supplementalMessages?: PilotDeckToolSupplementalMessage[];
+export type G9AgentToolExecutionOutput<Output = unknown> = {
+  content: G9AgentToolResultContent[];
+  supplementalMessages?: G9AgentToolSupplementalMessage[];
   data?: Output;
   metadata?: Record<string, unknown>;
 };
 
-export type PilotDeckToolAvailability =
+export type G9AgentToolAvailability =
   | { ok: true }
   | { ok: false; code: "setup_required" | "unavailable" | "failed_check"; reason: string };
 
-export type PilotDeckToolAvailabilityContext = {
+export type G9AgentToolAvailabilityContext = {
   cwd: string;
   env?: NodeJS.ProcessEnv;
 };
 
 /**
- * Tool progress event emitted via `PilotDeckToolRuntimeContext.progress`.
+ * Tool progress event emitted via `G9AgentToolRuntimeContext.progress`.
  * The sink is fire-and-forget — progress events MUST NOT replace the final
  * `tool_result`, MUST NOT enter the durable transcript, and MAY be dropped
  * by the caller without affecting tool correctness.
  */
-export type PilotDeckToolProgressEvent = {
+export type G9AgentToolProgressEvent = {
   type: "tool_progress";
   sessionId: string;
   turnId: string;
@@ -172,23 +172,23 @@ export type PilotDeckToolProgressEvent = {
   createdAt: string;
 };
 
-export type PilotDeckToolProgressSink = (event: PilotDeckToolProgressEvent) => void;
+export type G9AgentToolProgressSink = (event: G9AgentToolProgressEvent) => void;
 
-export type PilotDeckTodoItem = {
+export type G9AgentTodoItem = {
   id?: string;
   content: string;
   status: "pending" | "in_progress" | "completed" | "cancelled";
   priority?: string;
 };
 
-export type PilotDeckTodoUpdate = {
+export type G9AgentTodoUpdate = {
   id?: string;
   content?: string;
-  status?: PilotDeckTodoItem["status"];
+  status?: G9AgentTodoItem["status"];
   priority?: string;
 };
 
-export type PilotDeckTodoDiagnostics = {
+export type G9AgentTodoDiagnostics = {
   writeCount: number;
   todoCount: number;
   activeCount: number;
@@ -210,38 +210,38 @@ export type PilotDeckTodoDiagnostics = {
   };
 };
 
-export type PilotDeckTodoWriteHistoryEntry = {
+export type G9AgentTodoWriteHistoryEntry = {
   createdAt: string;
   mode: "markdown" | "structured";
   merge: boolean;
   reason?: string;
   markdown?: string;
-  todos: PilotDeckTodoItem[];
-  diagnostics: PilotDeckTodoDiagnostics;
+  todos: G9AgentTodoItem[];
+  diagnostics: G9AgentTodoDiagnostics;
 };
 
-export type PilotDeckPlanTodoStateSnapshot = {
+export type G9AgentPlanTodoStateSnapshot = {
   approvedPlan?: string;
   requiresInitialization: boolean;
   toolCallsSinceLastTodoWrite: number;
   lastMarkdown?: string;
-  todos: PilotDeckTodoItem[];
-  activeTodos: PilotDeckTodoItem[];
-  todoHistory: PilotDeckTodoWriteHistoryEntry[];
-  todoDiagnostics: PilotDeckTodoDiagnostics;
+  todos: G9AgentTodoItem[];
+  activeTodos: G9AgentTodoItem[];
+  todoHistory: G9AgentTodoWriteHistoryEntry[];
+  todoDiagnostics: G9AgentTodoDiagnostics;
 };
 
-export type PilotDeckPlanTodoStateHandle = {
-  getSnapshot(): PilotDeckPlanTodoStateSnapshot;
+export type G9AgentPlanTodoStateHandle = {
+  getSnapshot(): G9AgentPlanTodoStateSnapshot;
   markPlanApproved(plan: string): void;
-  recordTodoWrite(markdown: string, todos: PilotDeckTodoItem[], options?: { reason?: string }): PilotDeckTodoItem[];
-  writeTodos(todos: PilotDeckTodoUpdate[], options?: { markdown?: string; merge?: boolean; reason?: string }): PilotDeckTodoItem[];
+  recordTodoWrite(markdown: string, todos: G9AgentTodoItem[], options?: { reason?: string }): G9AgentTodoItem[];
+  writeTodos(todos: G9AgentTodoUpdate[], options?: { markdown?: string; merge?: boolean; reason?: string }): G9AgentTodoItem[];
   markToolProgressChanged(toolName: string): void;
   buildPromptAddendum(): string | undefined;
   blockingMessageFor(toolName: string, isReadOnly: boolean): string | undefined;
 };
 
-export type PilotDeckToolRuntimeContext = {
+export type G9AgentToolRuntimeContext = {
   sessionId: string;
   turnId: string;
   cwd: string;
@@ -256,7 +256,7 @@ export type PilotDeckToolRuntimeContext = {
   toolAliases?: Record<string, string>;
   permissionMode: PermissionMode;
   permissionContext: PermissionContext;
-  auditRecorder?: PilotDeckToolAuditRecorder;
+  auditRecorder?: G9AgentToolAuditRecorder;
   /**
    * The final allow decision for the current tool call, populated by
    * ToolRuntime after permission checks pass and before tool execution.
@@ -273,30 +273,30 @@ export type PilotDeckToolRuntimeContext = {
    * before the final result lands. Absent by default; callers opt in by
    * supplying a sink.
    */
-  progress?: PilotDeckToolProgressSink;
+  progress?: G9AgentToolProgressSink;
   /**
    * Optional model client for tools that need to issue secondary model calls
    * (e.g. `agent` subagent prompts, `web_fetch` content extraction). Absent
    * when the caller didn't provide one — affected tools must report
    * `unsupported_tool` with a clear hint instead of failing silently.
    */
-  model?: PilotDeckToolModelClient;
+  model?: G9AgentToolModelClient;
   /**
    * Optional user-elicitation channel used by `ask_user_question` and any
    * tool that requests a synchronous user answer. The host (Gateway / TUI /
    * CLI / Feishu) wires this in. Absent when no UI is connected; affected
    * tools must report `unsupported_tool`.
    */
-  elicitation?: PilotDeckElicitationChannel;
+  elicitation?: G9AgentElicitationChannel;
   /**
    * Optional file-history sink (C4). When provided, `edit_file` /
    * `write_file` call `trackEdit(filePath, messageId)` *before* mutating,
-   * so a later `pilotdeck rewind` can restore the prior content. Absent
+   * so a later `g9agent rewind` can restore the prior content. Absent
    * for stand-alone runtimes; tools tolerate the absence by simply
    * skipping backup capture (intentional — never block the edit on
    * snapshot infrastructure).
    */
-  fileHistory?: PilotDeckToolFileHistorySink;
+  fileHistory?: G9AgentToolFileHistorySink;
   /**
    * Optional opaque "message id" the file-history sink uses to group
    * snapshots. Set by the agent loop per user turn (typically the user
@@ -317,7 +317,7 @@ export type PilotDeckToolRuntimeContext = {
    * absent, the `agent` tool falls back to the legacy single-shot model
    * call so unit tests still work.
    */
-  subagent?: PilotDeckSubagentForkApi;
+  subagent?: G9AgentSubagentForkApi;
   /**
    * Plan directory handle for plan-mode tools (`enter_plan_mode` /
    * `exit_plan_mode`). When plan mode is active the model may create and
@@ -336,7 +336,7 @@ export type PilotDeckToolRuntimeContext = {
    * that side-effecting tools do not run before the checklist is initialized
    * or refreshed after progress changes.
    */
-  planTodo?: PilotDeckPlanTodoStateHandle;
+  planTodo?: G9AgentPlanTodoStateHandle;
   /**
    * Multimodal constraints of the model driving this agent session.
    * Absent when the model config doesn't declare multimodal capabilities
@@ -365,15 +365,15 @@ export type PilotDeckToolRuntimeContext = {
    * tools report `unsupported_tool` instead of bypassing safety checks.
    */
   executeTool?: (
-    call: PilotDeckToolCall,
-    contextPatch?: Partial<PilotDeckToolRuntimeContext>,
-  ) => Promise<import("./result.js").PilotDeckToolResult>;
+    call: G9AgentToolCall,
+    contextPatch?: Partial<G9AgentToolRuntimeContext>,
+  ) => Promise<import("./result.js").G9AgentToolResult>;
   /**
    * Optional session-scoped cache for read_file de-duplication. The agent loop
    * keeps the map stable across turns so repeated reads of an unchanged file
    * can return a lightweight stub instead of re-injecting the full payload.
    */
-  readFileState?: PilotDeckReadFileStateMap;
+  readFileState?: G9AgentReadFileStateMap;
   /**
    * Session-scoped exact file paths that read_file may read even when they are
    * outside the workspace. Used for registered IM attachments only.
@@ -383,21 +383,21 @@ export type PilotDeckToolRuntimeContext = {
    * Optional session-scoped map of full-text reads that may authorize
    * subsequent write_file overwrites. Only complete text reads populate this.
    */
-  writeSnapshots?: PilotDeckWriteSnapshotMap;
+  writeSnapshots?: G9AgentWriteSnapshotMap;
   /**
    * Optional sink that propagates successful file writes to host integrations
    * such as LSP bridges or editor diff views.
    */
-  fileUpdateNotifier?: PilotDeckFileUpdateNotifier;
+  fileUpdateNotifier?: G9AgentFileUpdateNotifier;
 };
 
-export type PilotDeckToolDefinition<Input = unknown, Output = unknown> = {
+export type G9AgentToolDefinition<Input = unknown, Output = unknown> = {
   name: string;
   aliases?: string[];
   title?: string;
   description: string;
-  kind: PilotDeckToolKind;
-  inputSchema: PilotDeckToolInputSchema;
+  kind: G9AgentToolKind;
+  inputSchema: G9AgentToolInputSchema;
   outputSchema?: Record<string, unknown>;
   maxResultBytes?: number;
   shouldDefer?: boolean;
@@ -408,10 +408,10 @@ export type PilotDeckToolDefinition<Input = unknown, Output = unknown> = {
   isDestructive?(input: Input): boolean;
   requiresUserInteraction?(input: Input): boolean;
   isOpenWorld?(input: Input): boolean;
-  validateInput?(input: Input, context: PilotDeckToolRuntimeContext): Promise<PilotDeckToolValidationResult>;
-  checkAvailability?(context: PilotDeckToolAvailabilityContext): PilotDeckToolAvailability | Promise<PilotDeckToolAvailability>;
-  checkPermissions?(input: Input, context: PilotDeckToolRuntimeContext): Promise<PermissionResult>;
-  execute(input: Input, context: PilotDeckToolRuntimeContext): Promise<PilotDeckToolExecutionOutput<Output>>;
+  validateInput?(input: Input, context: G9AgentToolRuntimeContext): Promise<G9AgentToolValidationResult>;
+  checkAvailability?(context: G9AgentToolAvailabilityContext): G9AgentToolAvailability | Promise<G9AgentToolAvailability>;
+  checkPermissions?(input: Input, context: G9AgentToolRuntimeContext): Promise<PermissionResult>;
+  execute(input: Input, context: G9AgentToolRuntimeContext): Promise<G9AgentToolExecutionOutput<Output>>;
 };
 
-export type PilotDeckToolCall = CanonicalToolCall;
+export type G9AgentToolCall = CanonicalToolCall;

@@ -5,11 +5,11 @@ import { discoverPluginPaths, discoverSkillPaths } from "../discovery/discoverLo
 import { loadPluginFromPath, loadSkillFromPath } from "../loading/PluginLoader.js";
 import { loadPluginHooks } from "../loading/PluginHookLoader.js";
 import type { LoadedPluginCommand } from "../loading/PluginCommandLoader.js";
-import type { PilotDeckLoadedPlugin } from "../protocol/plugin.js";
+import type { G9AgentLoadedPlugin } from "../protocol/plugin.js";
 import { PluginRegistry } from "./PluginRegistry.js";
 import { truncateMcpInstructionString } from "./truncateMcpString.js";
-import type { PilotDeckHooksSettings } from "../../hooks/protocol/settings.js";
-import type { PilotDeckCustomRouter } from "../../../router/customRouter/customRouter.js";
+import type { G9AgentHooksSettings } from "../../hooks/protocol/settings.js";
+import type { G9AgentCustomRouter } from "../../../router/customRouter/customRouter.js";
 import { renderSkillContent } from "../../skills/renderSkillContent.js";
 import type { PluginCommandContribution, PluginSkillContribution, PluginMcpInstruction, PluginPromptContributions } from "../protocol/promptContributions.js";
 export type { PluginCommandContribution, PluginSkillContribution, PluginMcpInstruction, PluginPromptContributions } from "../protocol/promptContributions.js";
@@ -20,7 +20,7 @@ export type { PluginCommandContribution, PluginSkillContribution, PluginMcpInstr
  * this type is *advisory* — the runtime only reads `instructions` and falls
  * back gracefully when missing.
  */
-export type PilotDeckMcpServerStaticSpec = {
+export type G9AgentMcpServerStaticSpec = {
   instructions?: string;
   [key: string]: unknown;
 };
@@ -30,7 +30,7 @@ export type PilotDeckMcpServerStaticSpec = {
  * as a stricter alias of {@link PluginMcpInstruction} so callers that only
  * care about *populated* entries keep a non-optional `instructions` field.
  */
-export type PilotDeckMcpInstructionEntry = {
+export type G9AgentMcpInstructionEntry = {
   serverName: string;
   instructions: string;
 };
@@ -38,25 +38,25 @@ export type PilotDeckMcpInstructionEntry = {
 export type PluginRuntimeOptions = {
   projectRoot: string;
   pilotHome: string;
-  /** Read-only skills shipped with the active PilotDeck build. */
+  /** Read-only skills shipped with the active G9Agent build. */
   builtinSkillsRoot?: string;
-  builtinPlugins?: PilotDeckLoadedPlugin[];
+  builtinPlugins?: G9AgentLoadedPlugin[];
   builtinPluginsEnabled?: Record<string, boolean>;
 };
 
 export type PluginRefreshResult = {
-  previous: PilotDeckLoadedPlugin[];
-  next: PilotDeckLoadedPlugin[];
-  added: PilotDeckLoadedPlugin[];
-  removed: PilotDeckLoadedPlugin[];
+  previous: G9AgentLoadedPlugin[];
+  next: G9AgentLoadedPlugin[];
+  added: G9AgentLoadedPlugin[];
+  removed: G9AgentLoadedPlugin[];
 };
 
 export type PluginContributionSnapshot = {
-  plugins: PilotDeckLoadedPlugin[];
+  plugins: G9AgentLoadedPlugin[];
   commands: PluginCommandContribution[];
   skills: PluginSkillContribution[];
   outputStyles: LoadedPluginCommand[];
-  hooks: PilotDeckHooksSettings;
+  hooks: G9AgentHooksSettings;
   mcpServers: Record<string, unknown>;
   lspServers: Record<string, unknown>;
   mcpInstructions: PluginMcpInstruction[];
@@ -67,7 +67,7 @@ export class PluginRuntime {
 
   constructor(private readonly options: PluginRuntimeOptions) {}
 
-  snapshot(): PilotDeckLoadedPlugin[] {
+  snapshot(): G9AgentLoadedPlugin[] {
     return this.registry.list();
   }
 
@@ -86,8 +86,8 @@ export class PluginRuntime {
    * instructions on top via the same `getAllMcpInstructions` aggregator
    * surface used by `PluginRuntimeExtensionResolver`.
    */
-  getAllMcpInstructions(): PilotDeckMcpInstructionEntry[] {
-    const entries: PilotDeckMcpInstructionEntry[] = [];
+  getAllMcpInstructions(): G9AgentMcpInstructionEntry[] {
+    const entries: G9AgentMcpInstructionEntry[] = [];
     const seen = new Set<string>();
     for (const plugin of this.registry.list()) {
       const servers = plugin.mcpServers;
@@ -95,7 +95,7 @@ export class PluginRuntime {
       for (const [serverName, raw] of Object.entries(servers)) {
         if (seen.has(serverName)) continue;
         if (!raw || typeof raw !== "object") continue;
-        const candidate = (raw as PilotDeckMcpServerStaticSpec).instructions;
+        const candidate = (raw as G9AgentMcpServerStaticSpec).instructions;
         if (typeof candidate !== "string") continue;
         const trimmed = candidate.trim();
         if (trimmed.length === 0) continue;
@@ -147,7 +147,7 @@ export class PluginRuntime {
     };
   }
 
-  lookupRouter(extensionId: string): PilotDeckCustomRouter | undefined {
+  lookupRouter(extensionId: string): G9AgentCustomRouter | undefined {
     for (const plugin of this.registry.list()) {
       for (const contribution of plugin.routerContributions ?? []) {
         if (contribution.id !== extensionId) {
@@ -195,7 +195,7 @@ export class PluginRuntime {
   }
 
   /** Existing sessions honor switches immediately, without waiting for a watcher. */
-  private enabledPlugins(): PilotDeckLoadedPlugin[] {
+  private enabledPlugins(): G9AgentLoadedPlugin[] {
     const preferences = readSkillPreferences(this.options.pilotHome);
     const paths = resolvePluginDirectories(this.options);
     return this.registry.list().filter(plugin => {
@@ -207,7 +207,7 @@ export class PluginRuntime {
     });
   }
 
-  async refresh(): Promise<PilotDeckLoadedPlugin[]> {
+  async refresh(): Promise<G9AgentLoadedPlugin[]> {
     return (await this.refreshWithReport()).next;
   }
 
@@ -258,23 +258,23 @@ export class PluginRuntime {
   }
 }
 
-function isLoadedPlugin(value: PilotDeckLoadedPlugin | undefined): value is PilotDeckLoadedPlugin {
+function isLoadedPlugin(value: G9AgentLoadedPlugin | undefined): value is G9AgentLoadedPlugin {
   return value !== undefined;
 }
 
 function enabledBuiltinPlugins(
-  plugins: PilotDeckLoadedPlugin[],
+  plugins: G9AgentLoadedPlugin[],
   enabled: Record<string, boolean>,
-): PilotDeckLoadedPlugin[] {
+): G9AgentLoadedPlugin[] {
   return plugins.filter((plugin) => plugin.source !== "builtin" || enabled[plugin.name] !== false);
 }
 
-function hasPlugin(plugins: PilotDeckLoadedPlugin[], plugin: PilotDeckLoadedPlugin): boolean {
+function hasPlugin(plugins: G9AgentLoadedPlugin[], plugin: G9AgentLoadedPlugin): boolean {
   return plugins.some((candidate) => candidate.name === plugin.name && candidate.source === plugin.source);
 }
 
 function toCommandContribution(
-  plugin: PilotDeckLoadedPlugin,
+  plugin: G9AgentLoadedPlugin,
   command: LoadedPluginCommand,
 ): PluginCommandContribution {
   return {
@@ -289,7 +289,7 @@ function toCommandContribution(
 }
 
 function toSkillContribution(
-  plugin: PilotDeckLoadedPlugin,
+  plugin: G9AgentLoadedPlugin,
   skill: LoadedPluginCommand,
 ): PluginSkillContribution {
   return {
@@ -300,7 +300,7 @@ function toSkillContribution(
   };
 }
 
-function sourcePriority(source: PilotDeckLoadedPlugin["source"]): number {
+function sourcePriority(source: G9AgentLoadedPlugin["source"]): number {
   switch (source) {
     case "project":
       return 2;
@@ -312,11 +312,11 @@ function sourcePriority(source: PilotDeckLoadedPlugin["source"]): number {
   }
 }
 
-function sortByResolutionPriority(plugins: PilotDeckLoadedPlugin[]): PilotDeckLoadedPlugin[] {
+function sortByResolutionPriority(plugins: G9AgentLoadedPlugin[]): G9AgentLoadedPlugin[] {
   return [...plugins].sort((a, b) => sourcePriority(b.source) - sourcePriority(a.source));
 }
 
-function collectSkillContributions(plugins: PilotDeckLoadedPlugin[]): PluginSkillContribution[] {
+function collectSkillContributions(plugins: G9AgentLoadedPlugin[]): PluginSkillContribution[] {
   const selected = new Map<string, { contribution: PluginSkillContribution; priority: number }>();
   for (const plugin of plugins) {
     const priority = sourcePriority(plugin.source);

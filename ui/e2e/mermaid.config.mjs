@@ -7,7 +7,7 @@ export default defineConfig({
   testDir: '.', testMatch: ['mermaid.spec.mjs'],
   outputDir: '../../artifacts/mermaid/playwright', workers: 1,
   use: {
-    channel: process.env.PILOTDECK_TEST_BROWSER_CHANNEL || undefined,
+    channel: process.env.G9AGENT_TEST_BROWSER_CHANNEL || undefined,
     baseURL: 'http://127.0.0.1:5267', viewport: { width: 1100, height: 800 },
     screenshot: 'only-on-failure',
   },

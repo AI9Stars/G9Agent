@@ -13,13 +13,13 @@ assert.equal(process.platform, 'linux');
 assert.ok(display === 'x11' ? process.env.DISPLAY : process.env.WAYLAND_DISPLAY,
   `Missing ${display} display socket`);
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), `pilotdeck-${display}-smoke-`));
+const root = fs.mkdtempSync(path.join(os.tmpdir(), `g9agent-${display}-smoke-`));
 const configHome = path.join(root, 'config');
-const runtimeLog = path.join(configHome, 'pilotdeck-desktop', 'logs', 'runtime.log');
-const child = spawn('/usr/bin/pilotdeck-desktop', [
+const runtimeLog = path.join(configHome, 'g9agent-desktop', 'logs', 'runtime.log');
+const child = spawn('/usr/bin/g9agent-desktop', [
   `--ozone-platform=${display}`, '--disable-gpu', '--no-sandbox',
 ], {
-  env: { ...process.env, XDG_CONFIG_HOME: configHome, PILOT_HOME: path.join(root, 'pilot-home') },
+  env: { ...process.env, XDG_CONFIG_HOME: configHome, G9AGENT_HOME: path.join(root, 'pilot-home') },
   stdio: ['ignore', 'pipe', 'pipe'],
   detached: true,
 });
@@ -37,16 +37,16 @@ async function waitForReady() {
     if (exited) throw new Error(`Electron exited before startup:\n${output}`);
     if (fs.existsSync(runtimeLog)) {
       const log = fs.readFileSync(runtimeLog, 'utf8');
-      const url = log.match(/PilotDeck Web UI ready: (http:\/\/127\.0\.0\.1:\d+)/)?.[1];
+      const url = log.match(/G9Agent Web UI ready: (http:\/\/127\.0\.0\.1:\d+)/)?.[1];
       if (url) {
         const response = await fetch(url).catch(() => null);
         if (response?.ok) return url;
       }
-      if (log.includes('PilotDeck failed to start')) throw new Error(log.slice(-6000));
+      if (log.includes('G9Agent failed to start')) throw new Error(log.slice(-6000));
     }
     await pause(250);
   }
-  throw new Error(`Timed out waiting for PilotDeck UI:\n${output}\n${fs.existsSync(runtimeLog) ? fs.readFileSync(runtimeLog, 'utf8').slice(-6000) : 'No runtime log'}`);
+  throw new Error(`Timed out waiting for G9Agent UI:\n${output}\n${fs.existsSync(runtimeLog) ? fs.readFileSync(runtimeLog, 'utf8').slice(-6000) : 'No runtime log'}`);
 }
 
 async function stop() {
@@ -59,8 +59,8 @@ async function stop() {
     }
   }
   // Managed Node processes intentionally live in separate process groups.
-  // Match only this smoke run's private PILOT_HOME before terminating them.
-  const marker = Buffer.from(`\0PILOT_HOME=${path.join(root, 'pilot-home')}\0`);
+  // Match only this smoke run's private G9AGENT_HOME before terminating them.
+  const marker = Buffer.from(`\0G9AGENT_HOME=${path.join(root, 'pilot-home')}\0`);
   const ownedPids = () => fs.readdirSync('/proc').filter(name => /^\d+$/.test(name))
     .map(Number).filter(pid => {
       if (pid === process.pid) return false;
@@ -84,13 +84,13 @@ async function main() {
   try {
     const url = await waitForReady();
     assert.ok(fs.existsSync(path.join(root, 'pilot-home', 'auth.db')),
-      'The installed app must store its database in PILOT_HOME, including when the smoke test runs as root');
+      'The installed app must store its database in G9AGENT_HOME, including when the smoke test runs as root');
     await pause(2_000);
     assert.equal(exited, false, `Electron exited after readiness:\n${output}`);
     if (display === 'x11') {
       const { execFileSync } = require('node:child_process');
       const windows = execFileSync('xwininfo', ['-root', '-tree'], { encoding: 'utf8' });
-      assert.match(windows, /PilotDeck/, 'X11 window was not created');
+      assert.match(windows, /G9Agent/, 'X11 window was not created');
     }
     console.log(`PASS: installed Linux package started on ${display} and served ${url}`);
   } finally {

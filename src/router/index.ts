@@ -71,7 +71,7 @@ export {
   type CustomRouterContext,
   type CustomRouterDecideInput,
   type CustomRouterRegistry,
-  type PilotDeckCustomRouter,
+  type G9AgentCustomRouter,
 } from "./customRouter/customRouter.js";
 export {
   ProviderHealthTracker,

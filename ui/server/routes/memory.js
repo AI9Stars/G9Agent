@@ -6,11 +6,11 @@ import {
   MemoryBundleValidationError,
 } from 'edgeclaw-memory-core';
 import {
-  readPilotDeckConfigFile,
-  updatePilotDeckConfig,
-} from '../services/pilotdeckConfig.js';
-import { reloadPilotDeckConfig } from '../services/pilotdeckConfigReloader.js';
-import { suppressNextWatchEvent } from '../services/pilotdeckConfigWatcher.js';
+  readG9AgentConfigFile,
+  updateG9AgentConfig,
+} from '../services/g9agentConfig.js';
+import { reloadG9AgentConfig } from '../services/g9agentConfigReloader.js';
+import { suppressNextWatchEvent } from '../services/g9agentConfigWatcher.js';
 import {
   clearAllMemoryData,
   exportAllProjectsMemoryBundle,
@@ -72,11 +72,11 @@ function getGlobalMemorySettingsFromConfig(config) {
 }
 
 function getGlobalMemorySettings() {
-  return getGlobalMemorySettingsFromConfig(readPilotDeckConfigFile().config);
+  return getGlobalMemorySettingsFromConfig(readG9AgentConfigFile().config);
 }
 
 async function saveGlobalMemorySettings(partial = {}) {
-  const saved = await updatePilotDeckConfig((config) => {
+  const saved = await updateG9AgentConfig((config) => {
     const current = getGlobalMemorySettingsFromConfig(config);
     const configuredMemory = config?.memory && typeof config.memory === 'object'
       && !Array.isArray(config.memory);
@@ -95,7 +95,7 @@ async function saveGlobalMemorySettings(partial = {}) {
     paths: [['memory']],
     onWriteCommitted: suppressNextWatchEvent,
   });
-  await reloadPilotDeckConfig(saved.config);
+  await reloadG9AgentConfig(saved.config);
   return getGlobalMemorySettingsFromConfig(saved.config);
 }
 
@@ -533,14 +533,14 @@ router.get('/dream-traces/:dreamTraceId', async (req, res) =>
 router.get('/export/current-project', async (req, res) =>
   withMemoryService(req, res, async ({ service }) => {
     const bundle = service.exportBundle();
-    sendBundleDownload(res, bundle, 'pilotdeck-memory-current-project');
+    sendBundleDownload(res, bundle, 'g9agent-memory-current-project');
   }),
 );
 
 router.get('/export/all-projects', async (_req, res) => {
   try {
     const bundle = await exportAllProjectsMemoryBundle();
-    sendBundleDownload(res, bundle, 'pilotdeck-memory-all-projects');
+    sendBundleDownload(res, bundle, 'g9agent-memory-all-projects');
   } catch (error) {
     res.status(500).json({
       error: error instanceof Error ? error.message : String(error),
@@ -575,7 +575,7 @@ router.post('/import/all-projects', async (req, res) => {
 router.get('/export', async (req, res) =>
   withMemoryService(req, res, async ({ service }) => {
     const bundle = service.exportBundle();
-    sendBundleDownload(res, bundle, 'pilotdeck-memory-current-project');
+    sendBundleDownload(res, bundle, 'g9agent-memory-current-project');
   }),
 );
 

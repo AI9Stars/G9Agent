@@ -1,7 +1,7 @@
 export type PermissionsExport = {
   version: 2;
   exportedAt: string;
-  source: "pilotdeck";
+  source: "g9agent";
   allowedTools: string[];
   disallowedTools: string[];
   skipPermissions: boolean;

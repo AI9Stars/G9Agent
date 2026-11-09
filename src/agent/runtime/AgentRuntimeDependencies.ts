@@ -1,13 +1,13 @@
 import type { CanonicalMessage, CanonicalModelEvent, CanonicalModelRequest } from "../../model/index.js";
 import type {
-  PilotDeckElicitationChannel,
-  PilotDeckToolAuditRecorder,
-  PilotDeckFileUpdateNotifier,
-  PilotDeckToolFileHistorySink,
-  PilotDeckToolScheduler,
+  G9AgentElicitationChannel,
+  G9AgentToolAuditRecorder,
+  G9AgentFileUpdateNotifier,
+  G9AgentToolFileHistorySink,
+  G9AgentToolScheduler,
   ToolRegistry,
-  PilotDeckToolResult,
-  PilotDeckToolDefinition,
+  G9AgentToolResult,
+  G9AgentToolDefinition,
 } from "../../tool/index.js";
 import type { PlanFileManager } from "../../tool/builtin/planFile.js";
 import type { PlanTodoStateManager } from "./PlanTodoState.js";
@@ -89,10 +89,10 @@ export type AgentRuntimeDependencies = {
   releaseSessionResources?: () => void;
   acquireTurnResources?: () => () => void;
   /** Refresh only the supplied registry at a request boundary; child scopes stay restricted. */
-  refreshToolCatalog?: (registry: ToolRegistry, signal?: AbortSignal, include?: (tool: PilotDeckToolDefinition) => boolean) => Promise<void>;
+  refreshToolCatalog?: (registry: ToolRegistry, signal?: AbortSignal, include?: (tool: G9AgentToolDefinition) => boolean) => Promise<void>;
   router: AgentRouterRuntime;
   tools: {
-    scheduler: PilotDeckToolScheduler;
+    scheduler: G9AgentToolScheduler;
     registry: ToolRegistry;
   };
   context?: AgentContextRuntime;
@@ -117,7 +117,7 @@ export type AgentRuntimeDependencies = {
   getModelSupportsPromptCache?: (provider: string, model: string) => boolean | undefined;
   now?: () => Date;
   uuid?: () => string;
-  auditRecorder?: PilotDeckToolAuditRecorder;
+  auditRecorder?: G9AgentToolAuditRecorder;
   lifecycle?: LifecycleRuntime;
   /** C3 sidechain transcript hooks (optional). */
   subagentTranscript?: AgentSubagentTranscriptHooks;
@@ -131,26 +131,26 @@ export type AgentRuntimeDependencies = {
   inheritSubagentToolResult?: (args: {
     parentSessionId: string;
     subagentSessionId: string;
-    result: PilotDeckToolResult;
+    result: G9AgentToolResult;
   }) => Promise<{ key: string; description: string } | undefined>;
   /**
-   * Elicitation channel — wired into the per-tool `PilotDeckToolRuntimeContext`
+   * Elicitation channel — wired into the per-tool `G9AgentToolRuntimeContext`
    * so `ask_user_question` (B1) can drive the gateway. When omitted, the
    * tool returns a `mcp_unavailable` error instead of crashing.
    */
-  elicitation?: PilotDeckElicitationChannel;
+  elicitation?: G9AgentElicitationChannel;
   /**
    * File-history sink — wired into the per-tool runtime context so
    * `edit_file` / `write_file` (C4) snapshot the file before mutation.
    * `FileHistoryStore` directly satisfies this contract.
    */
-  fileHistory?: PilotDeckToolFileHistorySink;
+  fileHistory?: G9AgentToolFileHistorySink;
   /**
    * Optional sink for propagating successful file writes to editor / LSP
    * integrations. When absent, write_file still succeeds and performs no
    * post-write host notifications.
    */
-  fileUpdateNotifier?: PilotDeckFileUpdateNotifier;
+  fileUpdateNotifier?: G9AgentFileUpdateNotifier;
   /**
    * Plan file manager — resolves the current writable plan directory
    * directory and reads explicitly submitted plan documents for

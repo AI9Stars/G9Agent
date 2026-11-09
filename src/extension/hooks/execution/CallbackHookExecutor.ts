@@ -1,13 +1,13 @@
-import type { PilotDeckHookInput } from "../protocol/input.js";
-import type { PilotDeckHookCommand } from "../protocol/settings.js";
-import type { PilotDeckHookOutput } from "../protocol/output.js";
+import type { G9AgentHookInput } from "../protocol/input.js";
+import type { G9AgentHookCommand } from "../protocol/settings.js";
+import type { G9AgentHookOutput } from "../protocol/output.js";
 import { parseHookOutput } from "./parseHookOutput.js";
 import type { CommandHookExecutionResult } from "./CommandHookExecutor.js";
 
 export type CallbackHookHandler = (input: {
-  hookInput: PilotDeckHookInput;
+  hookInput: G9AgentHookInput;
   signal?: AbortSignal;
-}) => Promise<PilotDeckHookOutput | string | void> | PilotDeckHookOutput | string | void;
+}) => Promise<G9AgentHookOutput | string | void> | G9AgentHookOutput | string | void;
 
 export class CallbackHookExecutor {
   private readonly callbacks = new Map<string, CallbackHookHandler>();
@@ -21,8 +21,8 @@ export class CallbackHookExecutor {
   }
 
   async execute(options: {
-    hook: Extract<PilotDeckHookCommand, { type: "callback" }>;
-    hookInput: PilotDeckHookInput;
+    hook: Extract<G9AgentHookCommand, { type: "callback" }>;
+    hookInput: G9AgentHookInput;
     signal?: AbortSignal;
   }): Promise<CommandHookExecutionResult> {
     const callback = this.callbacks.get(options.hook.name);

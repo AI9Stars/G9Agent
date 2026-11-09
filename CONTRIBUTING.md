@@ -4,7 +4,7 @@ Use Node.js 22 and the pnpm version declared in package.json. Start with the [co
 
 ## Documentation
 
-These are PilotDeck conventions; the line targets are guidance, not external standards.
+These are G9Agent conventions; the line targets are guidance, not external standards.
 
 - Preserve the existing root-level README*.md files, their translations and the entire existing assets/ tree during cleanup. These public entry points and media sources are excluded from automatic English-only developer-documentation normalization. Change them only when explicitly requested.
 - Keep one short English README.md at each public package or substantial subsystem boundary. Aim for 15–40 lines covering responsibility, real entry points, validation and links. Small internal folders use the parent guide.
@@ -17,7 +17,7 @@ These are PilotDeck conventions; the line targets are guidance, not external sta
 
 - Put backend regression cases under tests/, UI/server cases alongside their modules, browser/Electron acceptance under ui/e2e/, and desktop helper cases under apps/desktop/scripts/. Use the existing runners; retain distinct security, data-integrity and platform boundaries.
 - A test must assert an observable result or contract and fail for a meaningful regression. Console-only probes, screenshot generators and temporary provider mocks are not regression cases.
-- Use temporary profiles, PILOT_HOME, databases and workspaces. Stop only owned processes and clean up temporary resources. Real provider calls must be explicit opt-in and must not inherit user secrets.
+- Use temporary profiles, G9AGENT_HOME, databases and workspaces. Stop only owned processes and clean up temporary resources. Real provider calls must be explicit opt-in and must not inherit user secrets.
 - Keep reusable build/diagnostic tools in scripts/ with a documented consumer or use. Read-only import reports identify review candidates; dynamic loaders, assets and test helpers need manual checks before deletion.
 - Verify the affected behavior first, then the relevant module suite. Changes to native resources, shared protocols or build inputs need the corresponding native/integration checks. Do not weaken assertions or ignore tests to make cleanup pass.
 

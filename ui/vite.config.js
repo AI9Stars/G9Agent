@@ -51,12 +51,12 @@ export default defineConfig(({ mode }) => {
     '@uiw/react-codemirror',
   ]
 
-  const disableLocalAuth = isLocalAuthDisabled(env.PILOTDECK_DISABLE_LOCAL_AUTH)
+  const disableLocalAuth = isLocalAuthDisabled(env.G9AGENT_DISABLE_LOCAL_AUTH)
 
   return {
     define: {
-      'import.meta.env.VITE_PILOTDECK_VERSION': JSON.stringify(env.PILOTDECK_VERSION || JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8')).version),
-      'import.meta.env.VITE_PILOTDECK_REQUEST_HEADERS': JSON.stringify(env.PILOTDECK_REQUEST_HEADERS || 'full'),
+      'import.meta.env.VITE_G9AGENT_VERSION': JSON.stringify(env.G9AGENT_VERSION || JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8')).version),
+      'import.meta.env.VITE_G9AGENT_REQUEST_HEADERS': JSON.stringify(env.G9AGENT_REQUEST_HEADERS || 'full'),
       'import.meta.env.VITE_DISABLE_LOCAL_AUTH': JSON.stringify(disableLocalAuth ? 'true' : 'false'),
     },
     plugins: [react(), {
@@ -67,10 +67,11 @@ export default defineConfig(({ mode }) => {
         if (path.resolve(context.filename) !== path.join(__dirname, 'index.html')) return html;
         // The same shell is painted before the application bundle is evaluated.
         // Keep it outside React's root so phase changes never replace the frame.
-        const page = renderLoadingHtml({ language: 'en', themeMode: 'system' }, true);
+        const page = renderLoadingHtml({ language: 'en', themeMode: 'system' }, true,
+          readFileSync(path.join(__dirname, 'public/logo-256.png')).toString('base64'));
         const style = page.match(/<style>([\s\S]*?)<\/style>/)[1];
         const body = page.match(/<body[^>]*>([\s\S]*?)<\/body>/)[1];
-        return html.replace('<div id="root"></div>', () => `<div id="pilotdeck-startup-shell"><style>${style}</style>${body}</div><div id="root"></div>`);
+        return html.replace('<div id="root"></div>', () => `<div id="g9agent-startup-shell"><style>${style}</style>${body}</div><div id="root"></div>`);
       },
     }, {
       name: 'appearance-first-paint',
@@ -79,13 +80,19 @@ export default defineConfig(({ mode }) => {
         // wrong canvas. Full validation and token application follow at boot.
         return [{ tag: 'script', injectTo: 'head-prepend', children: `
           try {
-            var desktop = window.pilotdeckDesktop?.getAppearance?.();
+            var desktop = window.g9agentDesktop?.getAppearance?.();
+            var language = desktop?.language || localStorage.getItem('userLanguage') || 'en';
+            var name = language === 'zh-CN' ? '九格智能体' : 'G9Agent';
+            document.title = name;
+            document.documentElement.lang = language === 'zh-CN' ? 'zh-CN' : 'en';
+            document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', name);
+            document.querySelector('link[rel="manifest"]')?.setAttribute('href', language === 'zh-CN' ? '/manifest.zh-CN.json' : '/manifest.json');
             var mode = desktop?.themeMode || localStorage.getItem('themeMode') || localStorage.getItem('theme') || 'system';
             if (!['light', 'dark', 'system'].includes(mode)) mode = 'system';
             var dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
             document.documentElement.classList.toggle('dark', dark);
             document.documentElement.style.backgroundColor = dark ? '#23252b' : '#ffffff';
-            var preference = desktop?.lightAppearance || JSON.parse(localStorage.getItem('pilotdeck-light-appearance-v1') || 'null');
+            var preference = desktop?.lightAppearance || JSON.parse(localStorage.getItem('g9agent-light-appearance-v1') || 'null');
             var presets = ${JSON.stringify({ ...LIGHT_PRESETS, ...LEGACY_LIGHT_PRESETS })};
             var background = preference?.preset === 'custom' ? preference.custom?.background : presets[preference?.preset]?.background;
             document.documentElement.style.backgroundColor = dark ? '#23252b' : /^#[0-9a-f]{6}$/i.test(background) ? background : '#ffffff';

@@ -1,4 +1,4 @@
-export type PilotDeckExtensionContributionKind =
+export type G9AgentExtensionContributionKind =
   | "command"
   | "hook"
   | "tool"

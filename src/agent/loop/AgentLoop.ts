@@ -20,12 +20,12 @@ import {
   type CanonicalUsage,
 } from "../../model/index.js";
 import type {
-  PilotDeckReadFileStateMap,
-  PilotDeckSubagentForkApi,
-  PilotDeckToolErrorResult,
-  PilotDeckToolResult,
-  PilotDeckToolRuntimeContext,
-  PilotDeckWriteSnapshotMap,
+  G9AgentReadFileStateMap,
+  G9AgentSubagentForkApi,
+  G9AgentToolErrorResult,
+  G9AgentToolResult,
+  G9AgentToolRuntimeContext,
+  G9AgentWriteSnapshotMap,
 } from "../../tool/index.js";
 import {
   SUBAGENT_DEFINITIONS,
@@ -37,7 +37,7 @@ import type { AgentPermissionDenial, AgentTurnResult } from "../protocol/result.
 import type { AgentRuntimeConfig } from "../runtime/AgentRuntimeConfig.js";
 import type { AgentRuntimeDependencies } from "../runtime/AgentRuntimeDependencies.js";
 import type { LifecycleDispatchResult } from "../../lifecycle/index.js";
-import type { PilotDeckHookEvent } from "../../extension/hooks/protocol/events.js";
+import type { G9AgentHookEvent } from "../../extension/hooks/protocol/events.js";
 import { truncateHeadPreservingCheckpoint } from "../../context/compaction/CompactionEngine.js";
 import type { AgentContextRuntime } from "../../context/ContextRuntime.js";
 import type {
@@ -141,14 +141,14 @@ export type AgentLoopRunResult = {
 };
 
 export type AgentLoopSeedState = {
-  readFileState?: PilotDeckReadFileStateMap;
-  writeSnapshots?: PilotDeckWriteSnapshotMap;
+  readFileState?: G9AgentReadFileStateMap;
+  writeSnapshots?: G9AgentWriteSnapshotMap;
   allowedReadFiles?: string[];
 };
 
 export class AgentLoop {
-  private readonly readFileState: PilotDeckReadFileStateMap;
-  private readonly writeSnapshots: PilotDeckWriteSnapshotMap;
+  private readonly readFileState: G9AgentReadFileStateMap;
+  private readonly writeSnapshots: G9AgentWriteSnapshotMap;
   private readonly allowedReadFiles: Set<string>;
   private readonly tokenCalibrationByRoute = new Map<string, TokenCalibrationBaseline>();
   private readonly transientTokenCaps = new Map<string, {
@@ -459,7 +459,7 @@ export class AgentLoop {
         } catch {
           if (input.abortSignal?.aborted) continue;
           // Failed discovery leaves the last complete catalog available.
-          console.warn("[pilotdeck] Tool catalog refresh failed; retaining the previous tool contracts.");
+          console.warn("[g9agent] Tool catalog refresh failed; retaining the previous tool contracts.");
         }
       }
 
@@ -656,7 +656,7 @@ export class AgentLoop {
         try {
           await input.onModelContext(createModelContextSnapshot(calibrationRequest, input.turnId,
             this.dependencies.tokenAccounting?.estimateRequestBreakdown?.(calibrationRequest)));
-        } catch (error) { console.warn('[pilotdeck] Could not save context inspection snapshot:', error); }
+        } catch (error) { console.warn('[g9agent] Could not save context inspection snapshot:', error); }
       }
       let calibrationRequestFingerprint = requestFingerprint(calibrationRequest);
       const assembler = createModelMessageAssemblerState(randomUUID());
@@ -673,7 +673,7 @@ export class AgentLoop {
         if (input.onModelContext) {
           try { await input.onModelContext(createModelContextSnapshot(actual, input.turnId,
             this.dependencies.tokenAccounting?.estimateRequestBreakdown?.(actual))); }
-          catch (error) { console.warn('[pilotdeck] Could not save context inspection snapshot:', error); }
+          catch (error) { console.warn('[g9agent] Could not save context inspection snapshot:', error); }
         }
       } : undefined;
       try {
@@ -1725,7 +1725,7 @@ export class AgentLoop {
         return { result, messages };
       }
 
-      let results: PilotDeckToolResult[];
+      let results: G9AgentToolResult[];
       try {
         const toolContext = this.createToolContext(input, messages);
         if (assembled.finishReason === "length" || assembled.hasRepairedToolCalls) {
@@ -2313,7 +2313,7 @@ export class AgentLoop {
   private createToolContext(
     input: AgentLoopInput,
     messages: CanonicalMessage[],
-  ): PilotDeckToolRuntimeContext {
+  ): G9AgentToolRuntimeContext {
     const planDirectoryPath = this.dependencies.planFileManager?.getPlanDirectoryPath();
     const planTodo = this.dependencies.planTodoManager?.forSession(input.sessionId);
     const canPrompt = input.canPrompt ?? this.config.permissionContext.canPrompt;
@@ -2389,7 +2389,7 @@ export class AgentLoop {
   private buildSubagentForkApi(
     input: AgentLoopInput,
     messages: CanonicalMessage[],
-  ): PilotDeckSubagentForkApi {
+  ): G9AgentSubagentForkApi {
     const depth = this.config.subagentDepth ?? 0;
     const maxDepth = this.config.maxSubagentDepth ?? 1;
     return {
@@ -2548,7 +2548,7 @@ export class AgentLoop {
 
   private async dispatchLifecycle(
     input: AgentLoopInput,
-    event: PilotDeckHookEvent,
+    event: G9AgentHookEvent,
     payload: Record<string, unknown>,
   ): Promise<LifecycleDispatchResult> {
     return this.dependencies.lifecycle?.dispatch({
@@ -2603,9 +2603,9 @@ export class AgentLoop {
 
   private async *executeToolsWithEventPump(
     toolCalls: CanonicalToolCall[],
-    context: PilotDeckToolRuntimeContext,
+    context: G9AgentToolRuntimeContext,
     input: AgentLoopInput,
-  ): AsyncGenerator<AgentEvent, PilotDeckToolResult[], unknown> {
+  ): AsyncGenerator<AgentEvent, G9AgentToolResult[], unknown> {
     const activeSubagents = new Map<string, ActiveSubagentStatus>();
     let settled = false;
 
@@ -2779,11 +2779,11 @@ export function buildTurnEnvironment(
 ): NodeJS.ProcessEnv {
   return {
     ...(baseEnv ?? process.env),
-    PILOTDECK_SESSION_ID: sessionId,
-    PILOTDECK_TURN_ID: turnId,
-    PILOTDECK_WORK_DIR: path.join(
+    G9AGENT_SESSION_ID: sessionId,
+    G9AGENT_TURN_ID: turnId,
+    G9AGENT_WORK_DIR: path.join(
       path.resolve(cwd),
-      ".pilotdeck",
+      ".g9agent",
       "work",
       safeWorkPathSegment(sessionId),
       safeWorkPathSegment(turnId),
@@ -2807,7 +2807,7 @@ function findLifecycleBlock(result: LifecycleDispatchResult): { reason: string; 
   );
 }
 
-function findToolLifecycleBlock(results: PilotDeckToolResult[]): { reason: string; stopReason?: string } | undefined {
+function findToolLifecycleBlock(results: G9AgentToolResult[]): { reason: string; stopReason?: string } | undefined {
   for (const result of results) {
     const lifecycle = result.metadata?.lifecycle;
     if (isRecord(lifecycle) && isRecord(lifecycle.blocked) && typeof lifecycle.blocked.reason === "string") {
@@ -2913,9 +2913,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function cloneReadFileStateMap(
-  state: PilotDeckReadFileStateMap | undefined,
-): PilotDeckReadFileStateMap {
-  const out: PilotDeckReadFileStateMap = new Map();
+  state: G9AgentReadFileStateMap | undefined,
+): G9AgentReadFileStateMap {
+  const out: G9AgentReadFileStateMap = new Map();
   if (!state) return out;
   for (const [key, value] of state.entries()) {
     out.set(key, { ...value });
@@ -2924,9 +2924,9 @@ function cloneReadFileStateMap(
 }
 
 function cloneWriteSnapshotMap(
-  state: PilotDeckWriteSnapshotMap | undefined,
-): PilotDeckWriteSnapshotMap {
-  const out: PilotDeckWriteSnapshotMap = new Map();
+  state: G9AgentWriteSnapshotMap | undefined,
+): G9AgentWriteSnapshotMap {
+  const out: G9AgentWriteSnapshotMap = new Map();
   if (!state) return out;
   for (const [key, value] of state.entries()) {
     out.set(key, { ...value });
@@ -2947,10 +2947,10 @@ function truncateHeadKeepRatio(messages: CanonicalMessage[], keepRatio: number):
   return truncateHeadPreservingCheckpoint(messages, keepRatio);
 }
 
-function buildInvalidFingerprint(results: PilotDeckToolResult[]): string {
+function buildInvalidFingerprint(results: G9AgentToolResult[]): string {
   return results
     .filter(
-      (result): result is PilotDeckToolErrorResult =>
+      (result): result is G9AgentToolErrorResult =>
         result.type === "error" && result.error.code === "invalid_tool_input",
     )
     .map((result) => `${result.toolName}::${result.error.message}`)
@@ -3023,7 +3023,7 @@ function removeTransientPromptsById(
 }
 
 function detectRepeatedToolFailure(
-  results: PilotDeckToolResult[],
+  results: G9AgentToolResult[],
   lastFingerprint: string | undefined,
 ): {
   currentFingerprint?: string;
@@ -3046,9 +3046,9 @@ function detectRepeatedToolFailure(
   };
 }
 
-function buildToolFailureKeys(results: PilotDeckToolResult[]): string[] {
+function buildToolFailureKeys(results: G9AgentToolResult[]): string[] {
   return results
-    .filter((result): result is PilotDeckToolErrorResult => result.type === "error")
+    .filter((result): result is G9AgentToolErrorResult => result.type === "error")
     .map((result) => {
       const recovery = readRecoveryMetadata(result);
       return toolFailureKey(result, recovery);
@@ -3057,9 +3057,9 @@ function buildToolFailureKeys(results: PilotDeckToolResult[]): string[] {
 }
 
 function annotateRepeatedToolFailures(
-  results: PilotDeckToolResult[],
+  results: G9AgentToolResult[],
   repeatedKeys: Set<string>,
-): PilotDeckToolResult[] {
+): G9AgentToolResult[] {
   if (repeatedKeys.size === 0) {
     return results;
   }
@@ -3099,7 +3099,7 @@ function annotateRepeatedToolFailures(
 }
 
 function toolFailureKey(
-  result: PilotDeckToolErrorResult,
+  result: G9AgentToolErrorResult,
   recovery: Record<string, unknown> | undefined,
 ): string {
   return `${result.toolName}::${result.error.code}::${recovery?.failureClass ?? "unknown"}`;
@@ -3119,9 +3119,9 @@ function findRepeatedValues(values: string[]): Set<string> {
 }
 
 function appendTextToFirstContent(
-  content: PilotDeckToolErrorResult["content"],
+  content: G9AgentToolErrorResult["content"],
   suffix: string,
-): PilotDeckToolErrorResult["content"] {
+): G9AgentToolErrorResult["content"] {
   const [first, ...rest] = content;
   if (!first) {
     return [{ type: "text", text: suffix.trimStart() }];
@@ -3132,12 +3132,12 @@ function appendTextToFirstContent(
   return [{ ...first, text: `${first.text}${suffix}` }, ...rest];
 }
 
-function readRecoveryMetadata(result: PilotDeckToolErrorResult): Record<string, unknown> | undefined {
+function readRecoveryMetadata(result: G9AgentToolErrorResult): Record<string, unknown> | undefined {
   const recovery = result.metadata?.recovery;
   return isRecord(recovery) ? recovery : undefined;
 }
 
-function collectPermissionDenials(results: PilotDeckToolResult[]): AgentPermissionDenial[] {
+function collectPermissionDenials(results: G9AgentToolResult[]): AgentPermissionDenial[] {
   return results.flatMap((result) => {
     if (
       result.type === "error" &&
@@ -3186,7 +3186,7 @@ function readRequestedMode(value: unknown): AgentRuntimeConfig["permissionMode"]
 }
 
 function bindSupplementalMessagesToToolCalls(
-  results: PilotDeckToolResult[],
+  results: G9AgentToolResult[],
   supplementalMessages: CanonicalMessage[],
 ): ContextSupplementalToolResultMessage[] {
   const bound: ContextSupplementalToolResultMessage[] = [];
@@ -3297,11 +3297,11 @@ export function modelFailureAction(error: CanonicalModelError | undefined): {
   const modelLabel = error.model ? ` model "${error.model}"` : " selected model";
 
   if (error.status === 401 || error.status === 403 || error.code === "auth_error") {
-    const hint = `Update the API key or access permissions for${providerLabel} in Settings → Model Provider, or run pilotdeck setup.`;
+    const hint = `Update the API key or access permissions for${providerLabel} in Settings → Model Provider, or run g9agent setup.`;
     return modelFailureActionResult(hint, "settings", "auth", { provider: error.provider ?? "the provider" });
   }
   if (error.code === "model_not_found") {
-    const hint = `Choose a valid${modelLabel} for${providerLabel} in Settings → Model Provider, or add it under model.providers.<id>.models in pilotdeck.yaml.`;
+    const hint = `Choose a valid${modelLabel} for${providerLabel} in Settings → Model Provider, or add it under model.providers.<id>.models in g9agent.yaml.`;
     return modelFailureActionResult(hint, "settings", "modelNotFound", { provider: error.provider ?? "the provider", model: error.model });
   }
   if (error.code === "timeout") {

@@ -20,7 +20,7 @@ const value = (env: NodeJS.ProcessEnv, name: string) => process.platform === 'wi
 
 /** Reports the execution host's Git; never installs tools or reads repositories. */
 export async function getGitRuntimeStatus({ env = process.env, run = probe }: { env?: NodeJS.ProcessEnv; run?: Run } = {}): Promise<GitRuntimeStatus> {
-  const configured = env.PILOTDECK_GIT_PATH;
+  const configured = env.G9AGENT_GIT_PATH;
   const declared = configured && isAbsolute(configured) ? await realpath(configured).catch(() => undefined) : undefined;
   const candidates = (value(env, 'PATH') || '').split(delimiter).filter(Boolean)
     .map(directory => join(directory.replace(/^"|"$/g, ''), process.platform === 'win32' ? 'git.exe' : 'git'));
@@ -28,7 +28,7 @@ export async function getGitRuntimeStatus({ env = process.env, run = probe }: { 
     if (!isAbsolute(candidate)) continue;
     try { await access(candidate, constants.X_OK); } catch { continue; }
     const executable = await realpath(candidate).catch(() => candidate);
-    const source = executable === declared ? env.PILOTDECK_BUNDLED_GIT === '1' ? 'bundled' : 'configured' : 'system';
+    const source = executable === declared ? env.G9AGENT_BUNDLED_GIT === '1' ? 'bundled' : 'configured' : 'system';
     try {
       const { stdout } = await run(executable, ['--version'], { env, windowsHide: true, timeout: 5000, maxBuffer: 16 * 1024 });
       const version = /^git version ([^\r\n]+)$/.exec(stdout.trim())?.[1];

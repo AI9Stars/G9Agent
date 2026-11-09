@@ -4,9 +4,9 @@ import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
-const PILOT_HOME = process.env.PILOT_HOME || join(homedir(), ".pilotdeck");
-const PILOTDECK_YAML_PATH = process.env.PILOTDECK_CONFIG_PATH || join(PILOT_HOME, "pilotdeck.yaml");
-const WEIXIN_CREDS_PATH = join(PILOT_HOME, "weixin-credentials.json");
+const G9AGENT_HOME = process.env.G9AGENT_HOME || join(homedir(), ".g9agent");
+const G9AGENT_YAML_PATH = process.env.G9AGENT_CONFIG_PATH || join(G9AGENT_HOME, "g9agent.yaml");
+const WEIXIN_CREDS_PATH = join(G9AGENT_HOME, "weixin-credentials.json");
 
 const FEISHU_TOKEN_URL = "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal";
 const LARK_TOKEN_URL = "https://open.larksuite.com/open-apis/auth/v3/tenant_access_token/internal";
@@ -31,7 +31,7 @@ export async function runGatewaySetup(argv: string[]): Promise<void> {
 
   try {
     console.log("\n╔══════════════════════════════════════════════════╗");
-    console.log("║  PilotDeck Gateway Setup                        ║");
+    console.log("║  G9Agent Gateway Setup                   ║");
     console.log("║  配置 IM 平台连接                                ║");
     console.log("╚══════════════════════════════════════════════════╝\n");
 
@@ -168,9 +168,9 @@ async function setupFeishu(rl: ReturnType<typeof createInterface>): Promise<void
 
   // Write config
   writeFeishuConfig({ appId, appSecret, domain });
-  console.log("\n✅ 飞书配置已写入 pilotdeck.yaml");
+  console.log("\n✅ 飞书配置已写入 g9agent.yaml");
   console.log("   连接模式: stream (WebSocket, 推荐 — 无需公网 IP)");
-  console.log("   重启 PilotDeck 服务后生效\n");
+  console.log("   重启 九格智能体 服务后生效\n");
 }
 
 async function attemptFeishuQRCreation(
@@ -373,9 +373,9 @@ async function setupWeCom(rl: ReturnType<typeof createInterface>): Promise<void>
     groupAllowFrom,
   });
 
-  console.log("\n企业微信配置已写入 pilotdeck.yaml");
+  console.log("\n企业微信配置已写入 g9agent.yaml");
   console.log("连接模式: AI Bot WebSocket (无需公网 IP)");
-  console.log("重启 PilotDeck 服务后生效。\n");
+  console.log("重启 九格智能体 服务后生效。\n");
 }
 
 export async function qrScanForWeComBotInfo(options: {
@@ -437,7 +437,7 @@ export async function qrScanForWeComBotInfo(options: {
 
 async function fetchJson(fetchImpl: typeof fetch, url: string): Promise<Record<string, unknown>> {
   const res = await fetchImpl(url, {
-    headers: { "User-Agent": "PilotDeck/1.0" },
+    headers: { "User-Agent": "G9Agent/1.0" },
   });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
@@ -573,7 +573,7 @@ async function setupWeixin(rl: ReturnType<typeof createInterface>): Promise<void
     console.log(`\n✅ 微信登录成功！`);
     console.log(`   账号 ID: ${result.accountId}`);
     console.log(`   凭据已保存到: ${WEIXIN_CREDS_PATH}`);
-    console.log(`   重启 PilotDeck 服务后生效\n`);
+    console.log(`   重启 九格智能体 服务后生效\n`);
   } catch (e) {
     console.log(`\n❌ 微信登录失败: ${e instanceof Error ? e.message : String(e)}`);
     console.log("   请检查网络连接后重试。\n");
@@ -597,7 +597,7 @@ function saveWeixinCredentials(creds: {
   botToken: string;
   accountId: string;
 }): void {
-  mkdirSync(join(homedir(), ".pilotdeck"), { recursive: true });
+  mkdirSync(join(homedir(), ".g9agent"), { recursive: true });
   writeFileSync(WEIXIN_CREDS_PATH, JSON.stringify(creds, null, 2), "utf-8");
 }
 
@@ -614,8 +614,8 @@ function enableWeixinConfig(): void {
 
 function loadYamlConfig(): Record<string, any> | null {
   try {
-    if (!existsSync(PILOTDECK_YAML_PATH)) return null;
-    const raw = readFileSync(PILOTDECK_YAML_PATH, "utf-8");
+    if (!existsSync(G9AGENT_YAML_PATH)) return null;
+    const raw = readFileSync(G9AGENT_YAML_PATH, "utf-8");
     return parseYaml(raw) as Record<string, any>;
   } catch {
     return null;
@@ -623,12 +623,12 @@ function loadYamlConfig(): Record<string, any> | null {
 }
 
 function saveYamlConfig(config: Record<string, any>): void {
-  mkdirSync(dirname(PILOTDECK_YAML_PATH), { recursive: true });
+  mkdirSync(dirname(G9AGENT_YAML_PATH), { recursive: true });
   const yamlStr = stringifyYaml(config, {
     lineWidth: 0,
     singleQuote: false,
   });
-  writeFileSync(PILOTDECK_YAML_PATH, yamlStr, "utf-8");
+  writeFileSync(G9AGENT_YAML_PATH, yamlStr, "utf-8");
 }
 
 function maskSecret(value: string): string {

@@ -1,5 +1,5 @@
-import type { PilotDeckConfig } from "../../modelPool/types";
+import type { G9AgentConfig } from "../../modelPool/types";
 
-export function isCronConfigEnabled(config: PilotDeckConfig): boolean {
+export function isCronConfigEnabled(config: G9AgentConfig): boolean {
   return config.cron?.enabled !== false;
 }

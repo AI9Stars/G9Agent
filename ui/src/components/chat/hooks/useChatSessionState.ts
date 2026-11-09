@@ -5,7 +5,7 @@ import { authenticatedFetch } from '../../../utils/api';
 import type {
   ChatMessage,
   ClaudeWorkStatus,
-  PilotDeckWorkStatus,
+  G9AgentWorkStatus,
   SessionRuntimeState,
 } from '../types/types';
 import {
@@ -304,7 +304,7 @@ export function useChatSessionState({
     setTokenBudgetState(budget);
   }, []);
   const [claudeStatus, setClaudeStatus] = useState<ClaudeWorkStatus | null>(null);
-  const [pilotDeckStatus, setPilotDeckStatus] = useState<PilotDeckWorkStatus | null>(null);
+  const [g9agentStatus, setG9AgentStatus] = useState<G9AgentWorkStatus | null>(null);
   const [sessionLoadError, setSessionLoadError] = useState<string | null>(null);
   const [allMessagesLoaded, setAllMessagesLoaded] = useState(false);
   const [isLoadingAllMessages, setIsLoadingAllMessages] = useState(false);
@@ -413,7 +413,7 @@ export function useChatSessionState({
   if (activeSessionId && activeSessionId !== prevActiveSessionRef.current && pendingUserMessage) {
     const expectedSessionId = pendingViewSessionRef.current?.sessionId ?? null;
     if (expectedSessionId && activeSessionId === expectedSessionId) {
-      const normalized = chatMessageToNormalized(pendingUserMessage, activeSessionId, 'pilotdeck' as SessionProvider);
+      const normalized = chatMessageToNormalized(pendingUserMessage, activeSessionId, 'g9agent' as SessionProvider);
       if (normalized) {
         sessionStore.appendRealtime(activeSessionId, normalized);
       }
@@ -490,7 +490,7 @@ export function useChatSessionState({
       setPendingUserMessage(msg);
       return;
     }
-    const normalized = chatMessageToNormalized(msg, sessionId, 'pilotdeck' as SessionProvider);
+    const normalized = chatMessageToNormalized(msg, sessionId, 'g9agent' as SessionProvider);
     if (normalized) {
       sessionStore.appendRealtime(sessionId, normalized);
     }
@@ -759,7 +759,7 @@ export function useChatSessionState({
       pendingViewSessionRef.current = null;
       setPendingUserMessage(null);
       setClaudeStatus(null);
-      setPilotDeckStatus(null);
+      setG9AgentStatus(null);
       setCanAbortSession(false);
       setIsAborting(false);
       setIsLoading(false);
@@ -780,7 +780,7 @@ export function useChatSessionState({
       return;
     }
 
-    const provider = 'pilotdeck';
+    const provider = 'g9agent';
     const sessionKey = requestScope!.key;
     const isEnteringSession = lastLoadedSessionKeyRef.current !== sessionKey;
     const sessionChanged = didLoadedSessionChange(lastLoadedSessionKeyRef.current, sessionKey);
@@ -815,7 +815,7 @@ export function useChatSessionState({
       setActiveRunId(null);
       pendingViewSessionRef.current = null;
       setClaudeStatus(null);
-      setPilotDeckStatus(null);
+      setG9AgentStatus(null);
       setSessionLoadError(null);
       setCanAbortSession(false);
       setIsAborting(false);
@@ -1047,7 +1047,7 @@ export function useChatSessionState({
     const abort = new AbortController();
     const fetchInitialTokenUsage = async () => {
       try {
-        const url = `/api/projects/${encodeURIComponent(requestScope.projectName)}/sessions/${encodeURIComponent(requestScope.sessionId)}/token-usage?provider=pilotdeck`;
+        const url = `/api/projects/${encodeURIComponent(requestScope.projectName)}/sessions/${encodeURIComponent(requestScope.sessionId)}/token-usage?provider=g9agent`;
         const response = await authenticatedFetch(url, { signal: abort.signal });
         const budget = response.ok ? await response.json() : null;
         if (isCurrent() && !abort.signal.aborted && revision === tokenBudgetRevision.current) setTokenBudget(budget);
@@ -1103,7 +1103,7 @@ export function useChatSessionState({
     const requestStatus = () => {
       const request = buildSessionStatusRequestIfIdle({
         sessionId: activeViewSessionId,
-        provider: 'pilotdeck',
+        provider: 'g9agent',
         expectedActiveRunId: activeRunIdRef.current,
         includeActiveTurnMessages: false,
       });
@@ -1167,8 +1167,8 @@ export function useChatSessionState({
     isLoadingAllMessages,
     claudeStatus,
     setClaudeStatus,
-    pilotDeckStatus,
-    setPilotDeckStatus,
+    g9agentStatus,
+    setG9AgentStatus,
     createDiff,
     scrollContainerRef,
     scrollToBottom,

@@ -14,7 +14,7 @@ describe('isExternalFileDrag', () => {
 });
 
 describe('resolveExternalFileDropTargetPath', () => {
-  const workspaceRoot = 'C:\\Work\\PilotDeck';
+  const workspaceRoot = 'C:\\Work\\G9Agent';
 
   it('uploads to the workspace root when no row is targeted', () => {
     expect(resolveExternalFileDropTargetPath(null, null, workspaceRoot)).toBe('');

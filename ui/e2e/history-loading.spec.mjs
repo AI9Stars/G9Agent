@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 const viewport = page => page.locator('[data-chat-search-surface]');
-const base = { provider: 'pilotdeck', sessionId: 'a', timestamp: '2026-09-01T00:00:00Z' };
+const base = { provider: 'g9agent', sessionId: 'a', timestamp: '2026-09-01T00:00:00Z' };
 const history = count => Array.from({ length: count }, (_, i) => [
   { ...base, id: `u-${i}`, runId: `r-${i}`, kind: 'text', role: 'user', content: `Question ${i}` },
   { ...base, id: `a-${i}`, runId: `r-${i}`, kind: 'text', role: 'assistant', content: `Answer ${i}.\n\nA paragraph to keep the transcript readable.` },

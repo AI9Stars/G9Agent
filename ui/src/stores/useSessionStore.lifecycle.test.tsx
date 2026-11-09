@@ -36,7 +36,7 @@ it('continues batching active-session notifications after StrictMode effect repl
   act(() => result.current.setActiveSession('fixture'));
   act(() => {
     result.current.appendRealtime('fixture', {
-      id: 'message', sessionId: 'fixture', timestamp: '2026-01-01T00:00:00Z', provider: 'pilotdeck',
+      id: 'message', sessionId: 'fixture', timestamp: '2026-01-01T00:00:00Z', provider: 'g9agent',
       kind: 'text', role: 'assistant', content: 'visible response',
     });
   });

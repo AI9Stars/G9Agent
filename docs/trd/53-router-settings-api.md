@@ -31,9 +31,9 @@ The baseline model takes precedence over scenarios.default for unrouted cost com
 ## Consistency and errors
 
 - Raw YAML must parse to an object and preserves complete configuration sections. Structured config restores masked secrets and validates references before writing/reload.
-- withPilotDeckConfigWrite serializes changes. A stale baseRevision returns 409 CONFIG_CONFLICT/currentRevision. Do not invent a fixed HTTP/reload timeout; the reloader and Gateway own that policy.
+- withG9AgentConfigWrite serializes changes. A stale baseRevision returns 409 CONFIG_CONFLICT/currentRevision. Do not invent a fixed HTTP/reload timeout; the reloader and Gateway own that policy.
 - A provider/model rename atomically updates scenarios, fallback lists, judge, tiers, pricing keys and baselineModel along with other consumers. Display-only renames do not rewrite references. Preserve prices; reject referenced deletions with 409 MODEL_IN_USE.
 - Syntax/type/reference/mask failures return 400; write/reload exceptions return 500. Parser diagnostics include ROUTER_ENABLED_INVALID, ROUTER_REF_FORMAT, ROUTER_REF_PROVIDER_NOT_FOUND, ROUTER_REF_MODEL_NOT_FOUND, ROUTER_TOKEN_SAVER_DEFAULT_TIER_UNKNOWN and ROUTER_TOKEN_SAVER_SUBAGENT_POLICY_INVALID.
-- A successful save returns the reread disk snapshot and broadcasts pilotdeck:config-broadcast. Never fabricate a success snapshot after failure.
+- A successful save returns the reread disk snapshot and broadcasts g9agent:config-broadcast. Never fabricate a success snapshot after failure.
 
-Implementation: [RouterRuntime](../../src/router/RouterRuntime.ts), [configuration service](../../ui/server/services/pilotdeckConfig.js), [settings hook](../../ui/src/hooks/usePilotDeckConfig.ts), [pricing](../../src/router/utils/modelPricing.ts). Validate through [router tests](../../tests/router) and [configuration route tests](../../ui/server/routes/config.test.js), including disabled routing, invalid tiers, rename/reference synchronization, price units and revision conflicts.
+Implementation: [RouterRuntime](../../src/router/RouterRuntime.ts), [configuration service](../../ui/server/services/g9agentConfig.js), [settings hook](../../ui/src/hooks/useG9AgentConfig.ts), [pricing](../../src/router/utils/modelPricing.ts). Validate through [router tests](../../tests/router) and [configuration route tests](../../ui/server/routes/config.test.js), including disabled routing, invalid tiers, rename/reference synchronization, price units and revision conflicts.

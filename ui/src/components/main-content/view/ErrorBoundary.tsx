@@ -35,7 +35,7 @@ function ErrorFallback({
   diagnosticId,
 }: ErrorFallbackProps) {
   const { t } = useTranslation('common');
-  const [logPath, setLogPath] = useState('~/.pilotdeck/logs/runtime.log');
+  const [logPath, setLogPath] = useState('~/.g9agent/logs/runtime.log');
   useEffect(() => {
     let token: string | null = null;
     try { token = localStorage.getItem('auth-token'); } catch { /* unavailable */ }

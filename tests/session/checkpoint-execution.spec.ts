@@ -8,18 +8,18 @@ import { createWriteFileTool } from "../../src/tool/builtin/writeFile.js";
 import { fixture, assertRestorable, assertUnattributed } from "./checkpoint-execution-fixture.js";
 
 test("unattributed writes after nested tools are visible but cannot overwrite files through undo", async t => {
-  const internal = ".pilotdeck/work/a.txt";
+  const internal = ".g9agent/work/a.txt";
   const f = await fixture(t, { [internal]: "A" });
   await f.toolWrite("B");
   await createReadFileTool().execute({ file_path: internal }, f.context);
   await createWriteFileTool().execute({ file_path: internal, content: "B" }, f.context);
   const result = await createExecuteCodeTool().execute({ code: `from pathlib import Path
-from pilotdeck_tools import read_file, write_file
+from g9agent_tools import read_file, write_file
 for name in ['a.txt', '${internal}']:
     read_file(name)
     write_file(name, 'C')
     Path(name).write_text('B')
-for name in ['temporary.txt', '.pilotdeck/work/temporary.txt']:
+for name in ['temporary.txt', '.g9agent/work/temporary.txt']:
     write_file(name, 'temporary')
     Path(name).unlink()
 ` }, f.context);
@@ -35,20 +35,20 @@ for name in ['temporary.txt', '.pilotdeck/work/temporary.txt']:
   const restored = await f.store.restore("session", plan.id);
   assert.deepEqual(restored.applied, []);
   for (const relative of ["a.txt", internal]) assert.equal(await readFile(join(f.workspace, relative), "utf8"), "B");
-  for (const relative of ["temporary.txt", ".pilotdeck/work/temporary.txt"]) {
+  for (const relative of ["temporary.txt", ".g9agent/work/temporary.txt"]) {
     await assert.rejects(readFile(join(f.workspace, relative)), { code: "ENOENT" });
   }
 });
 
 test("nested tools returning to the turn baseline leave no net changes", async t => {
-  const internal = ".pilotdeck/work/a.txt", f = await fixture(t, { [internal]: "A" });
+  const internal = ".g9agent/work/a.txt", f = await fixture(t, { [internal]: "A" });
   const result = await createExecuteCodeTool().execute({ code: `from pathlib import Path
-from pilotdeck_tools import read_file, write_file
+from g9agent_tools import read_file, write_file
 for name in ['a.txt', '${internal}']:
     read_file(name)
     write_file(name, 'C')
     Path(name).write_text('A')
-for name in ['temporary.txt', '.pilotdeck/work/temporary.txt']:
+for name in ['temporary.txt', '.g9agent/work/temporary.txt']:
     write_file(name, 'temporary')
     Path(name).unlink()
 ` }, f.context);
@@ -58,7 +58,7 @@ for name in ['temporary.txt', '.pilotdeck/work/temporary.txt']:
 
 test("returning execution still protects later manual edits", async t => {
   const f = await fixture(t); await f.toolWrite("B");
-  const result = await createExecuteCodeTool().execute({ code: "from pathlib import Path\nfrom pilotdeck_tools import read_file, write_file\nread_file('a.txt')\nwrite_file('a.txt','C')\nPath('a.txt').write_text('B')" }, f.context);
+  const result = await createExecuteCodeTool().execute({ code: "from pathlib import Path\nfrom g9agent_tools import read_file, write_file\nread_file('a.txt')\nwrite_file('a.txt','C')\nPath('a.txt').write_text('B')" }, f.context);
   assert.equal(result.data!.status, "success", result.data!.error);
   await writeFile(f.file, "manual");
   const checkpoint = (await f.history.finishTurn("complete"))!;
@@ -71,7 +71,7 @@ test("returning execution still protects later manual edits", async t => {
 
 test("execute_code with a complete nested file-tool chain remains safely restorable", async t => {
   const f = await fixture(t); await f.toolWrite("B");
-  const result = await createExecuteCodeTool().execute({ code: "from pilotdeck_tools import read_file, write_file\nread_file('a.txt')\nwrite_file('a.txt', 'C')" }, f.context);
+  const result = await createExecuteCodeTool().execute({ code: "from g9agent_tools import read_file, write_file\nread_file('a.txt')\nwrite_file('a.txt', 'C')" }, f.context);
   assert.equal(result.data!.status, "success", result.data!.error);
   await assertRestorable(f, "C");
 });
@@ -81,7 +81,7 @@ for (const order of ["python-tool", "tool-python", "nested-tools", "failed-pytho
     const f = await fixture(t);
     if (order !== "python-tool") await f.toolWrite("B");
     const code = "from pathlib import Path\nPath('a.txt').write_text('C')\n" +
-      (order === "nested-tools" ? "from pilotdeck_tools import read_file, write_file\nread_file('a.txt')\nwrite_file('a.txt', 'D')\nPath('a.txt').write_text('E')\n" :
+      (order === "nested-tools" ? "from g9agent_tools import read_file, write_file\nread_file('a.txt')\nwrite_file('a.txt', 'D')\nPath('a.txt').write_text('E')\n" :
         order === "failed-python" ? "raise RuntimeError('intentional failure')\n" : "");
     const result = await createExecuteCodeTool().execute({ code, timeout_seconds: 10 }, f.context);
     assert.equal(result.data!.status, order === "failed-python" ? "error" : "success", result.data!.error);

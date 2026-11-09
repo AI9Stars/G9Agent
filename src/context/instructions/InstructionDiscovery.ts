@@ -1,20 +1,22 @@
+import { migrateLegacyProject } from '@g9agent/config';
+
 /**
- * PILOTDECK.md instruction file discovery — multi-scope instruction hierarchy.
+ * G9AGENT.md instruction file discovery — multi-scope instruction hierarchy.
  *
  * Files are loaded in the following order (later = higher priority, model pays
  * more attention to content that appears later in the system prompt):
  *
- *   1. Managed     — $PILOTDECK_MANAGED_CONFIG/PILOTDECK.md
- *   2. User        — ~/.pilotdeck/PILOTDECK.md
- *   3. User rules  — ~/.pilotdeck/rules/*.md
+ *   1. Managed     — $G9AGENT_MANAGED_CONFIG/G9AGENT.md
+ *   2. User        — ~/.g9agent/G9AGENT.md
+ *   3. User rules  — ~/.g9agent/rules/*.md
  *   4. Project     — per directory from projectRoot toward cwd:
- *                      <dir>/PILOTDECK.md
- *                      <dir>/.pilotdeck/PILOTDECK.md
- *                      <dir>/.pilotdeck/rules/*.md
- *   5. Local       — <dir>/PILOTDECK.local.md  (private, not committed)
+ *                      <dir>/G9AGENT.md
+ *                      <dir>/.g9agent/G9AGENT.md
+ *                      <dir>/.g9agent/rules/*.md
+ *   5. Local       — <dir>/G9AGENT.local.md  (private, not committed)
  *
  * Design mirrors the legacy upstream instruction-file discovery, adapted to
- * PilotDeck path conventions (~/.pilotdeck/, .pilotdeck/).
+ * G9Agent path conventions (~/.g9agent/, .g9agent/).
  */
 
 import { readFile, readdir } from "node:fs/promises";
@@ -45,24 +47,25 @@ export class InstructionDiscovery {
     const layers: InstructionLayer[] = [];
     const seen = new Set<string>();
 
-    // 1. Managed (administrator-level, e.g. /etc/pilotdeck/)
-    const managedDir = process.env.PILOTDECK_MANAGED_CONFIG;
+    // 1. Managed (administrator-level, e.g. /etc/g9agent/)
+    const managedDir = process.env.G9AGENT_MANAGED_CONFIG;
     if (managedDir) {
-      await this.tryAdd(layers, seen, "managed", join(managedDir, "PILOTDECK.md"), signal);
+      await this.tryAdd(layers, seen, "managed", join(managedDir, "G9AGENT.md"), signal);
     }
 
     // 2. User-level
-    await this.tryAdd(layers, seen, "user", join(this.pilotHome, "PILOTDECK.md"), signal);
+    await this.tryAdd(layers, seen, "user", join(this.pilotHome, "G9AGENT.md"), signal);
     await this.tryAddRulesDir(layers, seen, "user", join(this.pilotHome, "rules"), signal);
 
     // 3–5. Project + Local — from root toward cwd (root first = lower priority)
     const dirs = this.collectDirectoryChain();
     for (const dir of dirs) {
       signal?.throwIfAborted();
-      await this.tryAdd(layers, seen, "project", join(dir, "PILOTDECK.md"), signal);
-      await this.tryAdd(layers, seen, "project", join(dir, ".pilotdeck", "PILOTDECK.md"), signal);
-      await this.tryAddRulesDir(layers, seen, "project-rules", join(dir, ".pilotdeck", "rules"), signal);
-      await this.tryAdd(layers, seen, "local", join(dir, "PILOTDECK.local.md"), signal);
+      migrateLegacyProject(dir);
+      await this.tryAdd(layers, seen, "project", join(dir, "G9AGENT.md"), signal);
+      await this.tryAdd(layers, seen, "project", join(dir, ".g9agent", "G9AGENT.md"), signal);
+      await this.tryAddRulesDir(layers, seen, "project-rules", join(dir, ".g9agent", "rules"), signal);
+      await this.tryAdd(layers, seen, "local", join(dir, "G9AGENT.local.md"), signal);
     }
 
     signal?.throwIfAborted();

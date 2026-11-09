@@ -110,7 +110,7 @@ tools:
           auth: headerApiKey
           apiKeyParam: X-API-Key
           headers:
-            X-Client: PilotDeck
+            X-Client: G9Agent
           requestBody:
             messages:
               - role: user

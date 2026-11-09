@@ -15,7 +15,7 @@ export function getGlobalMcpConfigPath() {
 }
 
 export function getProjectMcpConfigPath(projectPath) {
-  return path.join(projectPath, '.pilotdeck', 'mcp.json');
+  return path.join(projectPath, '.g9agent', 'mcp.json');
 }
 
 export function normalizeMcpConfig(input) {

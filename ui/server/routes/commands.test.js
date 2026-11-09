@@ -10,17 +10,17 @@ const tempDirs = [];
 afterEach(() => {
   vi.restoreAllMocks();
   vi.resetModules();
-  delete process.env.PILOT_HOME;
+  delete process.env.G9AGENT_HOME;
   for (const dir of tempDirs.splice(0)) {
     rmSync(dir, { recursive: true, force: true });
   }
 });
 
 describe('commands routes', () => {
-  it('executes user commands discovered under custom PILOT_HOME', async () => {
-    const pilotHome = mkdtempSync(join(tmpdir(), 'pilotdeck-commands-route-'));
+  it('executes user commands discovered under custom G9AGENT_HOME', async () => {
+    const pilotHome = mkdtempSync(join(tmpdir(), 'g9agent-commands-route-'));
     tempDirs.push(pilotHome);
-    process.env.PILOT_HOME = pilotHome;
+    process.env.G9AGENT_HOME = pilotHome;
 
     const commandsDir = join(pilotHome, 'commands');
     mkdirSync(commandsDir, { recursive: true });
@@ -34,7 +34,7 @@ describe('commands routes', () => {
       body: JSON.stringify({
         commandName: '/hello',
         commandPath,
-        args: ['PilotDeck'],
+        args: ['G9Agent'],
       }),
     });
 
@@ -42,14 +42,14 @@ describe('commands routes', () => {
     expect(result.body).toMatchObject({
       type: 'custom',
       command: '/hello',
-      content: 'Hello PilotDeck',
+      content: 'Hello G9Agent',
     });
   });
 });
 
 async function createCommandsApp() {
-  vi.doMock('../pilotdeck-bridge.js', () => ({
-    getPilotDeckGateway: vi.fn(() => { throw new Error('A local Markdown command must not connect to Gateway'); }),
+  vi.doMock('../g9agent-bridge.js', () => ({
+    getG9AgentGateway: vi.fn(() => { throw new Error('A local Markdown command must not connect to Gateway'); }),
   }));
   vi.doMock('../../shared/modelConstants.js', () => ({
     CODEX_MODELS: [],
@@ -59,8 +59,8 @@ async function createCommandsApp() {
     getClaudeRuntimeModelConfig: vi.fn(() => ({})),
     getClaudeRuntimeModelValues: vi.fn(() => []),
   }));
-  vi.doMock('../services/pilotdeckConfig.js', () => ({
-    readPilotDeckConfigFile: vi.fn(() => ({ config: {} })),
+  vi.doMock('../services/g9agentConfig.js', () => ({
+    readG9AgentConfigFile: vi.fn(() => ({ config: {} })),
     resolveModel: vi.fn((model) => model),
   }));
   vi.doMock('../turnkey-slash.js', () => ({

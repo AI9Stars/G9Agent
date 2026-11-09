@@ -12,14 +12,14 @@ import type { Gateway, GatewayEvent, GatewaySubmitTurnInput } from "../../src/ga
 let previousPilotHome: string | undefined;
 let testPilotHome: string;
 beforeEach(() => {
-  previousPilotHome = process.env.PILOT_HOME;
-  testPilotHome = mkdtempSync(join(tmpdir(), "pilotdeck-tui-permissions-"));
-  process.env.PILOT_HOME = testPilotHome;
+  previousPilotHome = process.env.G9AGENT_HOME;
+  testPilotHome = mkdtempSync(join(tmpdir(), "g9agent-tui-permissions-"));
+  process.env.G9AGENT_HOME = testPilotHome;
   writePermissionSettings({ allowedTools: [], askTools: [], disallowedTools: [], skipPermissions: false });
 });
 afterEach(() => {
-  if (previousPilotHome === undefined) delete process.env.PILOT_HOME;
-  else process.env.PILOT_HOME = previousPilotHome;
+  if (previousPilotHome === undefined) delete process.env.G9AGENT_HOME;
+  else process.env.G9AGENT_HOME = previousPilotHome;
   rmSync(testPilotHome, { recursive: true, force: true });
 });
 

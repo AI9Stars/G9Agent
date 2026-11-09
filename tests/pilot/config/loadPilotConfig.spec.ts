@@ -24,8 +24,8 @@ model:
 `;
 }
 
-test("loadPilotConfig reads PILOTDECK_CONFIG_PATH", () => {
-  const directory = mkdtempSync(join(tmpdir(), "pilotdeck-config-path-"));
+test("loadPilotConfig reads G9AGENT_CONFIG_PATH", () => {
+  const directory = mkdtempSync(join(tmpdir(), "g9agent-config-path-"));
   const configPath = join(directory, "custom.yaml");
   try {
     writeFileSync(configPath, `
@@ -43,7 +43,7 @@ model:
 `, "utf8");
 
     const snapshot = loadPilotConfig({
-      env: { PILOTDECK_CONFIG_PATH: configPath },
+      env: { G9AGENT_CONFIG_PATH: configPath },
     });
 
     assert.equal(snapshot.config.agent.model.id, "custom/model-a");
@@ -54,11 +54,11 @@ model:
 });
 
 test("loadPilotConfig rejects a missing config without creating one", () => {
-  const directory = mkdtempSync(join(tmpdir(), "pilotdeck-missing-config-"));
-  const configPath = join(directory, "pilotdeck.yaml");
+  const directory = mkdtempSync(join(tmpdir(), "g9agent-missing-config-"));
+  const configPath = join(directory, "g9agent.yaml");
   try {
     assert.throws(
-      () => loadPilotConfig({ env: { PILOTDECK_CONFIG_PATH: configPath } }),
+      () => loadPilotConfig({ env: { G9AGENT_CONFIG_PATH: configPath } }),
       (error: unknown) => (error as { code?: string }).code === "CONFIG_AGENT_MISSING",
     );
     assert.equal(existsSync(configPath), false);
@@ -77,12 +77,12 @@ for (const [name, yaml, enabled, timezone] of [
   ["explicit false", "cron:\n  enabled: false\n", false, "UTC"],
 ] as const) {
   test(`loadPilotConfig resolves Cron defaults for ${name}`, () => {
-    const directory = mkdtempSync(join(tmpdir(), "pilotdeck-cron-config-"));
-    const configPath = join(directory, "pilotdeck.yaml");
+    const directory = mkdtempSync(join(tmpdir(), "g9agent-cron-config-"));
+    const configPath = join(directory, "g9agent.yaml");
     const raw = configYaml("model-a") + yaml;
     try {
       writeFileSync(configPath, raw);
-      const snapshot = loadPilotConfig({ configPath, env: { PILOT_HOME: directory } });
+      const snapshot = loadPilotConfig({ configPath, env: { G9AGENT_HOME: directory } });
       assert.deepEqual(snapshot.config.cron, {
         enabled, timezone, maxConcurrentRuns: 1, runTimeoutMinutes: 60,
       });
@@ -96,12 +96,12 @@ for (const [name, yaml, enabled, timezone] of [
 
 for (const yaml of ["cron: false\n", "cron: invalid\n", "cron: []\n"]) {
   test(`loadPilotConfig still rejects invalid Cron structures: ${yaml.trim()}`, () => {
-    const directory = mkdtempSync(join(tmpdir(), "pilotdeck-cron-invalid-"));
-    const configPath = join(directory, "pilotdeck.yaml");
+    const directory = mkdtempSync(join(tmpdir(), "g9agent-cron-invalid-"));
+    const configPath = join(directory, "g9agent.yaml");
     try {
       writeFileSync(configPath, configYaml("model-a") + yaml);
       assert.throws(
-        () => loadPilotConfig({ configPath, env: { PILOT_HOME: directory } }),
+        () => loadPilotConfig({ configPath, env: { G9AGENT_HOME: directory } }),
         (error: unknown) => (error as { code?: string }).code === "CRON_CONFIG_INVALID",
       );
     } finally {
@@ -111,11 +111,11 @@ for (const yaml of ["cron: false\n", "cron: invalid\n", "cron: []\n"]) {
 }
 
 test("PilotConfigStore reports Cron switch changes when enabling, disabling, or removing the section", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "pilotdeck-cron-reload-"));
-  const configPath = join(directory, "pilotdeck.yaml");
+  const directory = mkdtempSync(join(tmpdir(), "g9agent-cron-reload-"));
+  const configPath = join(directory, "g9agent.yaml");
   try {
     writeFileSync(configPath, configYaml("model-a"));
-    const store = createPilotConfigStoreSync({ configPath, env: { PILOT_HOME: directory } });
+    const store = createPilotConfigStoreSync({ configPath, env: { G9AGENT_HOME: directory } });
     let changedPaths: string[] = [];
     store.subscribe(event => { changedPaths = event.changedPaths; });
     for (const yaml of ["cron: { enabled: false }\n", "cron: { enabled: true }\n", "cron: { enabled: false }\n", ""]) {
@@ -130,7 +130,7 @@ test("PilotConfigStore reports Cron switch changes when enabling, disabling, or 
 });
 
 test("PilotConfigStore watches the configured custom path", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "pilotdeck-config-watch-"));
+  const directory = mkdtempSync(join(tmpdir(), "g9agent-config-watch-"));
   const configPath = join(directory, "custom.yaml");
   const pilotHome = join(directory, "home");
   let stopWatching: (() => void) | undefined;
@@ -140,8 +140,8 @@ test("PilotConfigStore watches the configured custom path", async () => {
     writeFileSync(configPath, configYaml("model-a"), "utf8");
     const store = createPilotConfigStoreSync({
       env: {
-        PILOT_HOME: pilotHome,
-        PILOTDECK_CONFIG_PATH: configPath,
+        G9AGENT_HOME: pilotHome,
+        G9AGENT_CONFIG_PATH: configPath,
       },
     });
     const reloaded = new Promise<void>((resolve, reject) => {
@@ -168,8 +168,8 @@ test("PilotConfigStore watches the configured custom path", async () => {
 
 
 test("invalid unused providers are isolated from the Gateway without deleting their settings", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pilotdeck-provider-isolation-"));
-  const path = join(dir, "pilotdeck.yaml");
+  const dir = mkdtempSync(join(tmpdir(), "g9agent-provider-isolation-"));
+  const path = join(dir, "g9agent.yaml");
   const raw = configYaml("model-a") + `
     broken:
       protocol: openai

@@ -1,6 +1,6 @@
 # Runtime boundaries
 
-PilotDeck shares one backend across Web, desktop, CLI and messaging adapters.
+G9Agent shares one backend across Web, desktop, CLI and messaging adapters.
 Keep execution policy and resource ownership in that backend; clients project
 events into views. A module should depend on the contract it consumes, rather
 than reaching into another module's process or UI state.

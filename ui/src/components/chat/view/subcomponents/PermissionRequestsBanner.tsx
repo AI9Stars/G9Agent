@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PendingPermissionRequest } from '../../types/types';
-import { buildPilotDeckToolPermissionEntry, formatToolInputForDisplay } from '../../utils/chatPermissions';
-import { getPilotDeckSettings } from '../../utils/chatStorage';
+import { buildG9AgentToolPermissionEntry, formatToolInputForDisplay } from '../../utils/chatPermissions';
+import { getG9AgentSettings } from '../../utils/chatStorage';
 import { getPermissionPanel, registerPermissionPanel } from '../../tools/configs/permissionPanelRegistry';
 import { AskUserQuestionPanel, ExitPlanModePanel } from '../../tools/components/InteractiveRenderers';
 
@@ -58,7 +58,7 @@ export default function PermissionRequestsBanner({
       continue;
     }
     const rawInput = formatToolInputForDisplay(request.input);
-    const entry = buildPilotDeckToolPermissionEntry(request.toolName, rawInput) ?? request.requestId;
+    const entry = buildG9AgentToolPermissionEntry(request.toolName, rawInput) ?? request.requestId;
     const group = grouped.get(entry);
     if (group) {
       group.push(request);
@@ -85,8 +85,8 @@ export default function PermissionRequestsBanner({
         const first = requests[0];
         const allIds = requests.map((r) => r.requestId);
         const rawInput = formatToolInputForDisplay(first.input);
-        const permissionEntry = buildPilotDeckToolPermissionEntry(first.toolName, rawInput);
-        const settings = getPilotDeckSettings();
+        const permissionEntry = buildG9AgentToolPermissionEntry(first.toolName, rawInput);
+        const settings = getG9AgentSettings();
         const alreadyAllowed = permissionEntry ? settings.allowedTools.includes(permissionEntry) : false;
         const rememberLabel = alreadyAllowed ? t('permissionBanner.allowSaved') : t('permissionBanner.allowRemember');
 

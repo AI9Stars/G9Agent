@@ -8,13 +8,13 @@ import { promisify } from 'util';
 import { CURSOR_MODELS, CODEX_MODELS } from '../../shared/modelConstants.js';
 import { parseFrontmatter } from '../utils/frontmatter.js';
 import { getClaudeRuntimeModelConfig, getClaudeRuntimeModelValues } from '../utils/claude-runtime-config.js';
-import { readPilotDeckConfigFile, resolveModel } from '../services/pilotdeckConfig.js';
+import { readG9AgentConfigFile, resolveModel } from '../services/g9agentConfig.js';
 import { resolvePilotHome } from '../utils/pilotPaths.js';
 import { isPathInsideOrEqual } from '../utils/pathSafety.js';
 import { executeTurnkeySlashCommand } from '../turnkey-slash.js';
 import { getRegisteredCommands } from '../../../src/adapters/channel/protocol/ChannelCommandRegistry.js';
 import { runChatSearchFormatted } from '../../../src/cli/commands/chatSearch.js';
-import { getPilotDeckGateway } from '../pilotdeck-bridge.js';
+import { getG9AgentGateway } from '../g9agent-bridge.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -45,7 +45,7 @@ const BUNDLED_SKILL_STUBS = [
   {
     name: '/projects',
     description:
-      'List every PilotDeck project visible to the TUI, gateway, and UI.',
+      'List every G9Agent project visible to the TUI, gateway, and UI.',
     metadata: { type: 'bundled-skill' },
   },
   {
@@ -213,7 +213,7 @@ const webOnlyBuiltInCommands = [
   },
   {
     name: '/memory',
-    description: 'Open PILOTDECK.md memory file for editing',
+    description: 'Open G9AGENT.md memory file for editing',
     namespace: 'builtin',
     metadata: { type: 'builtin' }
   },
@@ -244,7 +244,7 @@ const webOnlyBuiltInCommands = [
   {
     name: '/skill_install',
     description:
-      'Install a skill from clawhub.com. Auto-targets ~/.pilotdeck/skills/<slug> in general chat and <project>/.pilotdeck/skills/<slug> when a project is active. Use --global / --project to override.',
+      'Install a skill from clawhub.com. Auto-targets ~/.g9agent/skills/<slug> in general chat and <project>/.g9agent/skills/<slug> when a project is active. Use --global / --project to override.',
     namespace: 'builtin',
     metadata: {
       type: 'builtin',
@@ -312,7 +312,7 @@ async function executeSearchCommand(args, context) {
 
 const builtInHandlers = {
   '/help': async (args, context) => {
-    const helpText = `# PilotDeck Commands
+    const helpText = `# G9Agent Commands
 
 ## Built-in Commands
 
@@ -323,8 +323,8 @@ ${cmd.description}
 ## Custom Commands
 
 Custom commands can be created in:
-- Project: \`.pilotdeck/commands/\` (project-specific)
-- User: \`~/.pilotdeck/commands/\` (available in all projects)
+- Project: \`.g9agent/commands/\` (project-specific)
+- User: \`~/.g9agent/commands/\` (available in all projects)
 
 ### Command Syntax
 
@@ -360,7 +360,7 @@ Custom commands can be created in:
   },
 
   '/model': async (args, context) => {
-    const { config } = readPilotDeckConfigFile();
+    const { config } = readG9AgentConfigFile();
     const mainRef = config?.agent?.model || '';
     const resolved = resolveModel(config, mainRef, { allowMissing: true });
     const currentModel = resolved ? resolved.id : mainRef || '(not configured)';
@@ -392,7 +392,7 @@ Custom commands can be created in:
 
   '/cost': async (args, context) => {
     const tokenUsage = context?.tokenUsage || {};
-    const { config: pdConfig } = readPilotDeckConfigFile();
+    const { config: pdConfig } = readG9AgentConfigFile();
     const mainRef = pdConfig?.agent?.model || '';
     const resolvedMain = resolveModel(pdConfig, mainRef, { allowMissing: true });
     const provider = context?.provider || resolvedMain?.providerId || 'unknown';
@@ -470,7 +470,7 @@ Custom commands can be created in:
   '/status': async (args, context) => {
     const packageJsonPath = path.join(path.dirname(__dirname), '..', 'package.json');
     let version = 'unknown';
-    let packageName = 'pilotdeck';
+    let packageName = 'g9agent';
 
     try {
       const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
@@ -480,7 +480,7 @@ Custom commands can be created in:
       console.error('Error reading package.json:', err);
     }
 
-    const { config } = readPilotDeckConfigFile();
+    const { config } = readG9AgentConfigFile();
     const mainRef = config?.agent?.model || '';
     const resolved = resolveModel(config, mainRef, { allowMissing: true });
 
@@ -516,17 +516,17 @@ Custom commands can be created in:
         action: 'memory',
         data: {
           error: 'No project selected',
-          message: 'Please select a project to access its PILOTDECK.md file'
+          message: 'Please select a project to access its G9AGENT.md file'
         }
       };
     }
 
-    const pilotDeckMdPath = path.join(projectPath, 'PILOTDECK.md');
+    const g9agentMdPath = path.join(projectPath, 'G9AGENT.md');
 
-    // Check if PILOTDECK.md exists
+    // Check if G9AGENT.md exists
     let exists = false;
     try {
-      await fs.access(pilotDeckMdPath);
+      await fs.access(g9agentMdPath);
       exists = true;
     } catch (err) {
       // File doesn't exist
@@ -536,11 +536,11 @@ Custom commands can be created in:
       type: 'builtin',
       action: 'memory',
       data: {
-        path: pilotDeckMdPath,
+        path: g9agentMdPath,
         exists,
         message: exists
-          ? `Opening PILOTDECK.md at ${pilotDeckMdPath}`
-          : `PILOTDECK.md not found at ${pilotDeckMdPath}. Create it to store project-specific instructions.`
+          ? `Opening G9AGENT.md at ${g9agentMdPath}`
+          : `G9AGENT.md not found at ${g9agentMdPath}. Create it to store project-specific instructions.`
       }
     };
   },
@@ -733,7 +733,7 @@ Custom commands can be created in:
 
     const projectPath = context?.projectPath || null;
 
-    // PilotDeck's virtual "general" workspace roots at ~/.pilotdeck. It looks
+    // G9Agent's virtual "general" workspace roots at ~/.g9agent. It looks
     // like a real projectPath but the user's mental model is general chat →
     // user/global scope. Force user scope with --global when needed.
     const GENERAL_CWD_PATHS = [path.resolve(resolvePilotHome(process.env))];
@@ -759,7 +759,7 @@ Custom commands can be created in:
         };
       }
       workdir = effectiveProjectPath;
-      dir = path.join('.pilotdeck', 'skills');
+      dir = path.join('.g9agent', 'skills');
     } else {
       workdir = resolvePilotHome(process.env);
       dir = 'skills';
@@ -875,7 +875,7 @@ Custom commands can be created in:
  *   - Built-in commands: hardcoded in this file (handled by builtInHandlers).
  *   - Bundled skills: hardcoded stubs (BUNDLED_SKILL_STUBS) — actual handlers
  *     live in the CLI binary; we only surface them so the UI menu shows them.
- *   - On-disk commands: `.pilotdeck/commands/**\/*.md` (project + user).
+ *   - On-disk commands: `.g9agent/commands/**\/*.md` (project + user).
  *
  * Dedup: when the same `/<name>` exists in multiple places, project wins over
  * user, and `commands/` wins over `skills/` (first-seen preference).
@@ -887,7 +887,7 @@ Custom commands can be created in:
 router.post('/list', async (req, res) => {
   try {
     const { projectKey, projectPath, query, cursor, limit } = req.body || {};
-    const gateway = await getPilotDeckGateway();
+    const gateway = await getG9AgentGateway();
     const serverInfo = await gateway.describeServer();
     if (!serverInfo.capabilities?.includes('commands_list')) {
       const legacy = await listLegacyCommands(projectKey || projectPath);
@@ -917,8 +917,8 @@ async function listLegacyCommands(projectPath) {
   const pilotHome = resolvePilotHome(process.env);
   const sources = [];
   if (projectPath) {
-    const commandsDir = path.join(projectPath, '.pilotdeck', 'commands');
-    const skillsDir = path.join(projectPath, '.pilotdeck', 'skills');
+    const commandsDir = path.join(projectPath, '.g9agent', 'commands');
+    const skillsDir = path.join(projectPath, '.g9agent', 'skills');
     const [commands, skills] = await Promise.all([
       scanCommandsDirectory(commandsDir, commandsDir, 'project'),
       scanSkillsDirectory(skillsDir, 'project'),
@@ -958,11 +958,11 @@ router.post('/load', async (req, res) => {
     // Security: Prevent path traversal. Allow paths under any
     const resolvedPath = path.resolve(commandPath);
     const inHome = resolvedPath.startsWith(path.resolve(os.homedir()));
-    const inPilotdeckSubdir = /\.pilotdeck\/(commands|skills)\//.test(resolvedPath);
-    if (!inHome && !inPilotdeckSubdir) {
+    const ing9agentSubdir = /\.g9agent\/(commands|skills)\//.test(resolvedPath);
+    if (!inHome && !ing9agentSubdir) {
       return res.status(403).json({
         error: 'Access denied',
-        message: 'Command must be in a .pilotdeck/commands or .pilotdeck/skills directory'
+        message: 'Command must be in a .g9agent/commands or .g9agent/skills directory'
       });
     }
 
@@ -1059,7 +1059,7 @@ router.post('/execute', async (req, res) => {
     // server-side and submitted as raw user input — that would dump the whole
     // SKILL.md body into chat. Instead, passthrough the slash text so the
     // proxy's slash parser invokes SkillTool with the procedural body.
-    if (commandPath && /\/\.pilotdeck\/skills\/[^/]+\/SKILL\.md$/i.test(commandPath)) {
+    if (commandPath && /\/\.g9agent\/skills\/[^/]+\/SKILL\.md$/i.test(commandPath)) {
       const passthroughContent = buildPassthroughContent();
       return res.json({
         type: 'custom',
@@ -1088,15 +1088,15 @@ router.post('/execute', async (req, res) => {
       ];
       if (context?.projectPath) {
         allowedBases.push(
-          path.resolve(path.join(context.projectPath, '.pilotdeck', 'commands')),
-          path.resolve(path.join(context.projectPath, '.pilotdeck', 'skills')),
+          path.resolve(path.join(context.projectPath, '.g9agent', 'commands')),
+          path.resolve(path.join(context.projectPath, '.g9agent', 'skills')),
         );
       }
       const isUnder = (base) => isPathInsideOrEqual(base, resolvedPath) && path.resolve(base) !== resolvedPath;
       if (!allowedBases.some(isUnder)) {
         return res.status(403).json({
           error: 'Access denied',
-          message: 'Command must be in a .pilotdeck/commands or .pilotdeck/skills directory'
+          message: 'Command must be in a .g9agent/commands or .g9agent/skills directory'
         });
       }
     }

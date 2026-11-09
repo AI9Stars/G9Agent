@@ -4,7 +4,7 @@ import { flattenCanonicalMessage } from '../../src/web/server/readSessionMessage
 import { applyWebGatewayEvent, createWebMessageReducerState } from '../../src/web/client/webMessage.js';
 import { toCanonicalToolResultBlock } from '../../src/tool/protocol/result.js';
 import { createAskUserQuestionTool } from '../../src/tool/builtin/askUserQuestion.js';
-import { InMemoryElicitationChannel } from '../../src/tool/elicitation/PilotDeckElicitationChannel.js';
+import { InMemoryElicitationChannel } from '../../src/tool/elicitation/G9AgentElicitationChannel.js';
 
 for (const toolName of ['ask_user_question', 'AskUserQuestion']) {
   test(`${toolName} preserves real elicitation answers through canonical history and live projection`, async () => {

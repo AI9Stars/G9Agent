@@ -37,13 +37,13 @@ export default function CatalogPicker({
       <section className="provider-picker" role="dialog" data-dialog-surface aria-modal="true" aria-labelledby="provider-picker-title">
         <header className="provider-picker-header">
           <div>
-            <h2 id="provider-picker-title">{t("pilotDeckConfig.panels.models.addProviderTitle")}</h2>
-            <p>{t("pilotDeckConfig.panels.models.providerPickerDescription")}</p>
+            <h2 id="provider-picker-title">{t("g9agentConfig.panels.models.addProviderTitle")}</h2>
+            <p>{t("g9agentConfig.panels.models.providerPickerDescription")}</p>
           </div>
           <button
             type="button"
             className="icon-button"
-            aria-label={t("pilotDeckConfig.panels.models.close")}
+            aria-label={t("g9agentConfig.panels.models.close")}
             onClick={onClose}
           >
             <XIcon size={20} />
@@ -65,8 +65,8 @@ export default function CatalogPicker({
               className="provider-option-icon"
             />
             <span className="provider-option-copy">
-              <strong>{t("pilotDeckConfig.panels.models.customProvider")}</strong>
-              <small>{t("pilotDeckConfig.panels.models.manualSetup")}</small>
+              <strong>{t("g9agentConfig.panels.models.customProvider")}</strong>
+              <small>{t("g9agentConfig.panels.models.manualSetup")}</small>
             </span>
             <span className="provider-option-radio" aria-hidden="true" />
           </button>

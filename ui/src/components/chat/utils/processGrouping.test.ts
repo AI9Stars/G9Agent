@@ -109,7 +109,7 @@ function normalizedText(
   return {
     id,
     sessionId: 'session-1',
-    provider: 'pilotdeck',
+    provider: 'g9agent',
     kind: 'text',
     role,
     content,
@@ -126,7 +126,7 @@ function normalizedTool(
   return {
     id,
     sessionId: 'session-1',
-    provider: 'pilotdeck',
+    provider: 'g9agent',
     kind: 'tool_use',
     toolName,
     toolId: id,
@@ -751,14 +751,14 @@ describe('turn-wide process disclosure', () => {
   it.each(['status', 'user'])('keeps a stopped steered run on its own boundaries with timing on %s', timingHost => {
     const turnTiming = { startedAt: timestamp(1000), completedAt: timestamp(3000), finishReason: 'aborted_streaming' };
     const messages: NormalizedMessage[] = [
-      { id: 'old-user', sessionId: 'session', provider: 'pilotdeck', kind: 'text', role: 'user', content: 'Previous request', runId: 'old', timestamp: timestamp(0) },
-      { id: 'old-answer', sessionId: 'session', provider: 'pilotdeck', kind: 'text', role: 'assistant', content: 'Previous answer', runId: 'old', timestamp: timestamp(100) },
-      ...(timingHost === 'status' ? [{ id: 'timing', sessionId: 'session', provider: 'pilotdeck' as const, kind: 'status' as const, runId: 'next', timestamp: timestamp(1000), turnTiming }] : []),
-      { id: 'next-user', sessionId: 'session', provider: 'pilotdeck', kind: 'text', role: 'user', content: 'Next request', runId: 'next', timestamp: timestamp(1200),
+      { id: 'old-user', sessionId: 'session', provider: 'g9agent', kind: 'text', role: 'user', content: 'Previous request', runId: 'old', timestamp: timestamp(0) },
+      { id: 'old-answer', sessionId: 'session', provider: 'g9agent', kind: 'text', role: 'assistant', content: 'Previous answer', runId: 'old', timestamp: timestamp(100) },
+      ...(timingHost === 'status' ? [{ id: 'timing', sessionId: 'session', provider: 'g9agent' as const, kind: 'status' as const, runId: 'next', timestamp: timestamp(1000), turnTiming }] : []),
+      { id: 'next-user', sessionId: 'session', provider: 'g9agent', kind: 'text', role: 'user', content: 'Next request', runId: 'next', timestamp: timestamp(1200),
         ...(timingHost === 'user' ? { turnTiming } : {}) },
-      { id: 'partial', sessionId: 'session', provider: 'pilotdeck', kind: 'text', role: 'assistant', content: 'Partial reply', runId: 'next', timestamp: timestamp(1500) },
-      { id: 'steer', sessionId: 'session', provider: 'pilotdeck', kind: 'text', role: 'user', content: 'Continue this way', runId: 'next', isSteer: true, timestamp: timestamp(2000) },
-      { id: 'call', sessionId: 'session', provider: 'pilotdeck', kind: 'tool_use', toolId: 'call', toolName: 'read_file', toolInput: { file_path: 'example.ts' }, runId: 'next', timestamp: timestamp(2500) },
+      { id: 'partial', sessionId: 'session', provider: 'g9agent', kind: 'text', role: 'assistant', content: 'Partial reply', runId: 'next', timestamp: timestamp(1500) },
+      { id: 'steer', sessionId: 'session', provider: 'g9agent', kind: 'text', role: 'user', content: 'Continue this way', runId: 'next', isSteer: true, timestamp: timestamp(2000) },
+      { id: 'call', sessionId: 'session', provider: 'g9agent', kind: 'tool_use', toolId: 'call', toolName: 'read_file', toolInput: { file_path: 'example.ts' }, runId: 'next', timestamp: timestamp(2500) },
     ];
     const items = project(normalizedToChatMessages(messages));
     expect(items.find(item => item.message.id === 'old-user')?.afterTurnProcess?.outcome).not.toBe('cancelled');

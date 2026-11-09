@@ -151,7 +151,7 @@ export default function MemoryDataSection({
     const seenNames = new Set<string>([MEMORY_GENERAL_TARGET]);
     const seenPaths = new Set<string>();
     const fallback = t(
-      "pilotDeckConfig.panels.memory.data.target.projectFallback",
+      "g9agentConfig.panels.memory.data.target.projectFallback",
     );
     return projects.reduce<MemoryProjectTarget[]>((items, project) => {
       if (isGeneralProject(project)) return items;
@@ -180,7 +180,7 @@ export default function MemoryDataSection({
     () => [
       {
         value: MEMORY_GENERAL_TARGET,
-        label: t("pilotDeckConfig.panels.memory.data.target.all"),
+        label: t("g9agentConfig.panels.memory.data.target.all"),
       },
       ...projectTargets.map((target) => ({
         value: target.value,
@@ -209,9 +209,9 @@ export default function MemoryDataSection({
   const dashboardProjectPath =
     selectedProjectPath || generalProjectPath || projectTargets[0]?.path || "";
   const selectedTargetLabel = targetIsAllMemory
-    ? t("pilotDeckConfig.panels.memory.data.target.all")
+    ? t("g9agentConfig.panels.memory.data.target.all")
     : selectedProjectTarget?.label ??
-      t("pilotDeckConfig.panels.memory.data.target.projectFallback");
+      t("g9agentConfig.panels.memory.data.target.projectFallback");
   const canManageTarget = targetIsAllMemory || Boolean(selectedProjectPath);
   const actionsDisabled = actionBusy || !canManageTarget;
 
@@ -241,8 +241,8 @@ export default function MemoryDataSection({
       const { raw, body } = await readMemoryResponse(response);
       if (!body) return;
       const prefix = targetIsAllMemory
-        ? "pilotdeck-memory-all"
-        : `pilotdeck-memory-${safeDownloadToken(selectedTargetLabel)}`;
+        ? "g9agent-memory-all"
+        : `g9agent-memory-${safeDownloadToken(selectedTargetLabel)}`;
       downloadMemoryText(raw, `${prefix}-${Date.now()}.json`);
     } catch {
       // Status banners on this page are intentionally omitted.
@@ -263,8 +263,8 @@ export default function MemoryDataSection({
     if (!payload) return;
 
     const confirmKey = targetIsAllMemory
-      ? "pilotDeckConfig.panels.memory.data.confirm.importAll"
-      : "pilotDeckConfig.panels.memory.data.confirm.importProject";
+      ? "g9agentConfig.panels.memory.data.confirm.importAll"
+      : "g9agentConfig.panels.memory.data.confirm.importProject";
     if (!await confirm({ message: t(confirmKey, { target: selectedTargetLabel }), destructive: true })) {
       return;
     }
@@ -350,9 +350,9 @@ export default function MemoryDataSection({
     >
       <div className="general-card">
         <GeneralCardHeader icon={<GeneralSettingsIcon icon={Database} />} id="memory-data-title"
-          title={t("pilotDeckConfig.panels.memory.data.title")}
-          detail={t("pilotDeckConfig.panels.memory.data.description")} />
-        <GeneralSettingRow htmlFor="memory-project" title={t("pilotDeckConfig.panels.memory.data.target.label")}>
+          title={t("g9agentConfig.panels.memory.data.title")}
+          detail={t("g9agentConfig.panels.memory.data.description")} />
+        <GeneralSettingRow htmlFor="memory-project" title={t("g9agentConfig.panels.memory.data.target.label")}>
           <div className="memory-data-controls">
             <GeneralSelectControl id="memory-project" value={selectedMemoryTarget}
               onChange={setSelectedMemoryTarget} options={memoryTargetOptions} />
@@ -364,13 +364,13 @@ export default function MemoryDataSection({
                 onClick={() => void handleExportMemory()}
               >
                 <ExportIcon />
-                {t("pilotDeckConfig.panels.memory.data.actions.export")}
+                {t("g9agentConfig.panels.memory.data.actions.export")}
               </button>
               <button className="button secondary compact" type="button" disabled={actionsDisabled}
                 onClick={() => importInputRef.current?.click()}>
                 <ImportIcon />
                 <span>
-                  {t("pilotDeckConfig.panels.memory.data.actions.import")}
+                  {t("g9agentConfig.panels.memory.data.actions.import")}
                 </span>
               </button>
                 <input
@@ -378,7 +378,7 @@ export default function MemoryDataSection({
                   hidden
                   accept=".json"
                   aria-label={t(
-                    "pilotDeckConfig.panels.memory.data.actions.import",
+                    "g9agentConfig.panels.memory.data.actions.import",
                   )}
                   type="file"
                   disabled={actionsDisabled}
@@ -398,7 +398,7 @@ export default function MemoryDataSection({
                 onClick={handleClearMemory}
               >
                 <ClearIcon />
-                {t("pilotDeckConfig.panels.memory.data.actions.clear")}
+                {t("g9agentConfig.panels.memory.data.actions.clear")}
               </button>
             </div>
           </div>
@@ -407,10 +407,10 @@ export default function MemoryDataSection({
     </section>
     {clearModalOpen ? (
       <ConfirmDialog destructive busy={actionBusy}
-        title={t("pilotDeckConfig.panels.memory.data.confirm.clearModalTitle", { name: selectedMemoryTarget })}
-        confirmLabel={t("pilotDeckConfig.panels.memory.data.confirm.clearModalConfirm")}
+        title={t("g9agentConfig.panels.memory.data.confirm.clearModalTitle", { name: selectedMemoryTarget })}
+        confirmLabel={t("g9agentConfig.panels.memory.data.confirm.clearModalConfirm")}
         onCancel={closeClearModal} onConfirm={() => void confirmClearMemory()}>
-        {t("pilotDeckConfig.panels.memory.data.confirm.clearModalDescription")}
+        {t("g9agentConfig.panels.memory.data.confirm.clearModalDescription")}
       </ConfirmDialog>
     ) : null}
     </>

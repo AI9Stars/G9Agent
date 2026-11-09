@@ -8,7 +8,7 @@ artifacts/
 outputs/
 design-qa/
 design-qa.md
-.pilotdeck/
+.g9agent/
 .playwright-mcp/
 .cursor/
 Auto-Research-Skills/

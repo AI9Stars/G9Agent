@@ -4,13 +4,14 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
+import { LEGACY_PRODUCT_NAME, LEGACY_WORKSPACE_MARKER, LEGACY_GENERAL_NAMES } from '@g9agent/config';
 
 import { isPathInsideOrEqual } from './pathSafety.js';
 import { createProjectId, resolvePilotHome } from './pilotPaths.js';
 import { migrateLegacyGeneralWorkspace } from './generalWorkspaceMigration.js';
 
-export const GENERAL_WORKSPACE_DIRECTORY_NAME = 'PilotDeckGeneral';
-export const GENERAL_WORKSPACE_MARKER = '.pilotdeck-workspace';
+export const GENERAL_WORKSPACE_DIRECTORY_NAME = 'G9AgentGeneral';
+export const GENERAL_WORKSPACE_MARKER = '.g9agent-workspace';
 
 let windowsDocumentsDirectory;
 function resolveWindowsDocumentsDirectory(homeDirectory) {
@@ -36,7 +37,7 @@ function assertSeparatedFromPilotHome(candidate, pilotHome) {
         isPathInsideOrEqual(pilotHome, candidate)
         || isPathInsideOrEqual(candidate, pilotHome)
     ) {
-        const error = new Error('General workspace must be separate from PILOT_HOME.');
+        const error = new Error('General workspace must be separate from G9AGENT_HOME.');
         error.code = 'GENERAL_WORKSPACE_UNSAFE';
         throw error;
     }
@@ -45,7 +46,7 @@ function assertSeparatedFromPilotHome(candidate, pilotHome) {
 function defaultWorkspaceDirectory(env = process.env, {
     platform = process.platform,
     homeDirectory = os.homedir(),
-    documentsDirectory = env.PILOTDECK_DOCUMENTS_DIRECTORY,
+    documentsDirectory = env.G9AGENT_DOCUMENTS_DIRECTORY,
 } = {}) {
     const configuredRoot = env.WORKSPACES_ROOT ? expandHome(env.WORKSPACES_ROOT, homeDirectory) : null;
     // WORKSPACES_ROOT historically defaults to the user's home for project
@@ -72,10 +73,10 @@ function readDefaultLocation(env, baseDirectory) {
         throw Object.assign(new Error('Invalid saved General workspace location.'), { code: 'GENERAL_WORKSPACE_STATE_INVALID' });
     }
     const sameParent = path.relative(path.dirname(baseDirectory), path.dirname(state.baseDirectory)) === '';
-    if (path.relative(baseDirectory, state.baseDirectory) !== '' && !(sameParent && path.basename(state.baseDirectory) === 'PilotDeck')) return null;
+    if (path.relative(baseDirectory, state.baseDirectory) !== '' && !(sameParent && (path.basename(state.baseDirectory) === 'G9Agent' || LEGACY_GENERAL_NAMES.test(path.basename(state.baseDirectory))))) return null;
     const name = path.basename(state.directory);
     if (path.relative(path.dirname(baseDirectory), path.dirname(state.directory)) !== ''
-        || !/^PilotDeck(?:General)?(?:[2-9]|[1-9]\d+)?$/.test(name)) {
+        || !(/^G9Agent(?:General)?(?:[2-9]|[1-9]\d+)?$/.test(name) || LEGACY_GENERAL_NAMES.test(name))) {
         throw Object.assign(new Error('Invalid saved General workspace directory.'), { code: 'GENERAL_WORKSPACE_STATE_INVALID' });
     }
     if (state.migration) {
@@ -83,14 +84,14 @@ function readDefaultLocation(env, baseDirectory) {
         if (state.migration.phase !== 'pending' || (source !== null && (
             typeof source?.directory !== 'string' || typeof source.workspaceId !== 'string' || !source.workspaceId
             || path.relative(path.dirname(baseDirectory), path.dirname(source.directory)) !== ''
-            || !/^PilotDeck(?:[2-9]|[1-9]\d+)?$/.test(path.basename(source.directory))
+            || !(/^G9Agent(?:[2-9]|[1-9]\d+)?$/.test(path.basename(source.directory)) || LEGACY_GENERAL_NAMES.test(path.basename(source.directory)))
         ))) throw Object.assign(new Error('Invalid saved General migration claim.'), { code: 'GENERAL_WORKSPACE_STATE_INVALID' });
     }
     return state;
 }
 
 export function resolveGeneralWorkspaceDirectory(env = process.env, options = {}) {
-    const configuredDirectory = env.PILOTDECK_GENERAL_WORKSPACE_DIRECTORY?.trim();
+    const configuredDirectory = env.G9AGENT_GENERAL_WORKSPACE_DIRECTORY?.trim();
     let candidate;
     if (configuredDirectory) {
         if (!path.isAbsolute(configuredDirectory) && !/^~(?:[\\/]|$)/.test(configuredDirectory)) {
@@ -106,13 +107,13 @@ export function resolveGeneralWorkspaceDirectory(env = process.env, options = {}
 }
 
 export function generalWorkspaceNotice(env = process.env, options = {}) {
-    if (env.PILOTDECK_GENERAL_WORKSPACE_DIRECTORY?.trim()) return null;
+    if (env.G9AGENT_GENERAL_WORKSPACE_DIRECTORY?.trim()) return null;
     const state = readDefaultLocation(env, defaultWorkspaceDirectory(env, options));
     return state?.reason ? { directory: state.directory, originalDirectory: state.baseDirectory } : null;
 }
 
 // Resolve even a missing leaf through its closest existing ancestor before
-// creating anything, so a linked parent cannot redirect writes into PILOT_HOME.
+// creating anything, so a linked parent cannot redirect writes into G9AGENT_HOME.
 async function realPlannedPath(candidate) {
     try { return await fs.realpath(candidate); }
     catch (error) {
@@ -129,8 +130,8 @@ async function assertSafeLocation(candidate, env) {
         realPlannedPath(candidate), realPlannedPath(pilotHome),
     ]);
     assertSeparatedFromPilotHome(plannedCandidate, plannedPilotHome);
-    const runtimeRoots = [env.PILOTDECK_DESKTOP_RUNTIME_ROOT, env.PILOTDECK_RUNTIME_ROOT].filter(Boolean);
-    const installationPaths = [env.PILOTDECK_DESKTOP_INSTALL_ROOT,
+    const runtimeRoots = [env.G9AGENT_DESKTOP_RUNTIME_ROOT, env.G9AGENT_RUNTIME_ROOT].filter(Boolean);
+    const installationPaths = [env.G9AGENT_DESKTOP_INSTALL_ROOT,
         fileURLToPath(new URL('../../../', import.meta.url)), ...runtimeRoots];
     // Older desktop launchers supplied only resources/runtime. Protect its
     // complete install too: upgrades replace the enclosing resources tree.
@@ -144,7 +145,7 @@ async function assertSafeLocation(candidate, env) {
     for (const installation of installationPaths.filter(Boolean)) {
         const realInstallation = await realPlannedPath(path.resolve(installation));
         if (isPathInsideOrEqual(plannedCandidate, realInstallation) || isPathInsideOrEqual(realInstallation, plannedCandidate)) {
-            throw Object.assign(new Error('General workspace overlaps the PilotDeck installation.'), { code: 'GENERAL_WORKSPACE_UNSAFE' });
+            throw Object.assign(new Error('General workspace overlaps the G9Agent installation.'), { code: 'GENERAL_WORKSPACE_UNSAFE' });
         }
     }
 }
@@ -152,7 +153,7 @@ async function assertSafeLocation(candidate, env) {
 /**
  * Materialize the managed working directory used by General conversations.
  *
- * General transcripts deliberately remain keyed by PILOT_HOME for backwards
+ * General transcripts deliberately remain keyed by G9AGENT_HOME for backwards
  * compatibility. Only the agent's execution cwd moves here, keeping config,
  * credentials, and transcript storage outside the workspace it may operate on.
  */
@@ -203,11 +204,21 @@ async function prepareDirectory(candidate, env, { requireEmpty = false, workspac
         const stat = await fs.lstat(markerPath);
         if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 1024) throw new Error('Invalid workspace marker');
         marker = JSON.parse(await fs.readFile(markerPath, 'utf8'));
-        if (marker.product !== 'PilotDeck' || marker.version !== 1 || typeof marker.id !== 'string') throw new Error('Invalid workspace marker');
+        if (marker.product !== 'G9Agent' || marker.version !== 1 || typeof marker.id !== 'string') throw new Error('Invalid workspace marker');
     } catch (error) {
         if (error.code !== 'ENOENT') throw Object.assign(new Error('Cannot verify the General workspace identity.'), { code: 'GENERAL_WORKSPACE_UNSAFE' });
-        if (workspaceId) throw Object.assign(new Error('The registered General workspace marker is missing.'), { code: 'GENERAL_WORKSPACE_STATE_INVALID' });
-        marker = { product: 'PilotDeck', version: 1, id: randomUUID() };
+        let previous;
+        try {
+            const oldPath = path.join(candidate, LEGACY_WORKSPACE_MARKER);
+            const stat = await fs.lstat(oldPath);
+            if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 1024) throw new Error('Invalid workspace marker');
+            previous = JSON.parse(await fs.readFile(oldPath, 'utf8'));
+            if (previous.product !== LEGACY_PRODUCT_NAME || previous.version !== 1 || typeof previous.id !== 'string') throw new Error('Invalid workspace marker');
+        } catch (legacyError) {
+            if (legacyError.code !== 'ENOENT') throw Object.assign(new Error('Cannot verify the General workspace identity.'), { code: 'GENERAL_WORKSPACE_UNSAFE' });
+        }
+        if (workspaceId && !previous) throw Object.assign(new Error('The registered General workspace marker is missing.'), { code: 'GENERAL_WORKSPACE_STATE_INVALID' });
+        marker = previous ? { ...previous, product: 'G9Agent' } : { product: 'G9Agent', version: 1, id: randomUUID() };
         try { await fs.writeFile(markerPath, JSON.stringify(marker), { flag: 'wx', mode: 0o600 }); }
         catch (writeError) {
             // Another profile/process may have claimed the same unnumbered
@@ -224,7 +235,7 @@ const locationLocks = new Map();
 export async function ensureGeneralWorkspaceDirectory(env = process.env, options = {}) {
     const key = resolvePilotHome(env);
     const previous = locationLocks.get(key) ?? Promise.resolve();
-    const next = previous.catch(() => {}).then(() => env.PILOTDECK_GENERAL_WORKSPACE_DIRECTORY?.trim()
+    const next = previous.catch(() => {}).then(() => env.G9AGENT_GENERAL_WORKSPACE_DIRECTORY?.trim()
         ? ensureCustomDirectory(env, options) : ensureDefaultDirectory(env, options));
     locationLocks.set(key, next);
     try { return await next; }
@@ -260,7 +271,7 @@ async function ensureCustomDirectory(env, options) {
         if (error.code !== 'ENOENT' && !explicitEmptySelection) throw Object.assign(new Error('Cannot verify the saved General workspace identity.'), { code: 'GENERAL_WORKSPACE_STATE_INVALID' });
         saved = undefined;
     }
-    const workspaceId = env.PILOTDECK_GENERAL_WORKSPACE_ID || (explicitEmptySelection ? undefined : saved?.workspaceId);
+    const workspaceId = env.G9AGENT_GENERAL_WORKSPACE_ID || (explicitEmptySelection ? undefined : saved?.workspaceId);
     if (!workspaceId) await assertGeneralWorkspaceSwitchAllowed(null, candidate);
     const prepared = await prepareDirectory(candidate, env, { workspaceId });
     // YAML users do not go through the settings route that saves an ID. Keep
@@ -283,14 +294,15 @@ async function ensureDefaultDirectory(env, options) {
     let candidate = state?.directory ?? base;
     let prepared;
     let reason = state?.reason;
-    const legacyState = state && !path.basename(state.directory).startsWith(GENERAL_WORKSPACE_DIRECTORY_NAME);
+    const legacyState = state && !path.basename(state.directory).startsWith(GENERAL_WORKSPACE_DIRECTORY_NAME)
+        && !path.basename(state.directory).startsWith(`${LEGACY_PRODUCT_NAME}General`);
     const migrationSource = legacyState ? { directory: state.directory, workspaceId: state.workspaceId } : state?.migration?.source;
     if (state && !legacyState) {
         // Upgrades reuse a registered directory, including populated ones.
         // Unavailability or identity loss must never silently choose another cwd.
         prepared = await prepareDirectory(state.directory, env, { workspaceId: state.workspaceId });
     }
-    // Validate a registered old PilotDeck/PilotDeck2 before migrating it. A
+    // Validate a registered old G9Agent/G9Agent2 before migrating it. A
     // missing/replaced legacy workspace must not be mistaken for a fresh install.
     if (migrationSource) await prepareDirectory(migrationSource.directory, env, { workspaceId: migrationSource.workspaceId });
     for (let suffix = 1; !prepared && suffix <= 1000; suffix++) {
@@ -307,7 +319,7 @@ async function ensureDefaultDirectory(env, options) {
     if (!state || legacyState) {
         // Claim before copying: a failed numbered migration must resume this
         // directory, even when it already contains partially copied user files.
-        // Keep a registered legacy source (including PilotDeck2) for restarts.
+        // Keep a registered legacy source (including G9Agent2) for restarts.
         await writeLocationState(locationStatePath(env), { version: 1, baseDirectory: base, directory: candidate,
             workspaceId: prepared.workspaceId, reason, migration: { phase: 'pending', source: migrationSource ?? null } });
     }
@@ -320,13 +332,13 @@ async function ensureDefaultDirectory(env, options) {
     const hasGeneralHistory = (await fs.readdir(transcriptDirectory).catch(error => {
         if (error.code === 'ENOENT') return []; throw error;
     })).some(name => name.endsWith('.jsonl'));
-    const previousDirectory = migrationSource?.directory ?? path.join(path.dirname(base), 'PilotDeck');
+    const previousDirectory = migrationSource?.directory ?? path.join(path.dirname(base), 'G9Agent');
     const previousStat = await fs.lstat(previousDirectory).catch(error => { if (error.code === 'ENOENT') return null; throw error; });
     const previousIsDirectory = previousStat?.isDirectory() && !previousStat.isSymbolicLink();
     let previousMarker;
     try { if (previousIsDirectory) previousMarker = JSON.parse(await fs.readFile(path.join(previousDirectory, GENERAL_WORKSPACE_MARKER), 'utf8')); }
     catch (error) { if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error; }
-    const ownedPrevious = previousMarker?.product === 'PilotDeck' && previousMarker?.version === 1 && typeof previousMarker?.id === 'string';
+    const ownedPrevious = previousMarker?.product === 'G9Agent' && previousMarker?.version === 1 && typeof previousMarker?.id === 'string';
     if (migrationSource || (previousIsDirectory && (hasGeneralHistory || ownedPrevious))) {
         let safe = true;
         try { await assertSafeLocation(previousDirectory, env); }
@@ -336,7 +348,7 @@ async function ensureDefaultDirectory(env, options) {
             if (migrationSource || error.code !== 'GENERAL_WORKSPACE_UNSAFE') throw error;
             safe = false;
         }
-        if (safe) await migrateLegacyGeneralWorkspace({ source: previousDirectory, destination: candidate, pilotHome: prepared.realPilotHome, sourceLabel: 'PilotDeck' });
+        if (safe) await migrateLegacyGeneralWorkspace({ source: previousDirectory, destination: candidate, pilotHome: prepared.realPilotHome, sourceLabel: 'G9Agent' });
     }
     assertSeparatedFromPilotHome(legacyDirectory, pilotHome);
     await assertSafeLocation(legacyDirectory, env);

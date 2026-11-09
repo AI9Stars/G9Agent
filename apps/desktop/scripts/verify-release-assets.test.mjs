@@ -8,10 +8,9 @@ import { gzipSync } from 'node:zlib';
 import { verifyReleaseAssets } from './verify-release-assets.mjs';
 
 function fixture(differentialUpdates) {
-  const directory = mkdtempSync(join(tmpdir(), 'pilotdeck-complete-release-'));
-  const prefix = 'PilotDeck-2026.1004.0';
+  const directory = mkdtempSync(join(tmpdir(), 'g9agent-complete-release-'));
+  const prefix = 'G9Agent-2026.1004.0';
   const assets = [];
-  const feeds = [];
   function add(name, contents, platform, arch) {
     const bytes = Buffer.from(contents);
     writeFileSync(join(directory, name), bytes);
@@ -21,18 +20,9 @@ function fixture(differentialUpdates) {
     return asset;
   }
   for (const arch of ['x64', 'arm64']) {
-    for (const [suffix, feed, platform] of [
-      [`linux-${arch}.deb`, `latest-linux${arch === 'arm64' ? '-arm64' : ''}.yml`, 'linux'],
-      [`linux-${arch}.rpm`, `latest-rpm-linux${arch === 'arm64' ? '-arm64' : ''}.yml`, 'linux'],
-      [`mac-${arch}.zip`, `latest-${arch}-mac.yml`, 'darwin'],
-      [`win-${arch}-setup.exe`, `latest-${arch}.yml`, 'win32'],
-    ]) {
-      const payloads = [add(`${prefix}-${suffix}`, suffix, platform, arch)];
-      if (platform === 'darwin') payloads.push(add(`${prefix}-mac-${arch}.dmg`, 'disk image', platform, arch));
-      feeds.push({ name: feed, contents: `version: 2026.1004.0\nfiles:\n${payloads.map(asset => `  - url: ${asset.name}\n    sha512: ${asset.sha512}\n    size: ${asset.size}\n`).join('')}`, platform, arch });
-    }
+    const asset = add(`${prefix}-win-${arch}-setup.exe`, `Windows ${arch} installer`, 'win32', arch);
+    add(`latest-${arch}.yml`, `version: 2026.1004.0\nfiles:\n  - url: ${asset.name}\n    sha512: ${asset.sha512}\n    size: ${asset.size}\n`, 'win32', arch);
   }
-  for (const feed of feeds) add(feed.name, feed.contents, feed.platform, feed.arch);
   if (differentialUpdates !== undefined) {
     for (const payload of [...assets].filter(a => /\.(zip|exe)$/.test(a.name))) {
       add(`${payload.name}.blockmap`, gzipSync(JSON.stringify({ version: '2', files: [
@@ -59,9 +49,9 @@ function replaceFeed(directory, name, contents) {
   writeFileSync(join(directory, 'SHA256SUMS.txt'), manifest.assets.map(asset => `${asset.sha256}  ${asset.name}\n`).join(''));
 }
 
-test('accepts all 10 installers and 8 feeds without changing existing filenames', () => {
+test('accepts a Windows-only release with both installers and both update feeds', () => {
   const f = fixture();
-  try { assert.deepEqual(verifyReleaseAssets(f.directory), { installers: 10, feeds: 8 }); }
+  try { assert.deepEqual(verifyReleaseAssets(f.directory), { installers: 2, feeds: 2 }); }
   finally { f.cleanup(); }
 });
 
@@ -69,7 +59,7 @@ for (const enabled of [true, false]) {
   test(`validates maps even with differentialUpdates=${enabled}`, () => {
     const f = fixture(enabled);
     try {
-      assert.deepEqual(verifyReleaseAssets(f.directory), { installers: 10, feeds: 8 });
+      assert.deepEqual(verifyReleaseAssets(f.directory), { installers: 2, feeds: 2 });
       const file = `${f.prefix}-win-x64-setup.exe.blockmap`;
       rmSync(join(f.directory, file));
       assert.throws(() => verifyReleaseAssets(f.directory));
@@ -92,9 +82,7 @@ for (const [reason, contents] of [
   });
 }
 
-for (const name of ['PilotDeck-2026.1004.0-win-arm64-setup.exe', 'PilotDeck-2026.1004.0-linux-arm64.rpm', 'PilotDeck-2026.1004.0-linux-x64.rpm',
-  'latest-arm64.yml', 'latest-x64.yml', 'latest-arm64-mac.yml', 'latest-x64-mac.yml',
-  'latest-linux.yml', 'latest-linux-arm64.yml', 'latest-rpm-linux.yml', 'latest-rpm-linux-arm64.yml']) {
+for (const name of ["G9Agent-2026.1004.0-win-x64-setup.exe", "G9Agent-2026.1004.0-win-arm64-setup.exe", "latest-x64.yml", "latest-arm64.yml"]) {
   test(`refuses publication when ${name} is absent`, () => {
     const f = fixture();
     try {
@@ -109,7 +97,7 @@ for (const [description, transform] of [
   ['wrong version', feed => feed.replace('version: 2026.1004.0', 'version: 2026.1003.0')],
   ['wrong checksum', feed => feed.replace(/sha512: \S+/, `sha512: ${'A'.repeat(86)}==`)],
   ['wrong size', feed => feed.replace(/size: \d+/, 'size: 1')],
-  ['unknown payload', feed => feed.replaceAll('PilotDeck-', 'Unknown-')],
+  ['unknown payload', feed => feed.replaceAll('G9Agent-', 'Unknown-')],
 ]) {
   test(`refuses a Windows ARM64 feed with ${description}`, () => {
     const f = fixture();
@@ -124,7 +112,17 @@ for (const [description, transform] of [
 test('refuses a stale installer even when the current packages are present', () => {
   const f = fixture();
   try {
-    writeFileSync(join(f.directory, 'PilotDeck-2026.1003.0-win-x64-setup.exe'), 'stale');
+    writeFileSync(join(f.directory, 'G9Agent-2026.1003.0-win-x64-setup.exe'), 'stale');
     assert.throws(() => verifyReleaseAssets(f.directory), /Unexpected (installer|release files)/);
   } finally { f.cleanup(); }
 });
+
+for (const suffix of ['mac-arm64.dmg', 'linux-x64.deb', 'linux-arm64.rpm', 'win-ia32-setup.exe']) {
+  test(`refuses an extra unsupported installer: ${suffix}`, () => {
+    const f = fixture();
+    try {
+      writeFileSync(join(f.directory, `${f.prefix}-${suffix}`), 'unsupported');
+      assert.throws(() => verifyReleaseAssets(f.directory), /Unexpected (installer|release files)/);
+    } finally { f.cleanup(); }
+  });
+}

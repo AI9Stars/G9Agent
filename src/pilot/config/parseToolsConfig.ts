@@ -14,7 +14,7 @@ import type {
 } from "./types.js";
 
 /**
- * Parse the optional `tools` section of `pilotdeck.yaml`.
+ * Parse the optional `tools` section of `g9agent.yaml`.
  *
  *   tools:
  *     webSearch:

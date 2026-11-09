@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const dist = path.resolve(process.env.PILOTDECK_EDITOR_BUILD_DIR || path.join(uiRoot, 'dist'));
+const dist = path.resolve(process.env.G9AGENT_EDITOR_BUILD_DIR || path.join(uiRoot, 'dist'));
 await fs.access(path.join(dist, 'index.html'));
 const types = { '.js': 'application/javascript', '.mjs': 'application/javascript', '.css': 'text/css',
   '.html': 'text/html', '.json': 'application/json', '.svg': 'image/svg+xml', '.wasm': 'application/wasm',
@@ -20,4 +20,4 @@ createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
     res.end(body);
   } catch { res.writeHead(404).end(); }
-}).listen(Number(process.env.PILOTDECK_EDITOR_TEST_PORT || 5193), '127.0.0.1');
+}).listen(Number(process.env.G9AGENT_EDITOR_TEST_PORT || 5193), '127.0.0.1');

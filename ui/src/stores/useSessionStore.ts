@@ -108,10 +108,10 @@ export interface NormalizedMessage {
   /** True only when an error confirms that the parent turn has ended. */
   terminal?: boolean;
   /**
-   * `PilotDeckToolErrorCode` from the gateway when `kind === 'tool_result'`
+   * `G9AgentToolErrorCode` from the gateway when `kind === 'tool_result'`
    * and `isError === true` — flat on the frame because the bridge merges
    * `tool_call_finished.errorCode` here verbatim. See
-   * `pilotdeck-bridge.js#tool_call_finished` and `chatPermissions.ts`.
+   * `g9agent-bridge.js#tool_call_finished` and `chatPermissions.ts`.
    */
   errorCode?: string;
   resultPath?: string;

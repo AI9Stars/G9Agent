@@ -30,7 +30,7 @@ function updateError(reason, message = reason) {
 function matchesRepository(remote, repositoryUrl) {
   if (remote === repositoryUrl) return true;
   if (repositoryUrl !== OFFICIAL_URL) return false;
-  return /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)OpenBMB\/PilotDeck(?:\.git)?\/?$/i.test(remote);
+  return /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)OpenBMB\/G9Agent(?:\.git)?\/?$/i.test(remote);
 }
 
 export function createWebUpdateService({
@@ -63,15 +63,15 @@ export function createWebUpdateService({
 
   async function inspectWorkspace() {
     if (isContainer()) throw updateError('container');
-    if (env.PILOTDECK_DESKTOP === '1' || env.PILOTDECK_DESKTOP_VERSION) throw updateError('desktop');
-    if (env.PILOTDECK_RESTART_MODE === 'dev' || env.NODE_ENV === 'development') throw updateError('development');
+    if (env.G9AGENT_DESKTOP === '1' || env.G9AGENT_DESKTOP_VERSION) throw updateError('desktop');
+    if (env.G9AGENT_RESTART_MODE === 'dev' || env.NODE_ENV === 'development') throw updateError('development');
     try {
       if (!statSync(path.join(projectRoot, '.git')).isDirectory()) throw updateError('development');
       // Native realpath expands Windows 8.3 aliases; relative also handles
       // case-insensitive drive/directory spelling without weakening identity.
       if (path.relative(realpathSync.native(await git(['rev-parse', '--show-toplevel'])), realpathSync.native(projectRoot)) !== '') throw updateError('notGit');
     } catch (error) { throw error.reason ? error : updateError('notGit'); }
-    if (!ownsUpdateLock && existsSync(path.join(projectRoot, '.git', 'pilotdeck-update.lock'))) throw updateError('lockBusy');
+    if (!ownsUpdateLock && existsSync(path.join(projectRoot, '.git', 'g9agent-update.lock'))) throw updateError('lockBusy');
     const branch = await git(['branch', '--show-current']);
     if (branch !== 'main') throw updateError('development');
     if (await git(['status', '--porcelain', '--untracked-files=all'])) throw updateError('localChanges');
@@ -107,7 +107,7 @@ export function createWebUpdateService({
       if (!RELEASE_TAG.test(latest?.tagName || '') || !COMMIT_SHA.test(latest?.sourceSha || '')) throw updateError('releaseUnavailable');
       result.latest = latest;
       result.remoteHead = latest.sourceSha.slice(0, 8);
-      const ref = `refs/pilotdeck/releases/${latest.tagName}`;
+      const ref = `refs/g9agent/releases/${latest.tagName}`;
       await git(['fetch', '--no-tags', repositoryUrl, `refs/tags/${latest.tagName}:${ref}`]);
       const releaseCommit = await git(['rev-parse', `${ref}^{commit}`]);
       if (releaseCommit !== latest.sourceSha) throw updateError('releaseMismatch');
@@ -132,7 +132,7 @@ export function createWebUpdateService({
     let staging;
     let preserveBackup = false;
     let locked = false;
-    const lock = path.join(projectRoot, '.git', 'pilotdeck-update.lock');
+    const lock = path.join(projectRoot, '.git', 'g9agent-update.lock');
     try {
       // Validate the deployment before creating anything in its Git directory.
       await inspectWorkspace();
@@ -142,7 +142,7 @@ export function createWebUpdateService({
       if (!status.canUpdate) throw updateError(status.reason || 'checkFailed');
       if (status.latest.tagName !== target.tagName || status.latest.sourceSha !== target.sourceSha) throw updateError('targetChanged');
       report('Preparing the published release in a temporary directory.');
-      staging = await mkdtemp(path.join(projectRoot, '.git', 'pilotdeck-update-'));
+      staging = await mkdtemp(path.join(projectRoot, '.git', 'g9agent-update-'));
       const source = path.join(staging, 'source');
       await git(['clone', '--shared', '--no-checkout', projectRoot, source]);
       await git(['checkout', '--detach', target.sourceSha], source);
@@ -220,7 +220,7 @@ export function createWebUpdateService({
 async function buildStagedWeb(root, progress, env) {
   const buildEnv = { ...env, PATH: `${path.dirname(process.execPath)}${path.delimiter}${env.PATH || ''}`, HUSKY: '0' };
   const run = (command, args) => runManagedCommand(command, args, { cwd: root, env: buildEnv, progress });
-  await run('pnpm', ['install', '--frozen-lockfile', '--filter', 'pilotdeck', '--filter', 'pilotdeck-ui']);
+  await run('pnpm', ['install', '--frozen-lockfile', '--filter', 'g9agent', '--filter', 'g9agent-ui']);
   await run('pnpm', ['run', 'build:web']);
 }
 

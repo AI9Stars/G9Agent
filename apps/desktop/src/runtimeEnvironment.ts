@@ -35,9 +35,9 @@ export function withRuntimeCommandPath(
     pathApi.join(runtimeRoot, 'node_modules', '.bin'), nextEnv[pathKey],
   ].filter(Boolean).join(pathApi.delimiter);
   if (bundledGit) {
-    nextEnv.PILOTDECK_GIT_BASH_PATH = bundledGit.bash;
-    nextEnv.PILOTDECK_GIT_PATH = bundledGit.git;
-    nextEnv.PILOTDECK_BUNDLED_GIT = '1';
+    nextEnv.G9AGENT_GIT_BASH_PATH = bundledGit.bash;
+    nextEnv.G9AGENT_GIT_PATH = bundledGit.git;
+    nextEnv.G9AGENT_BUNDLED_GIT = '1';
     nextEnv.CHERE_INVOKING ||= '1';
     nextEnv.MSYSTEM ||= 'MINGW64';
   }

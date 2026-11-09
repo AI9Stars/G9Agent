@@ -6,7 +6,7 @@ import { ACTIVITY_VIEWS, usageMetrics, usageSeries, type ActivityView, type Usag
 import ActivityChart from './ActivityChart';
 import './usage.css';
 
-const VIEW_KEY = 'pilotdeck-usage-view-v1';
+const VIEW_KEY = 'g9agent-usage-view-v1';
 function savedView(): ActivityView {
   try {
     const value = localStorage.getItem(VIEW_KEY) as ActivityView;

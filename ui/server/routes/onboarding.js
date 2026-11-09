@@ -2,9 +2,9 @@ import express from 'express';
 import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'crypto';
 import { constants as fsConstants, promises as fs } from 'fs';
 import path from 'path';
-import { configRevision, readPilotDeckConfigFile, withPilotDeckConfigWrite, writePilotDeckConfig } from '../services/pilotdeckConfig.js';
-import { reloadPilotDeckConfig } from '../services/pilotdeckConfigReloader.js';
-import { suppressNextWatchEvent } from '../services/pilotdeckConfigWatcher.js';
+import { configRevision, readG9AgentConfigFile, withG9AgentConfigWrite, writeG9AgentConfig } from '../services/g9agentConfig.js';
+import { reloadG9AgentConfig } from '../services/g9agentConfigReloader.js';
+import { suppressNextWatchEvent } from '../services/g9agentConfigWatcher.js';
 import { probeModelConnection } from '../services/modelConnectionProbe.js';
 import { resolveCatalogImageSupport } from '../services/modelConnectionCapabilities.js';
 
@@ -434,9 +434,9 @@ router.put('/model-configuration', async (req, res) => {
     if (!hasOnlyKeys(submitted, ['modelId', 'textInput', 'imageInput']) || !tested || submitted.textInput !== true || submitted.imageInput !== (tested.imageInput === 'supported')) return apiError(res, 409, 'CONFIGURATION_MISMATCH', 'Model capabilities do not match the connection test.');
   }
   try {
-    const outcome = await withPilotDeckConfigWrite(async () => {
-      const recordConfig = readPilotDeckConfigFile();
-      if (recordConfig.parseError) return { error: ['INVALID_CONFIG_YAML', 'pilotdeck.yaml is invalid and must be repaired before saving.'] };
+    const outcome = await withG9AgentConfigWrite(async () => {
+      const recordConfig = readG9AgentConfigFile();
+      if (recordConfig.parseError) return { error: ['INVALID_CONFIG_YAML', 'g9agent.yaml is invalid and must be repaired before saving.'] };
       const existingProvider = recordConfig.config?.model?.providers?.[provider.providerId] || {};
       const suppliedKey = req.body?.apiKey;
       let apiKey;
@@ -482,7 +482,7 @@ router.put('/model-configuration', async (req, res) => {
         model: { ...recordConfig.config.model, providers: { ...recordConfig.config.model.providers, [provider.providerId]: savedProvider } },
         webui: { ...recordConfig.config.webui, onboarding: { modelConfigurationId: configurationId, savedAt } },
       };
-      const saved = await writePilotDeckConfig(nextConfig, {
+      const saved = await writeG9AgentConfig(nextConfig, {
         previousConfig: recordConfig.config,
         expectedRevision: configRevision(recordConfig.raw),
         onWriteCommitted: suppressNextWatchEvent,
@@ -490,7 +490,7 @@ router.put('/model-configuration', async (req, res) => {
       return { saved, configurationId, savedAt };
     });
     if (outcome.error) return apiError(res, outcome.error[0] === 'INVALID_REQUEST' ? 400 : 409, outcome.error[0], outcome.error[1]);
-    await reloadPilotDeckConfig(outcome.saved.config);
+    await reloadG9AgentConfig(outcome.saved.config);
     tests.delete(record.id);
     return res.json({ configurationId: outcome.configurationId, savedAt: outcome.savedAt });
   } catch (error) {
@@ -516,7 +516,7 @@ router.post('/workspaces', async (req, res) => {
   }
   if (Object.hasOwn(req.body || {}, 'modelConfigurationId') && req.body.modelConfigurationId !== null) {
     if (!text(req.body.modelConfigurationId)) return apiError(res, 400, 'INVALID_REQUEST', 'modelConfigurationId must be a non-empty string or null.');
-    const configId = readPilotDeckConfigFile().config?.webui?.onboarding?.modelConfigurationId;
+    const configId = readG9AgentConfigFile().config?.webui?.onboarding?.modelConfigurationId;
     if (req.body.modelConfigurationId !== configId) return apiError(res, 409, 'CONFIGURATION_MISMATCH', 'modelConfigurationId is not the active configuration.');
   }
   const validation = await validateWorkspacePath(requestedPath);
@@ -551,7 +551,7 @@ router.post('/workspaces', async (req, res) => {
       projectPath = path.join(workspacePath, repoName);
       try {
         try { await fs.access(projectPath); return apiError(res, 409, 'WORKSPACE_CONFLICT', 'Clone destination already exists.'); } catch { /* expected */ }
-        const lockPath = `${projectPath}.pilotdeck-clone.lock`;
+        const lockPath = `${projectPath}.g9agent-clone.lock`;
         let lockHandle;
         try {
           lockHandle = await fs.open(lockPath, 'wx');
@@ -559,7 +559,7 @@ router.post('/workspaces', async (req, res) => {
         } catch {
           return apiError(res, 409, 'WORKSPACE_CONFLICT', 'A clone is already in progress for this destination.');
         }
-        const stagingPath = path.join(workspacePath, `.${repoName}.pilotdeck-clone-${randomUUID()}`);
+        const stagingPath = path.join(workspacePath, `.${repoName}.g9agent-clone-${randomUUID()}`);
         try {
           await cloneGitHubRepository(cloneUrl.url, stagingPath, null, { signal: requestAbort.signal, timeoutMs: CLONE_TIMEOUT_MS });
           requestAbort.signal.throwIfAborted();
